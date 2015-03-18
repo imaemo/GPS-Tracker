@@ -1,0 +1,1199 @@
+///////////////////////////////////////////////////////////////////////////////
+//                                                                            /
+//                                                      24/May/2013  21:52:29 /
+// IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430        /
+// Copyright 1996-2012 IAR Systems AB.                                        /
+//                                                                            /
+//    __rt_version  =  3                                                      /
+//    __double_size =  32                                                     /
+//    __reg_r4      =  free                                                   /
+//    __reg_r5      =  free                                                   /
+//    __pic         =  no                                                     /
+//    __core        =  430                                                    /
+//    Source file   =  E:\WorkSpace\D\MSP_430\lcd - 副本\src\lcd.c            /
+//    Command line  =  "E:\WorkSpace\D\MSP_430\lcd - 副本\src\lcd.c" -lC      /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\" -lA    /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\" -o     /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\Obj\"         /
+//                     --no_cse --no_unroll --no_inline --no_code_motion      /
+//                     --no_tbaa --debug -D__MSP430G2452__ -e --double=32     /
+//                     --dlib_config "D:\IAR Systems\430\LIB\DLIB\dl430fn.h"  /
+//                     -Ol                                                    /
+//    List file     =  E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\lcd.s43   /
+//                                                                            /
+//                                                                            /
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME lcd
+
+        RTMODEL "__SystemLibrary", "DLib"
+        RTMODEL "__core", "430"
+        RTMODEL "__double_size", "32"
+        RTMODEL "__pic", "no"
+        RTMODEL "__reg_r4", "free"
+        RTMODEL "__reg_r5", "free"
+        RTMODEL "__rt_version", "3"
+
+        RSEG CSTACK:DATA:SORT:NOROOT(0)
+
+        EXTERN ?SwitchKey8
+        EXTERN ?Epilogue3
+        EXTERN ?Epilogue5
+        EXTERN ?cstart_init_zero
+        EXTERN ?longjmp_r4
+        EXTERN ?longjmp_r5
+        EXTERN ?setjmp_r4
+        EXTERN ?setjmp_r5
+
+        PUBWEAK ?setjmp_save_r4
+        PUBWEAK ?setjmp_save_r5
+        PUBLIC FontLib
+        PUBLIC FontLink
+        PUBLIC LCD_Clear
+        FUNCTION LCD_Clear,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 4, STACK
+        PUBLIC LCD_Init
+        FUNCTION LCD_Init,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC LCD_SetAddr
+        FUNCTION LCD_SetAddr,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 4, STACK
+        PUBLIC LCD_WriteByte
+        FUNCTION LCD_WriteByte,0203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC LCD_WriteCN
+        FUNCTION LCD_WriteCN,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 8, STACK
+        PUBLIC LCD_WriteCNString
+        FUNCTION LCD_WriteCNString,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 12, STACK
+        PUBLIC LCD_WriteChar
+        FUNCTION LCD_WriteChar,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 6, STACK
+        PUBLIC LCD_WriteString
+        FUNCTION LCD_WriteString,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 4, STACK
+        PUBWEAK P1OUT
+        PUBLIC font6x8
+        
+          CFI Names cfiNames0
+          CFI StackFrame CFA SP DATA
+          CFI Resource PC:16, SP:16, SR:16, R4:16, R5:16, R6:16, R7:16, R8:16
+          CFI Resource R9:16, R10:16, R11:16, R12:16, R13:16, R14:16, R15:16
+          CFI EndNames cfiNames0
+        
+          CFI Common cfiCommon0 Using cfiNames0
+          CFI CodeAlign 2
+          CFI DataAlign 2
+          CFI ReturnAddress PC CODE
+          CFI CFA SP+2
+          CFI PC Frame(CFA, -2)
+          CFI SR Undefined
+          CFI R4 SameValue
+          CFI R5 SameValue
+          CFI R6 SameValue
+          CFI R7 SameValue
+          CFI R8 SameValue
+          CFI R9 SameValue
+          CFI R10 SameValue
+          CFI R11 SameValue
+          CFI R12 Undefined
+          CFI R13 Undefined
+          CFI R14 Undefined
+          CFI R15 Undefined
+          CFI EndCommon cfiCommon0
+        
+// E:\WorkSpace\D\MSP_430\lcd - 副本\src\lcd.c
+//    1 /*
+//    2 *description:lcd file
+//    3 *author: maemo
+//    4 *date: 2012/07/16 22:43
+//    5 *
+//    6 */
+//    7 #include "lcd.h"   
+//    8 #include <msp430g2452.h>
+
+        ASEGN DATA16_AN:DATA:NOROOT,021H
+// unsigned char volatile P1OUT
+P1OUT:
+        DS8 1
+//    9 #include "enchar6x8.h"
+
+        RSEG DATA16_C:CONST:SORT:NOROOT(0)
+// unsigned char const font6x8[92][6]
+font6x8:
+        DC8 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 7, 0, 7, 0, 0, 20, 127
+        DC8 20, 127, 20, 0, 36, 42, 127, 42, 18, 0, 98, 100, 8, 19, 35, 0, 54
+        DC8 73, 85, 34, 80, 0, 0, 5, 3, 0, 0, 0, 0, 28, 34, 65, 0, 0, 0, 65, 34
+        DC8 28, 0, 0, 20, 8, 62, 8, 20, 0, 8, 8, 62, 8, 8, 0, 0, 0, 160, 96, 0
+        DC8 0, 8, 8, 8, 8, 8, 0, 0, 96, 96, 0, 0, 0, 32, 16, 8, 4, 2, 0, 62, 81
+        DC8 73, 69, 62, 0, 0, 66, 127, 64, 0, 0, 66, 97, 81, 73, 70, 0, 33, 65
+        DC8 69, 75, 49, 0, 24, 20, 18, 127, 16, 0, 39, 69, 69, 69, 57, 0, 60
+        DC8 74, 73, 73, 48, 0, 1, 113, 9, 5, 3, 0, 54, 73, 73, 73, 54, 0, 6, 73
+        DC8 73, 41, 30, 0, 0, 54, 54, 0, 0, 0, 0, 86, 54, 0, 0, 0, 8, 20, 34
+        DC8 65, 0, 0, 20, 20, 20, 20, 20, 0, 0, 65, 34, 20, 8, 0, 2, 1, 81, 9
+        DC8 6, 0, 50, 73, 89, 81, 62, 0, 124, 18, 17, 18, 124, 0, 127, 73, 73
+        DC8 73, 54, 0, 62, 65, 65, 65, 34, 0, 127, 65, 65, 34, 28, 0, 127, 73
+        DC8 73, 73, 65, 0, 127, 9, 9, 9, 1, 0, 62, 65, 73, 73, 122, 0, 127, 8
+        DC8 8, 8, 127, 0, 0, 65, 127, 65, 0, 0, 32, 64, 65, 63, 1, 0, 127, 8
+        DC8 20, 34, 65, 0, 127, 64, 64, 64, 64, 0, 127, 2, 12, 2, 127, 0, 127
+        DC8 4, 8, 16, 127, 0, 62, 65, 65, 65, 62, 0, 127, 9, 9, 9, 6, 0, 62, 65
+        DC8 81, 33, 94, 0, 127, 9, 25, 41, 70, 0, 70, 73, 73, 73, 49, 0, 1, 1
+        DC8 127, 1, 1, 0, 63, 64, 64, 64, 63, 0, 31, 32, 64, 32, 31, 0, 63, 64
+        DC8 56, 64, 63, 0, 99, 20, 8, 20, 99, 0, 7, 8, 112, 8, 7, 0, 97, 81, 73
+        DC8 69, 67, 0, 0, 127, 65, 65, 0, 0, 85, 42, 85, 42, 85, 0, 0, 65, 65
+        DC8 127, 0, 0, 4, 2, 1, 2, 4, 0, 64, 64, 64, 64, 64, 0, 0, 1, 2, 4, 0
+        DC8 0, 32, 84, 84, 84, 120, 0, 127, 72, 68, 68, 56, 0, 56, 68, 68, 68
+        DC8 32, 0, 56, 68, 68, 72, 127, 0, 56, 84, 84, 84, 24, 0, 8, 126, 9, 1
+        DC8 2, 0, 24, 164, 164, 164, 124, 0, 127, 8, 4, 4, 120, 0, 0, 68, 125
+        DC8 64, 0, 0, 64, 128, 132, 125, 0, 0, 127, 16, 40, 68, 0, 0, 0, 65
+        DC8 127, 64, 0, 0, 124, 4, 24, 4, 120, 0, 124, 8, 4, 4, 120, 0, 56, 68
+        DC8 68, 68, 56, 0, 252, 36, 36, 36, 24, 0, 24, 36, 36, 24, 252, 0, 124
+        DC8 8, 4, 4, 8, 0, 72, 84, 84, 84, 32, 0, 4, 63, 68, 64, 32, 0, 60, 64
+        DC8 64, 32, 124, 0, 28, 32, 64, 32, 28, 0, 60, 64, 48, 64, 60, 0, 68
+        DC8 40, 16, 40, 68, 0, 28, 160, 160, 160, 124, 0, 68, 100, 84, 76, 68
+        DC8 20, 20, 20, 20, 20, 20
+//   10 #include "CN_Char.h"
+
+        RSEG DATA16_C:CONST:SORT:NOROOT(0)
+// unsigned char const FontLib[10][24]
+FontLib:
+        DC8 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        DC8 0, 242, 18, 146, 126, 146, 18, 146, 126, 146, 18, 242, 0, 15, 1, 0
+        DC8 0, 2, 1, 0, 0, 0, 9, 15, 0, 152, 212, 179, 136, 0, 72, 72, 255, 36
+        DC8 165, 38, 0, 4, 4, 2, 2, 8, 8, 4, 3, 5, 8, 14, 0, 136, 255, 72, 0
+        DC8 76, 164, 149, 134, 148, 164, 76, 0, 8, 15, 0, 0, 8, 8, 8, 15, 8, 8
+        DC8 8, 0, 24, 214, 84, 255, 84, 212, 16, 252, 0, 0, 255, 0, 0, 7, 0, 15
+        DC8 4, 7, 0, 1, 8, 8, 15, 0, 32, 39, 165, 165, 103, 56, 103, 165, 173
+        DC8 55, 32, 0, 1, 15, 10, 10, 14, 0, 14, 10, 10, 15, 1, 0, 56, 0, 255
+        DC8 16, 8, 2, 2, 2, 254, 2, 2, 0, 8, 6, 1, 2, 12, 0, 8, 8, 15, 0, 0, 0
+        DC8 34, 68, 16, 8, 247, 148, 148, 244, 4, 252, 0, 0, 4, 2, 1, 0, 7, 8
+        DC8 8, 8, 9, 9, 14, 0, 130, 130, 186, 170, 170, 171, 170, 170, 186, 130
+        DC8 130, 0, 9, 8, 6, 2, 2, 2, 2, 6, 8, 8, 13, 0, 130, 114, 2, 2, 130
+        DC8 126, 130, 2, 66, 50, 2, 0, 8, 8, 4, 2, 1, 0, 1, 2, 4, 8, 8, 0
+//   11 #define SCLK    0x10
+//   12 #define SDIN      0x08
+//   13 #define DC     0x04
+//   14 #define RST     0x01
+//   15 #define SCE    0x02   
+//   16 
+//   17 #define SCLK_SET (P1OUT |= SCLK)
+//   18 #define SCLK_CLR (P1OUT &= ~SCLK)
+//   19 
+//   20 #define SDIN_SET (P1OUT |= SDIN)
+//   21 #define SDIN_CLR (P1OUT &= ~SDIN)
+//   22 //#define SDIN_SET(X) (P1OUT ^= (X)<<1)   /*  0000 0001 ^ 0000 0000 = 0000 0001   */
+//   23 
+//   24 #define DC_SET (P1OUT |= DC)
+//   25 #define DC_CLR (P1OUT &= ~DC)
+//   26 //#define DC_SET(X) (P1OUT ^= (X)<<2)     /*1111 0000  ^ 0000 0100 = 1111 0100*/
+//   27 
+//   28 #define RST_SET (P1OUT |= RST)
+//   29 #define RST_CLR (P1OUT &= ~RST)  
+//   30 
+//   31 #define SCE_SET (P1OUT |= SCE)
+//   32 #define SCE_CLR (P1OUT &= ~SCE)
+//   33 
+//   34 
+//   35 
+//   36 
+//   37 #define PD_HORIZON_BASIC 	0x20
+//   38 #define PD_HORIZON_EXTEND	0x21
+//   39 #define BASIC_NORMAL_MODE 	0x0c
+//   40 #define BASIC_SET_Y_ADDR	0x40
+//   41 #define BASIC_SET_X_ADDR	0x80
+//   42 #define EXTEND_TEMP_CTL 	0x04
+//   43 #define EXTEND_BIAS_SYS		0x10
+//   44 #define EXTEND_SET_VOP		0x80
+//   45 
+//   46 
+//   47 
+
+        RSEG DATA16_Z:DATA:SORT:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   48  uchar FontLink[4][7];
+FontLink:
+        DS8 28
+//   49 
+//   50 
+//   51 /*
+//   52 *description:initialize a byte 
+//   53 *author:maemo
+//   54 *date:2012/07/16 21:17
+//   55 *input: none
+//   56 *output: none
+//   57 *history:
+//   58 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//   59 void LCD_Init(void)
+LCD_Init:
+          CFI Block cfiBlock0 Using cfiCommon0
+          CFI Function LCD_Init
+//   60 {
+//   61   	RST_CLR;
+        FUNCALL LCD_Init, LCD_WriteByte
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL LCD_Init, LCD_WriteByte
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL LCD_Init, LCD_WriteByte
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL LCD_Init, LCD_WriteByte
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL LCD_Init, LCD_WriteByte
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL LCD_Init, LCD_Clear
+        LOCFRAME CSTACK, 2, STACK
+        BIC.B   #0x1, &0x21
+//   62 	__delay_cycles(100);				
+        ////////////// Start of 100 cycles delay.
+        JMP     ??LCD_Init_7
+??LCD_Init_7:
+        MOV.W   #0x1f, R15
+??LCD_Init_4:
+        ADD.W   #0xffff, R15
+        JC      ??LCD_Init_4
+        ////////////// End of delay code.
+//   63 	RST_SET;
+        BIS.B   #0x1, &0x21
+//   64 	SCE_CLR;
+        BIC.B   #0x2, &0x21
+//   65 	__delay_cycles(100);
+        ////////////// Start of 100 cycles delay.
+        JMP     ??LCD_Init_8
+??LCD_Init_8:
+        MOV.W   #0x1f, R15
+??LCD_Init_5:
+        ADD.W   #0xffff, R15
+        JC      ??LCD_Init_5
+        ////////////// End of delay code.
+//   66 	SCE_SET;
+        BIS.B   #0x2, &0x21
+//   67 	__delay_cycles(100);
+        ////////////// Start of 100 cycles delay.
+        JMP     ??LCD_Init_9
+??LCD_Init_9:
+        MOV.W   #0x1f, R15
+??LCD_Init_6:
+        ADD.W   #0xffff, R15
+        JC      ??LCD_Init_6
+        ////////////// End of delay code.
+//   68 	LCD_WriteByte(PD_HORIZON_EXTEND, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x21, R12
+        CALL    #LCD_WriteByte
+//   69 	LCD_WriteByte(EXTEND_SET_VOP|0x48, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0xc8, R12
+        CALL    #LCD_WriteByte
+//   70 	LCD_WriteByte(EXTEND_TEMP_CTL|0x02, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x6, R12
+        CALL    #LCD_WriteByte
+//   71 	LCD_WriteByte(EXTEND_BIAS_SYS|0x03, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x13, R12
+        CALL    #LCD_WriteByte
+//   72 	LCD_WriteByte(PD_HORIZON_BASIC, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x20, R12
+        CALL    #LCD_WriteByte
+//   73 	LCD_Clear();
+        CALL    #LCD_Clear
+//   74 	SCE_CLR;
+        BIC.B   #0x2, &0x21
+//   75     for (uchar i=0; i<4; i++)
+        MOV.B   #0x0, R14
+        JMP     ??LCD_Init_2
+//   76     {
+//   77         for (uchar j=0; j<7; j++)
+//   78         {
+//   79             FontLink[i][j] = 0;
+??LCD_Init_0:
+        MOV.B   R14, R13
+        MOV.W   R13, R12
+        RLA.W   R13
+        ADD.W   R13, R12
+        RLA.W   R13
+        ADD.W   R12, R13
+        MOV.B   R15, R15
+        ADD.W   R15, R13
+        MOV.B   #0x0, FontLink(R13)
+//   80         }
+        ADD.B   #0x1, R15
+??LCD_Init_1:
+        CMP.B   #0x7, R15
+        JNC     ??LCD_Init_0
+        ADD.B   #0x1, R14
+??LCD_Init_2:
+        CMP.B   #0x4, R14
+        JC      ??LCD_Init_3
+        MOV.B   #0x0, R15
+        JMP     ??LCD_Init_1
+//   81     }
+//   82 } 
+??LCD_Init_3:
+        RET
+          CFI EndBlock cfiBlock0
+        REQUIRE P1OUT
+//   83  
+//   84 /*
+//   85 *description:write a byte 
+//   86 *author:maemo
+//   87 *date:2012/07/16 21:17
+//   88 *input: data, cmd
+//   89 *output: none
+//   90 *history:
+//   91 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//   92 void LCD_WriteByte(uchar data, uchar cmd)
+LCD_WriteByte:
+          CFI Block cfiBlock1 Using cfiCommon0
+          CFI Function LCD_WriteByte
+//   93 {
+//   94     uchar i=0;
+        MOV.B   #0x0, R14
+//   95     if (cmd)
+        CMP.B   #0x0, R13
+        JEQ     ??LCD_WriteByte_2
+//   96     {
+//   97 	    DC_SET;
+        BIS.B   #0x4, &0x21
+        JMP     ??LCD_WriteByte_3
+//   98     }
+//   99     else
+//  100     {
+//  101         DC_CLR;
+??LCD_WriteByte_2:
+        BIC.B   #0x4, &0x21
+//  102     }
+//  103 	SCE_SET;
+??LCD_WriteByte_3:
+        BIS.B   #0x2, &0x21
+//  104 	__delay_cycles(1000);
+        ////////////// Start of 1000 cycles delay.
+        JMP     ??LCD_WriteByte_7
+??LCD_WriteByte_7:
+        MOV.W   #0x14b, R15
+??LCD_WriteByte_6:
+        ADD.W   #0xffff, R15
+        JC      ??LCD_WriteByte_6
+        ////////////// End of delay code.
+//  105 	SCE_CLR;
+        BIC.B   #0x2, &0x21
+//  106 	for(i=0; i<8; i++)
+        MOV.B   #0x0, R14
+        JMP     ??LCD_WriteByte_4
+//  107 	{
+//  108 		if (data&0x80)
+//  109         {
+//  110             SDIN_SET;
+//  111         }
+//  112         else
+//  113         {
+//  114             SDIN_CLR;
+??LCD_WriteByte_0:
+        BIC.B   #0x8, &0x21
+//  115         }
+//  116 		SCLK_CLR;
+??LCD_WriteByte_1:
+        BIC.B   #0x10, &0x21
+//  117 		data <<= 1;
+        RLA.B   R12
+//  118 		SCLK_SET;
+        BIS.B   #0x10, &0x21
+        ADD.B   #0x1, R14
+??LCD_WriteByte_4:
+        CMP.B   #0x8, R14
+        JC      ??LCD_WriteByte_5
+        CMP.B   #0x0, R12
+        JGE     ??LCD_WriteByte_0
+        BIS.B   #0x8, &0x21
+        JMP     ??LCD_WriteByte_1
+//  119 	}
+//  120 	SCE_SET;
+??LCD_WriteByte_5:
+        BIS.B   #0x2, &0x21
+//  121 }
+        RET
+          CFI EndBlock cfiBlock1
+        REQUIRE P1OUT
+//  122 
+//  123 
+//  124 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  125 void LCD_Clear(void)
+LCD_Clear:
+          CFI Block cfiBlock2 Using cfiCommon0
+          CFI Function LCD_Clear
+//  126 {
+        FUNCALL LCD_Clear, LCD_WriteByte
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL LCD_Clear, LCD_WriteByte
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL LCD_Clear, LCD_WriteByte
+        LOCFRAME CSTACK, 4, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+//  127     uint i=0;
+        MOV.W   #0x0, R10
+//  128 	LCD_WriteByte(BASIC_NORMAL_MODE, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0xc, R12
+        CALL    #LCD_WriteByte
+//  129 	LCD_WriteByte(BASIC_SET_X_ADDR, 0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x80, R12
+        CALL    #LCD_WriteByte
+//  130 //    LCD_SetAddr(0, 0);
+//  131     for (i=0; i<504; i++)
+        MOV.W   #0x0, R10
+        JMP     ??LCD_Clear_1
+//  132     {
+//  133         LCD_WriteByte(0, 1);
+??LCD_Clear_0:
+        MOV.B   #0x1, R13
+        MOV.B   #0x0, R12
+        CALL    #LCD_WriteByte
+//  134     }
+        ADD.W   #0x1, R10
+??LCD_Clear_1:
+        CMP.W   #0x1f8, R10
+        JNC     ??LCD_Clear_0
+//  135 }
+        POP.W   R10
+          CFI R10 SameValue
+          CFI CFA SP+2
+        RET
+          CFI EndBlock cfiBlock2
+//  136 /*
+//  137 *description:set the address 
+//  138 *date:2012/07/16 22:50
+//  139 *input: x address 0 --- 83, y address 0 --- 5 
+//  140 *output: none
+//  141 *other:the address counter is automatically increase by 1
+//  142 *history:
+//  143 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  144 void LCD_SetAddr(uchar x, uchar y)
+LCD_SetAddr:
+          CFI Block cfiBlock3 Using cfiCommon0
+          CFI Function LCD_SetAddr
+//  145 {
+        FUNCALL LCD_SetAddr, LCD_WriteByte
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL LCD_SetAddr, LCD_WriteByte
+        LOCFRAME CSTACK, 4, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        MOV.B   R13, R10
+//  146     LCD_WriteByte(BASIC_SET_X_ADDR|x, 0);
+        MOV.B   #0x0, R13
+        BIS.B   #0x80, R12
+        CALL    #LCD_WriteByte
+//  147     LCD_WriteByte(BASIC_SET_Y_ADDR|y, 0);
+        MOV.B   #0x0, R13
+        BIS.B   #0x40, R10
+        MOV.B   R10, R12
+        CALL    #LCD_WriteByte
+//  148 }
+        POP.W   R10
+          CFI R10 SameValue
+          CFI CFA SP+2
+        RET
+          CFI EndBlock cfiBlock3
+//  149 
+//  150 /*
+//  151 *description:write a char ,6 * 8 
+//  152 *date:2012/07/16 22:23
+//  153 *input: x address 0 --- 83, y address 0 --- 5,  data -- to be displayed
+//  154 *output: none
+//  155 *other:the address counter is automatically increase by 1
+//  156 *history:
+//  157 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  158 void LCD_WriteChar(uchar data)
+LCD_WriteChar:
+          CFI Block cfiBlock4 Using cfiCommon0
+          CFI Function LCD_WriteChar
+//  159 {
+        FUNCALL LCD_WriteChar, LCD_WriteByte
+        LOCFRAME CSTACK, 6, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        PUSH.W  R11
+          CFI R11 Frame(CFA, -6)
+          CFI CFA SP+6
+        MOV.B   R12, R10
+//  160     unsigned char line;
+//  161 
+//  162     data -= 32;
+        ADD.B   #0xe0, R10
+//  163  //   LCD_SetAddr(x, y);
+//  164     for (line=0; line<6; line++)
+        MOV.B   #0x0, R11
+        JMP     ??LCD_WriteChar_1
+//  165     {
+//  166         LCD_WriteByte(font6x8[data][line], 1);
+??LCD_WriteChar_0:
+        MOV.B   #0x1, R13
+        MOV.B   R10, R15
+        RLA.W   R15
+        MOV.W   R15, R14
+        RLA.W   R15
+        ADD.W   R14, R15
+        MOV.B   R11, R11
+        ADD.W   R11, R15
+        MOV.B   font6x8(R15), R12
+        CALL    #LCD_WriteByte
+//  167     }
+        ADD.B   #0x1, R11
+??LCD_WriteChar_1:
+        CMP.B   #0x6, R11
+        JNC     ??LCD_WriteChar_0
+//  168 }
+        POP.W   R11
+          CFI R11 SameValue
+          CFI CFA SP+4
+        POP.W   R10
+          CFI R10 SameValue
+          CFI CFA SP+2
+        RET
+          CFI EndBlock cfiBlock4
+//  169 
+//  170 
+//  171 /*
+//  172 *description:write a string ,6 * 8 
+//  173 *date: 2012/07/16 22:23
+//  174 *input: x address 0 --- 83, y address 0 --- 5,  data -- to be displayed
+//  175 *output: none
+//  176 *other:the address counter is automatically increase by 1
+//  177 *history:
+//  178 *
+//  179 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  180 void LCD_WriteString(uchar x, uchar y, uchar *pStr)
+LCD_WriteString:
+          CFI Block cfiBlock5 Using cfiCommon0
+          CFI Function LCD_WriteString
+//  181 {
+        FUNCALL LCD_WriteString, LCD_SetAddr
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL LCD_WriteString, LCD_WriteChar
+        LOCFRAME CSTACK, 4, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        MOV.W   R14, R10
+//  182     LCD_SetAddr(x, y);
+        CALL    #LCD_SetAddr
+        JMP     ??LCD_WriteString_1
+//  183     while(*pStr)
+//  184     {
+//  185         LCD_WriteChar(*pStr);
+??LCD_WriteString_0:
+        MOV.B   @R10, R12
+        CALL    #LCD_WriteChar
+//  186         pStr++;
+        ADD.W   #0x1, R10
+//  187     }
+??LCD_WriteString_1:
+        CMP.B   #0x0, 0(R10)
+        JNE     ??LCD_WriteString_0
+//  188 }
+        POP.W   R10
+          CFI R10 SameValue
+          CFI CFA SP+2
+        RET
+          CFI EndBlock cfiBlock5
+//  189 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  190 void LCD_WriteCN(uchar x, uchar y, uchar Index)
+LCD_WriteCN:
+          CFI Block cfiBlock6 Using cfiCommon0
+          CFI Function LCD_WriteCN
+//  191 {
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_SetAddr
+        LOCFRAME CSTACK, 8, STACK
+        FUNCALL LCD_WriteCN, LCD_WriteByte
+        LOCFRAME CSTACK, 8, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        PUSH.W  R11
+          CFI R11 Frame(CFA, -6)
+          CFI CFA SP+6
+        PUSH.W  R8
+          CFI R8 Frame(CFA, -8)
+          CFI CFA SP+8
+        MOV.B   R12, R8
+        MOV.B   R14, R11
+//  192 	uchar i=0, data=0;
+        MOV.B   #0x0, R10
+        MOV.B   #0x0, R12
+//  193 	
+//  194 	switch(y)
+        SUB.B   #0x0, R13
+        JEQ     ??LCD_WriteCN_8
+        SUB.B   #0x1, R13
+        JEQ     ??LCD_WriteCN_9
+        SUB.B   #0x1, R13
+        JEQ     ??LCD_WriteCN_10
+        SUB.B   #0x1, R13
+        JEQ     ??LCD_WriteCN_11
+        JMP     ??LCD_WriteCN_12
+//  195 	{
+//  196 		case 0:
+//  197 		FontLink[0][x] = Index;
+??LCD_WriteCN_8:
+        MOV.B   R8, R8
+        MOV.B   R11, FontLink(R8)
+//  198 		LCD_SetAddr(12*x, 0);
+        MOV.B   #0x0, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  199 		for (i=0; i<12; i++ )							/*高8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_13
+//  200 		{
+//  201 			LCD_WriteByte(FontLib[Index][i], 1)	;
+??LCD_WriteCN_0:
+        MOV.B   #0x1, R13
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R14
+        RLA.W   R15
+        ADD.W   R14, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        CALL    #LCD_WriteByte
+//  202 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_13:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_0
+//  203 		LCD_SetAddr(12*x, 1);
+        MOV.B   #0x1, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  204 		for (i=0; i<12; i++)							/*低四位,凑成8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_14
+//  205 		{	/*由两部分组成 == 当前字的后12字节的低四位 + 下一字的前12字节低四位, 后者成为高四位*/
+//  206 			/*					0000 xxxx    +    mmmm nnnn 左移四位 nnnn 0000 = nnnn xxxx*/
+//  207 			data = FontLib[Index][i+12] | (FontLib[FontLink[1][x]][i]<<4);
+??LCD_WriteCN_1:
+        MOV.B   R8, R8
+        MOV.B   FontLink + 7(R8), R15
+        MOV.B   R15, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R14
+        RLA.W   R15
+        ADD.W   R14, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R10, R15
+        MOV.B   R11, R14
+        RLA.W   R14
+        RLA.W   R14
+        RLA.W   R14
+        MOV.W   R14, R13
+        RLA.W   R14
+        ADD.W   R13, R14
+        ADD.W   R14, R15
+        BIS.B   FontLib + 12(R15), R12
+//  208 			LCD_WriteByte(data, 1);
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  209 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_14:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_1
+//  210 		break;
+        JMP     ??LCD_WriteCN_12
+//  211 		
+//  212 		case 1:
+//  213 		FontLink[1][x] = Index;
+??LCD_WriteCN_9:
+        MOV.B   R8, R8
+        MOV.B   R11, FontLink + 7(R8)
+//  214 		LCD_SetAddr(12*x, 1);                          /*高四位，凑成8位*/					
+        MOV.B   #0x1, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  215 		for (i=0; i<12; i++)
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_15
+//  216 		{	/*8位数由两部分组成 == 当前字的前12字节低四位 + 上一列同一位置的字后12位的位四位，前者变成高四位*/ 
+//  217 			/*				   xxxx yyyy 左移四位 yyyy 0000  + 0000 nnnn == yyyy nnnn						*/ 
+//  218 			data = FontLib[Index][i]<<4 | FontLib[FontLink[0][x]][i+12];	
+??LCD_WriteCN_2:
+        MOV.B   R10, R14
+        MOV.B   R8, R8
+        MOV.B   FontLink(R8), R15
+        MOV.B   R15, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        ADD.W   R15, R14
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        BIS.B   FontLib + 12(R14), R12
+//  219 			LCD_WriteByte(data, 1);
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  220 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_15:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_2
+//  221 		LCD_SetAddr(12*x, 2);                          /*低8位*/
+        MOV.B   #0x2, R13
+        RLA.B   R8
+        RLA.B   R8
+        MOV.B   R8, R14
+        RLA.B   R8
+        ADD.B   R14, R8
+        MOV.B   R8, R12
+        CALL    #LCD_SetAddr
+//  222 		for (i=0; i<12; i++)
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_16
+//  223 		{	/*低8位由两部分 == 前12字节的高四位 + 后12字节的低四位， 高-》低，低-》高 */
+//  224 			/*  	xxxxx yyyy 右移四位	0000 xxxx + 0000 mmmm 左移四位 mmmm 0000 = mmmm xxxx	*/
+//  225 			data = FontLib[Index][i]>>4 | FontLib[Index][i+12]<<4;
+??LCD_WriteCN_3:
+        MOV.B   R10, R15
+        MOV.B   R11, R14
+        RLA.W   R14
+        RLA.W   R14
+        RLA.W   R14
+        MOV.W   R14, R13
+        RLA.W   R14
+        ADD.W   R13, R14
+        ADD.W   R14, R15
+        MOV.B   FontLib + 12(R15), R14
+        RLA.B   R14
+        RLA.B   R14
+        RLA.B   R14
+        RLA.B   R14
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        CLRC
+        RRC.B   R12
+        RRA.B   R12
+        RRA.B   R12
+        RRA.B   R12
+        BIS.B   R14, R12
+//  226 			LCD_WriteByte(data, 1);
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  227 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_16:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_3
+//  228 		break;
+        JMP     ??LCD_WriteCN_12
+//  229 		
+//  230 		case 2:
+//  231 		FontLink[2][x] = Index;
+??LCD_WriteCN_10:
+        MOV.B   R8, R8
+        MOV.B   R11, FontLink + 14(R8)
+//  232 		LCD_SetAddr(12*x, 3);
+        MOV.B   #0x3, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  233 		for (i=0; i<12; i++)							/*高8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_17
+//  234 		{
+//  235 			LCD_WriteByte(FontLib[Index][i], 1);
+??LCD_WriteCN_4:
+        MOV.B   #0x1, R13
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R14
+        RLA.W   R15
+        ADD.W   R14, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        CALL    #LCD_WriteByte
+//  236 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_17:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_4
+//  237 		LCD_SetAddr(12*x, 4);
+        MOV.B   #0x4, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  238 		for (i=0; i<12; i++)							/*低四位，凑成8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_18
+//  239 		{	/*由两部分组成 == 当前字的后12字节的低8位 + 下一字的前12字节的低四位，后者变成高四位*/
+//  240 			/*					0000 xxxx   +     mmmm nnnn 左移四位 = nnnn xxxx*/
+//  241 			data = FontLib[Index][i+12] | (FontLib[FontLink[3][x]][i]<<4);
+??LCD_WriteCN_5:
+        MOV.B   R8, R8
+        MOV.B   FontLink + 21(R8), R15
+        MOV.B   R15, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R14
+        RLA.W   R15
+        ADD.W   R14, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R10, R15
+        MOV.B   R11, R14
+        RLA.W   R14
+        RLA.W   R14
+        RLA.W   R14
+        MOV.W   R14, R13
+        RLA.W   R14
+        ADD.W   R13, R14
+        ADD.W   R14, R15
+        BIS.B   FontLib + 12(R15), R12
+//  242 			LCD_WriteByte(data, 1);				
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  243 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_18:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_5
+//  244 		break;
+        JMP     ??LCD_WriteCN_12
+//  245 		
+//  246 		case 3:
+//  247 		FontLink[3][x] = Index;
+??LCD_WriteCN_11:
+        MOV.B   R8, R8
+        MOV.B   R11, FontLink + 21(R8)
+//  248 		LCD_SetAddr(12*x, 4);
+        MOV.B   #0x4, R13
+        MOV.B   R8, R12
+        RLA.B   R12
+        RLA.B   R12
+        MOV.B   R12, R14
+        RLA.B   R12
+        ADD.B   R14, R12
+        CALL    #LCD_SetAddr
+//  249 		for (i=0; i<12; i++)							/*高四位，凑8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_19
+//  250 		{	/*8位数由两部分组成 == 当前字的前12字节低四位 + 上一列同一位置的字后12位的低四位，前者变成高四位*/ 
+//  251 			/*				   xxxx yyyy 左移四位 yyyy 0000  + 0000 nnnn == yyyy nnnn						*/ 
+//  252 			data = FontLib[Index][i]<<4 | FontLib[FontLink[2][x]][i+12];
+??LCD_WriteCN_6:
+        MOV.B   R10, R14
+        MOV.B   R8, R8
+        MOV.B   FontLink + 14(R8), R15
+        MOV.B   R15, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        ADD.W   R15, R14
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        RLA.B   R12
+        BIS.B   FontLib + 12(R14), R12
+//  253 			LCD_WriteByte(data, 1);
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  254 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_19:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_6
+//  255 		LCD_SetAddr(12*x, 5);
+        MOV.B   #0x5, R13
+        RLA.B   R8
+        RLA.B   R8
+        MOV.B   R8, R14
+        RLA.B   R8
+        ADD.B   R14, R8
+        MOV.B   R8, R12
+        CALL    #LCD_SetAddr
+//  256 		for (i=0; i<12; i++)							/*低8位*/
+        MOV.B   #0x0, R10
+        JMP     ??LCD_WriteCN_20
+//  257 		{	/*低8位由两部分 == 前12字节的高四位 + 后12字节的低四位， 高-》低，低-》高 */
+//  258 			/*  	xxxxx yyyy 右移四位	0000 xxxx + 0000 mmmm 左移四位 mmmm 0000 = mmmm xxxx	*/
+//  259 			data = FontLib[Index][i]>>4 | FontLib[Index][i+12]<<4;
+??LCD_WriteCN_7:
+        MOV.B   R10, R15
+        MOV.B   R11, R14
+        RLA.W   R14
+        RLA.W   R14
+        RLA.W   R14
+        MOV.W   R14, R13
+        RLA.W   R14
+        ADD.W   R13, R14
+        ADD.W   R14, R15
+        MOV.B   FontLib + 12(R15), R14
+        RLA.B   R14
+        RLA.B   R14
+        RLA.B   R14
+        RLA.B   R14
+        MOV.B   R11, R15
+        RLA.W   R15
+        RLA.W   R15
+        RLA.W   R15
+        MOV.W   R15, R13
+        RLA.W   R15
+        ADD.W   R13, R15
+        MOV.B   R10, R10
+        ADD.W   R10, R15
+        MOV.B   FontLib(R15), R12
+        CLRC
+        RRC.B   R12
+        RRA.B   R12
+        RRA.B   R12
+        RRA.B   R12
+        BIS.B   R14, R12
+//  260 			LCD_WriteByte( data , 1);
+        MOV.B   #0x1, R13
+        CALL    #LCD_WriteByte
+//  261 		}
+        ADD.B   #0x1, R10
+??LCD_WriteCN_20:
+        CMP.B   #0xc, R10
+        JNC     ??LCD_WriteCN_7
+//  262 		break;	
+//  263 		default:
+//  264 			;
+//  265 	}
+//  266 
+//  267 }
+??LCD_WriteCN_12:
+        BR      #?Epilogue3
+          CFI EndBlock cfiBlock6
+//  268 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  269 void LCD_WriteCNString(uchar x, uchar y, uchar length, uchar pStr[])
+LCD_WriteCNString:
+          CFI Block cfiBlock7 Using cfiCommon0
+          CFI Function LCD_WriteCNString
+//  270 {	
+        FUNCALL LCD_WriteCNString, LCD_WriteCN
+        LOCFRAME CSTACK, 12, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        PUSH.W  R11
+          CFI R11 Frame(CFA, -6)
+          CFI CFA SP+6
+        PUSH.W  R8
+          CFI R8 Frame(CFA, -8)
+          CFI CFA SP+8
+        PUSH.W  R9
+          CFI R9 Frame(CFA, -10)
+          CFI CFA SP+10
+        PUSH.W  R6
+          CFI R6 Frame(CFA, -12)
+          CFI CFA SP+12
+        MOV.B   R12, R8
+        MOV.B   R13, R9
+        MOV.B   R14, R10
+        MOV.W   R15, R6
+//  271 	uchar i, j , count;
+//  272 	
+//  273 	i = x;
+//  274 	j = y;
+//  275 	count = 1;
+        MOV.B   #0x1, R11
+        JMP     ??LCD_WriteCNString_1
+//  276 	while (count<=length)
+//  277 	{
+//  278 		if (i>6)
+??LCD_WriteCNString_0:
+        CMP.B   #0x7, R8
+        JNC     ??LCD_WriteCNString_2
+//  279 		{
+//  280             i=0;
+        MOV.B   #0x0, R8
+//  281 			j++;
+        ADD.B   #0x1, R9
+//  282             if (j>3)
+        CMP.B   #0x4, R9
+        JNC     ??LCD_WriteCNString_2
+//  283             {
+//  284                 j=0;
+        MOV.B   #0x0, R9
+//  285             }
+//  286 		}        
+//  287 		LCD_WriteCN(i, j, pStr[count] );
+??LCD_WriteCNString_2:
+        MOV.B   R11, R11
+        MOV.W   R6, R15
+        ADD.W   R11, R15
+        MOV.B   @R15, R14
+        MOV.B   R9, R13
+        MOV.B   R8, R12
+        CALL    #LCD_WriteCN
+//  288 		count++;
+        ADD.B   #0x1, R11
+//  289 		i++;
+        ADD.B   #0x1, R8
+//  290 	}
+??LCD_WriteCNString_1:
+        CMP.B   R11, R10
+        JC      ??LCD_WriteCNString_0
+//  291 }
+        BR      #?Epilogue5
+          CFI EndBlock cfiBlock7
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+?setjmp_save_r4:
+        REQUIRE ?setjmp_r4
+        REQUIRE ?longjmp_r4
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+?setjmp_save_r5:
+        REQUIRE ?setjmp_r5
+        REQUIRE ?longjmp_r5
+
+        END
+// 
+// 1 212 bytes in segment CODE
+//     1 byte  in segment DATA16_AN
+//   792 bytes in segment DATA16_C
+//    28 bytes in segment DATA16_Z
+// 
+// 1 212 bytes of CODE  memory
+//   792 bytes of CONST memory
+//    28 bytes of DATA  memory (+ 1 byte shared)
+//
+//Errors: none
+//Warnings: none

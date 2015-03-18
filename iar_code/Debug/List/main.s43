@@ -1,0 +1,981 @@
+///////////////////////////////////////////////////////////////////////////////
+//                                                                            /
+//                                                      24/May/2013  21:52:29 /
+// IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430        /
+// Copyright 1996-2012 IAR Systems AB.                                        /
+//                                                                            /
+//    __rt_version  =  3                                                      /
+//    __double_size =  32                                                     /
+//    __reg_r4      =  free                                                   /
+//    __reg_r5      =  free                                                   /
+//    __pic         =  no                                                     /
+//    __core        =  430                                                    /
+//    Source file   =  E:\WorkSpace\D\MSP_430\lcd - 副本\src\main.c           /
+//    Command line  =  "E:\WorkSpace\D\MSP_430\lcd - 副本\src\main.c" -lC     /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\" -lA    /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\" -o     /
+//                     "E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\Obj\"         /
+//                     --no_cse --no_unroll --no_inline --no_code_motion      /
+//                     --no_tbaa --debug -D__MSP430G2452__ -e --double=32     /
+//                     --dlib_config "D:\IAR Systems\430\LIB\DLIB\dl430fn.h"  /
+//                     -Ol                                                    /
+//    List file     =  E:\WorkSpace\D\MSP_430\lcd - 副本\Debug\List\main.s43  /
+//                                                                            /
+//                                                                            /
+///////////////////////////////////////////////////////////////////////////////
+
+        NAME main
+
+        RTMODEL "__SystemLibrary", "DLib"
+        RTMODEL "__core", "430"
+        RTMODEL "__double_size", "32"
+        RTMODEL "__pic", "no"
+        RTMODEL "__reg_r4", "free"
+        RTMODEL "__reg_r5", "free"
+        RTMODEL "__rt_version", "3"
+
+        RSEG CSTACK:DATA:SORT:NOROOT(0)
+
+        EXTERN ?Epilogue6
+        EXTERN ?Mul32
+        EXTERN ?DivMod32s
+        EXTERN ?cstart_init_copy
+        EXTERN ?cstart_init_zero
+        EXTERN ?longjmp_r4
+        EXTERN ?longjmp_r5
+        EXTERN ?setjmp_r4
+        EXTERN ?setjmp_r5
+
+        PUBWEAK ?setjmp_save_r4
+        PUBWEAK ?setjmp_save_r5
+        PUBWEAK BCSCTL1
+        PUBWEAK BCSCTL2
+        PUBWEAK BCSCTL3
+        PUBWEAK CALBC1_8MHZ
+        PUBWEAK CALDCO_8MHZ
+        PUBLIC Convert
+        FUNCTION Convert,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBWEAK DCOCTL
+        PUBLIC DS18B20_Init
+        FUNCTION DS18B20_Init,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        FUNCTION DelayNus,0203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC DispTemp
+        FUNCTION DispTemp,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 14, STACK
+        PUBLIC Error
+        PUBLIC GetTemp
+        FUNCTION GetTemp,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBWEAK IFG1
+        PUBLIC InitDisplay
+        FUNCTION InitDisplay,021201H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC InitSysClk
+        FUNCTION InitSysClk,0203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBWEAK P1DIR
+        PUBWEAK P1OUT
+        PUBWEAK P2DIR
+        PUBWEAK P2IN
+        PUBWEAK P2OUT
+        PUBLIC ReadDo
+        FUNCTION ReadDo,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC ReadTemp
+        FUNCTION ReadTemp,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 4, STACK
+        PUBLIC Read_18B20
+        FUNCTION Read_18B20,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC Skip
+        FUNCTION Skip,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC Str1
+        PUBLIC Str2
+        PUBLIC Temper
+        PUBWEAK WDTCTL
+        PUBLIC Write_18B20
+        FUNCTION Write_18B20,021203H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC main
+        FUNCTION main,021a03H
+        ARGFRAME CSTACK, 0, STACK
+        LOCFRAME CSTACK, 2, STACK
+        PUBLIC temperature
+        
+          CFI Names cfiNames0
+          CFI StackFrame CFA SP DATA
+          CFI Resource PC:16, SP:16, SR:16, R4:16, R5:16, R6:16, R7:16, R8:16
+          CFI Resource R9:16, R10:16, R11:16, R12:16, R13:16, R14:16, R15:16
+          CFI EndNames cfiNames0
+        
+          CFI Common cfiCommon0 Using cfiNames0
+          CFI CodeAlign 2
+          CFI DataAlign 2
+          CFI ReturnAddress PC CODE
+          CFI CFA SP+2
+          CFI PC Frame(CFA, -2)
+          CFI SR Undefined
+          CFI R4 SameValue
+          CFI R5 SameValue
+          CFI R6 SameValue
+          CFI R7 SameValue
+          CFI R8 SameValue
+          CFI R9 SameValue
+          CFI R10 SameValue
+          CFI R11 SameValue
+          CFI R12 Undefined
+          CFI R13 Undefined
+          CFI R14 Undefined
+          CFI R15 Undefined
+          CFI EndCommon cfiCommon0
+        
+        EXTERN _Cast32fto32s
+        FUNCTION _Cast32fto32s,0202H
+        EXTERN LCD_SetAddr
+        FUNCTION LCD_SetAddr,0202H
+        EXTERN LCD_WriteChar
+        FUNCTION LCD_WriteChar,0202H
+        EXTERN _Cast32sto32f
+        FUNCTION _Cast32sto32f,0202H
+        EXTERN _Mul32f
+        FUNCTION _Mul32f,0202H
+        EXTERN LCD_WriteCNString
+        FUNCTION LCD_WriteCNString,0202H
+        EXTERN LCD_WriteString
+        FUNCTION LCD_WriteString,0202H
+        EXTERN LCD_Init
+        FUNCTION LCD_Init,0202H
+
+// E:\WorkSpace\D\MSP_430\lcd - 副本\src\main.c
+//    1 /*
+//    2  * main.c
+//    3  *
+//    4  * author:maemo
+//    5  *date:2012/07/16 11:48
+//    6  * history:
+//    7  *
+//    8  */
+//    9 
+//   10 #include <msp430g2452.h>   
+
+        ASEGN DATA16_AN:DATA:NOROOT,02H
+// unsigned char volatile IFG1
+IFG1:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,056H
+// unsigned char volatile DCOCTL
+DCOCTL:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,057H
+// unsigned char volatile BCSCTL1
+BCSCTL1:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,058H
+// unsigned char volatile BCSCTL2
+BCSCTL2:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,053H
+// unsigned char volatile BCSCTL3
+BCSCTL3:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,021H
+// unsigned char volatile P1OUT
+P1OUT:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,022H
+// unsigned char volatile P1DIR
+P1DIR:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,028H
+// unsigned char const volatile P2IN
+P2IN:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,029H
+// unsigned char volatile P2OUT
+P2OUT:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,02aH
+// unsigned char volatile P2DIR
+P2DIR:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,0120H
+// unsigned short volatile WDTCTL
+WDTCTL:
+        DS8 2
+
+        ASEGN DATA16_AN:DATA:NOROOT,010fcH
+// unsigned char const volatile CALDCO_8MHZ
+CALDCO_8MHZ:
+        DS8 1
+
+        ASEGN DATA16_AN:DATA:NOROOT,010fdH
+// unsigned char const volatile CALBC1_8MHZ
+CALBC1_8MHZ:
+        DS8 1
+//   11 #include "lcd.h"
+//   12 #include "type.h"
+//   13 
+//   14 #define DQ1 P2OUT |= BIT3
+//   15 #define DQ0 P2OUT &=~ BIT3
+//   16 
+
+        RSEG DATA16_Z:DATA:SORT:NOROOT(1)
+        REQUIRE ?cstart_init_zero
+//   17 float   Temper=0.0;  
+Temper:
+        DS8 4
+
+        RSEG DATA16_Z:DATA:SORT:NOROOT(1)
+        REQUIRE ?cstart_init_zero
+//   18 int     temperature=0;
+temperature:
+        DS8 2
+
+        RSEG DATA16_Z:DATA:SORT:NOROOT(0)
+        REQUIRE ?cstart_init_zero
+//   19 unsigned char Error = 0;
+Error:
+        DS8 1
+//   20 
+
+        RSEG DATA16_I:DATA:SORT:NOROOT(0)
+        REQUIRE ?cstart_init_copy
+//   21 uchar Str1[] = {0, 1, 2, 0, 3, 4, 5};
+Str1:
+        DS8 7
+        REQUIRE `?<Initializer for Str1>`
+
+        RSEG DATA16_I:DATA:SORT:NOROOT(0)
+        REQUIRE ?cstart_init_copy
+//   22 uchar Str2[] = {0, 6, 7, 0, 0, 9};
+Str2:
+        DS8 6
+        REQUIRE `?<Initializer for Str2>`
+//   23 
+//   24 void InitSysClk(void);
+//   25 void InitDisplay();
+//   26 
+//   27 static void DelayNus(unsigned int n);
+//   28 void Write_18B20(unsigned char n);
+//   29 unsigned char Read_18B20(void);
+//   30 void DS18B20_Init (void);
+//   31 void Skip(void);
+//   32 void Convert (void);
+//   33 void ReadDo (void);
+//   34 void ReadTemp (void);
+//   35 void GetTemp(void);
+//   36 void DispTemp(void);
+//   37 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//   38 void main(void)
+main:
+          CFI Block cfiBlock0 Using cfiCommon0
+          CFI Function main
+//   39 {
+//   40 
+//   41     WDTCTL = WDTPW+WDTHOLD;
+        FUNCALL main, InitSysClk
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL main, LCD_Init
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL main, InitDisplay
+        LOCFRAME CSTACK, 2, STACK
+        MOV.W   #0x5a80, &0x120
+//   42 
+//   43     P2DIR |= BIT3;
+        BIS.B   #0x8, &0x2a
+//   44     P2OUT &= ~BIT3;
+        BIC.B   #0x8, &0x29
+//   45       
+//   46     InitSysClk();
+        CALL    #InitSysClk
+//   47     P1DIR = 0xff;
+        MOV.B   #0xff, &0x22
+//   48     P1OUT |= BIT5;
+        BIS.B   #0x20, &0x21
+//   49  //   P2DIR = 0xff;
+//   50 //    P1OUT = BIT6+BIT5;              /*给5110供电用*/
+//   51     LCD_Init();     
+        CALL    #LCD_Init
+//   52     __delay_cycles(100);
+        ////////////// Start of 100 cycles delay.
+        JMP     ??main_2
+??main_2:
+        MOV.W   #0x1f, R15
+??main_1:
+        ADD.W   #0xffff, R15
+        JC      ??main_1
+        ////////////// End of delay code.
+//   53     InitDisplay();
+        CALL    #InitDisplay
+//   54     while(1)    
+??main_0:
+        JMP     ??main_0
+          CFI EndBlock cfiBlock0
+        REQUIRE WDTCTL
+        REQUIRE P2DIR
+        REQUIRE P2OUT
+        REQUIRE P1DIR
+        REQUIRE P1OUT
+//   55     {
+//   56 //        GetTemp();
+//   57 //        DispTemp();
+//   58     }
+//   59 }
+//   60 
+//   61 /*
+//   62  * function:Init System Clock
+//   63  * input: none
+//   64  * output: none
+//   65  * description: set MCLK source from DCO @ 8MHz
+//   66  */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//   67 void InitSysClk(void)
+InitSysClk:
+          CFI Block cfiBlock1 Using cfiCommon0
+          CFI Function InitSysClk
+//   68 {
+//   69 	if (CALBC1_8MHZ == 0XFF || CALDCO_8MHZ == 0XFF)
+        CMP.B   #0xff, &0x10fd
+        JEQ     ??InitSysClk_0
+        CMP.B   #0xff, &0x10fc
+        JNE     ??InitSysClk_1
+//   70 	{
+//   71 		while(1);		        /*if calibration constants erased, taps cpu*/
+??InitSysClk_0:
+        JMP     ??InitSysClk_0
+//   72 	}
+//   73 
+//   74 	BCSCTL1 = CALBC1_8MHZ;
+??InitSysClk_1:
+        MOV.B   &0x10fd, &0x57
+//   75 	DCOCTL  = CALDCO_8MHZ;		/* DCOCTL  Calibration Data for 1MHz */
+        MOV.B   &0x10fc, &0x56
+//   76 	BCSCTL3 |= LFXT1S_0;		/* Mode 0 for LFXT1 : Normal operation */
+        MOV.B   &0x53, &0x53
+//   77 	IFG1 &= ~OFIFG;				/*clear OSCfault flag*/
+        BIC.B   #0x2, &0x2
+//   78 
+//   79 	BCSCTL2 |= SELM_0 + DIVM_0 + DIVS_0 + SELS; /*set MCLK source from DCO, SMCLK LFXT1 32.768K*/
+        BIS.B   #0x8, &0x58
+//   80 }
+        RET
+          CFI EndBlock cfiBlock1
+        REQUIRE CALBC1_8MHZ
+        REQUIRE CALDCO_8MHZ
+        REQUIRE BCSCTL1
+        REQUIRE DCOCTL
+        REQUIRE BCSCTL3
+        REQUIRE IFG1
+        REQUIRE BCSCTL2
+//   81 
+//   82 /*
+//   83  * function:delayms
+//   84  * input: none
+//   85  * output: none
+//   86  * description: set TACLK source from SMCLK = DCO/8 = 1MHZ
+//   87  */
+//   88 /*void DelayMs(unsigned long us)
+//   89 {
+//   90     unsigned int i=0;
+//   91     
+//   92     TACTL |= TASSEL_2 + ID_3;    
+//   93     for (i=0; i<us; i++)
+//   94     {
+//   95         TACCR0 = 1000;
+//   96         TACCTL0 &= ~CCIFG;
+//   97         TACTL |= MC_1;
+//   98         while((TACCTL0 & CCIFG)==0);
+//   99         TACTL &= ~MC_1;   
+//  100     }
+//  101 }*/
+//  102 
+//  103 /*
+//  104 *Function Name: initi display
+//  105 *
+//  106 *Input        : none
+//  107 *
+//  108 *Output       : none
+//  109 *
+//  110 *description  : none
+//  111 *
+//  112 *author       : 2012/7/20, by Maemo
+//  113 */
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  114 void InitDisplay()
+InitDisplay:
+          CFI Block cfiBlock2 Using cfiCommon0
+          CFI Function InitDisplay
+//  115 {
+//  116 	LCD_WriteCNString(0, 0, 6, Str1);       
+        FUNCALL InitDisplay, LCD_WriteCNString
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL InitDisplay, LCD_WriteCNString
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL InitDisplay, LCD_WriteString
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL InitDisplay, LCD_WriteCNString
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL InitDisplay, LCD_WriteString
+        LOCFRAME CSTACK, 2, STACK
+        MOV.W   #Str1, R15
+        MOV.B   #0x6, R14
+        MOV.B   #0x0, R13
+        MOV.B   #0x0, R12
+        CALL    #LCD_WriteCNString
+//  117 	LCD_WriteCNString(0, 1, 5, Str2);
+        MOV.W   #Str2, R15
+        MOV.B   #0x5, R14
+        MOV.B   #0x1, R13
+        MOV.B   #0x0, R12
+        CALL    #LCD_WriteCNString
+//  118     LCD_WriteString(24, 2, "1:");
+        MOV.W   #`?<Constant "1:">`, R14
+        MOV.B   #0x2, R13
+        MOV.B   #0x18, R12
+        CALL    #LCD_WriteString
+//  119 	LCD_WriteCNString(0, 3, 5, Str2);    
+        MOV.W   #Str2, R15
+        MOV.B   #0x5, R14
+        MOV.B   #0x3, R13
+        MOV.B   #0x0, R12
+        CALL    #LCD_WriteCNString
+//  120     LCD_WriteString(24, 5, "2:");    
+        MOV.W   #`?<Constant "2:">`, R14
+        MOV.B   #0x5, R13
+        MOV.B   #0x18, R12
+        BR      #LCD_WriteString
+          CFI EndBlock cfiBlock2
+//  121 }
+//  122 
+//  123 
+//  124 
+//  125 
+//  126 //----------------------------------
+//  127 //功能：us 级别延时
+//  128 // n=10，则延时10*5+6=56uS
+//  129 //----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  130 static void DelayNus(unsigned int n)
+DelayNus:
+??DelayNus_0:
+          CFI Block cfiBlock3 Using cfiCommon0
+          CFI Function DelayNus
+//  131 {
+//  132     while(n--){};
+        MOV.W   R12, R15
+        MOV.W   R15, R12
+        ADD.W   #0xffff, R12
+        CMP.W   #0x0, R15
+        JNE     ??DelayNus_0
+//  133 }
+        RET
+          CFI EndBlock cfiBlock3
+//  134 //-----------------------------------
+//  135 //功能：写18B20
+//  136 //-----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  137 void Write_18B20(unsigned char n)
+Write_18B20:
+          CFI Block cfiBlock4 Using cfiCommon0
+          CFI Function Write_18B20
+//  138 {
+        FUNCALL Write_18B20, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL Write_18B20, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        MOV.B   R12, R14
+//  139     unsigned char i;
+//  140     for(i=0;i<8;i++)
+        MOV.B   #0x0, R13
+        JMP     ??Write_18B20_2
+//  141     {
+//  142         DQ0;
+//  143         DelayNus(1);//延时13us 左右
+//  144         if((n&0X01)==0X01)  DQ1;
+//  145         else DQ0;
+??Write_18B20_0:
+        BIC.B   #0x8, &0x29
+//  146         n=n>>1;
+??Write_18B20_1:
+        CLRC
+        RRC.B   R14
+//  147         DelayNus(9);//延时50us 以上
+        MOV.W   #0x9, R12
+        CALL    #DelayNus
+//  148         DQ1;
+        BIS.B   #0x8, &0x29
+        ADD.B   #0x1, R13
+??Write_18B20_2:
+        CMP.B   #0x8, R13
+        JC      ??Write_18B20_3
+        BIC.B   #0x8, &0x29
+        MOV.W   #0x1, R12
+        CALL    #DelayNus
+        BIT.B   #0x1, R14
+        JNC     ??Write_18B20_0
+        BIS.B   #0x8, &0x29
+        JMP     ??Write_18B20_1
+//  149     }
+//  150 }
+??Write_18B20_3:
+        RET
+          CFI EndBlock cfiBlock4
+        REQUIRE P2OUT
+//  151 //------------------------------------
+//  152 //功能：读取18B20
+//  153 //------------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  154 unsigned char Read_18B20(void)
+Read_18B20:
+          CFI Block cfiBlock5 Using cfiCommon0
+          CFI Function Read_18B20
+//  155 {
+//  156     unsigned char i;
+//  157     unsigned char temp;
+//  158     for(i=0;i<8;i++)
+        FUNCALL Read_18B20, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        MOV.B   #0x0, R13
+        JMP     ??Read_18B20_2
+//  159     {
+//  160         temp=temp>>1;
+//  161         DQ0;
+//  162         _NOP();//延时1us
+//  163         DQ1;
+//  164         _NOP();_NOP();//延时5us
+//  165         _NOP();_NOP();_NOP();
+//  166         P2DIR&=~BIT3;
+//  167         if((P2IN&BIT3)==0)
+//  168         {
+//  169             temp=temp&0x7F;
+//  170         }else
+//  171         {
+//  172             temp=temp|0x80;
+??Read_18B20_0:
+        BIS.B   #0x80, R14
+//  173         }
+//  174         DelayNus(7);//延时40us
+??Read_18B20_1:
+        MOV.W   #0x7, R12
+        CALL    #DelayNus
+//  175         P2DIR|=BIT3;
+        BIS.B   #0x8, &0x2a
+//  176         DQ1;
+        BIS.B   #0x8, &0x29
+        ADD.B   #0x1, R13
+??Read_18B20_2:
+        CMP.B   #0x8, R13
+        JC      ??Read_18B20_3
+        CLRC
+        RRC.B   R14
+        BIC.B   #0x8, &0x29
+        NOP
+        BIS.B   #0x8, &0x29
+        NOP
+        NOP
+        NOP
+        NOP
+        NOP
+        BIC.B   #0x8, &0x2a
+        BIT.B   #0x8, &0x28
+        JC      ??Read_18B20_0
+        BIC.B   #0x80, R14
+        JMP     ??Read_18B20_1
+//  177     }
+//  178     return    temp;
+??Read_18B20_3:
+        MOV.B   R14, R12
+        RET
+          CFI EndBlock cfiBlock5
+        REQUIRE P2OUT
+        REQUIRE P2DIR
+        REQUIRE P2IN
+//  179 }
+//  180 //-----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  181 void DS18B20_Init (void)
+DS18B20_Init:
+          CFI Block cfiBlock6 Using cfiCommon0
+          CFI Function DS18B20_Init
+//  182 {
+//  183     DQ0;
+        FUNCALL DS18B20_Init, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL DS18B20_Init, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        BIC.B   #0x8, &0x29
+//  184     DelayNus(50);//延时500us
+        MOV.W   #0x32, R12
+        CALL    #DelayNus
+//  185     DQ1;
+        BIS.B   #0x8, &0x29
+//  186     DelayNus(17);//延时90us
+        MOV.W   #0x11, R12
+        CALL    #DelayNus
+//  187     P2DIR&=~BIT3;
+        BIC.B   #0x8, &0x2a
+//  188     if((P2IN&BIT3)==BIT4)        //0001 1111b=1f
+        MOV.B   &0x28, R14
+//  189     {
+//  190         Error =1;    //失败1
+//  191         P2DIR|=BIT3;
+//  192     }else
+//  193     {
+//  194         Error = 0;//初始化成功
+        MOV.B   #0x0, &Error
+//  195         P2DIR|=BIT3;
+        BIS.B   #0x8, &0x2a
+//  196         DQ1;
+        BIS.B   #0x8, &0x29
+//  197     }
+//  198 }
+        RET
+          CFI EndBlock cfiBlock6
+        REQUIRE P2OUT
+        REQUIRE P2DIR
+        REQUIRE P2IN
+//  199 //----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  200 void Skip(void)
+Skip:
+          CFI Block cfiBlock7 Using cfiCommon0
+          CFI Function Skip
+//  201 {
+//  202     Write_18B20(0xcc);
+        FUNCALL Skip, Write_18B20
+        LOCFRAME CSTACK, 2, STACK
+        MOV.B   #0xcc, R12
+        BR      #Write_18B20
+          CFI EndBlock cfiBlock7
+//  203 }
+//  204 //----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  205 void Convert (void)
+Convert:
+          CFI Block cfiBlock8 Using cfiCommon0
+          CFI Function Convert
+//  206 {
+//  207     Write_18B20(0x44);
+        FUNCALL Convert, Write_18B20
+        LOCFRAME CSTACK, 2, STACK
+        MOV.B   #0x44, R12
+        BR      #Write_18B20
+          CFI EndBlock cfiBlock8
+//  208 }
+//  209 
+//  210 //----------------------------------
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  211 void ReadDo (void)
+ReadDo:
+          CFI Block cfiBlock9 Using cfiCommon0
+          CFI Function ReadDo
+//  212 {
+//  213     Write_18B20(0xbe);
+        FUNCALL ReadDo, Write_18B20
+        LOCFRAME CSTACK, 2, STACK
+        MOV.B   #0xbe, R12
+        BR      #Write_18B20
+          CFI EndBlock cfiBlock9
+//  214 }
+//  215 //----------------------------------
+//  216 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  217 void ReadTemp (void)
+ReadTemp:
+          CFI Block cfiBlock10 Using cfiCommon0
+          CFI Function ReadTemp
+//  218 {
+        FUNCALL ReadTemp, Read_18B20
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL ReadTemp, Read_18B20
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL ReadTemp, _Cast32sto32f
+        LOCFRAME CSTACK, 4, STACK
+        FUNCALL ReadTemp, _Mul32f
+        LOCFRAME CSTACK, 4, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+//  219     char temp_low,temp_high; //温度值
+//  220     temp_low=Read_18B20(); //读低位
+        CALL    #Read_18B20
+        MOV.B   R12, R10
+//  221     temp_high=Read_18B20(); //读高位
+        CALL    #Read_18B20
+//  222     temperature=(temp_high&0x0f);
+        MOV.B   R12, R12
+        AND.W   #0xf, R12
+        MOV.W   R12, &temperature
+//  223     temperature<<=8;
+        AND.W   #0xff, &temperature
+        SWPB    &temperature
+//  224     temperature|=temp_low;
+        MOV.B   R10, R10
+        BIS.W   R10, &temperature
+//  225     Temper=temperature*0.0625;
+        MOV.W   &temperature, R12
+        MOV.W   R12, R13
+        XOR.W   #0xffff, R13
+        RLA.W   R13
+        SUBC.W  R13, R13
+        CALL    #_Cast32sto32f
+        MOV.W   #0x0, R14
+        MOV.W   #0x3d80, R15
+        CALL    #_Mul32f
+        MOV.W   R12, &Temper
+        MOV.W   R13, &Temper + 2
+//  226 }
+        POP.W   R10
+          CFI R10 SameValue
+          CFI CFA SP+2
+        RET
+          CFI EndBlock cfiBlock10
+//  227 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  228 void GetTemp(void){
+GetTemp:
+          CFI Block cfiBlock11 Using cfiCommon0
+          CFI Function GetTemp
+//  229         DS18B20_Init();
+        FUNCALL GetTemp, DS18B20_Init
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, Skip
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, Convert
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, DelayNus
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, DS18B20_Init
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, Skip
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, ReadDo
+        LOCFRAME CSTACK, 2, STACK
+        FUNCALL GetTemp, ReadTemp
+        LOCFRAME CSTACK, 2, STACK
+        CALL    #DS18B20_Init
+//  230         Skip();
+        CALL    #Skip
+//  231         Convert();
+        CALL    #Convert
+//  232         DelayNus(60000);
+        MOV.W   #0xea60, R12
+        CALL    #DelayNus
+//  233         DelayNus(60000);
+        MOV.W   #0xea60, R12
+        CALL    #DelayNus
+//  234         DelayNus(60000);//延时1s以上
+        MOV.W   #0xea60, R12
+        CALL    #DelayNus
+//  235         DS18B20_Init();
+        CALL    #DS18B20_Init
+//  236         Skip();
+        CALL    #Skip
+//  237         ReadDo();
+        CALL    #ReadDo
+//  238         ReadTemp();
+        BR      #ReadTemp
+          CFI EndBlock cfiBlock11
+//  239 }
+//  240 
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+//  241 void DispTemp(void)
+DispTemp:
+          CFI Block cfiBlock12 Using cfiCommon0
+          CFI Function DispTemp
+//  242 {
+        FUNCALL DispTemp, _Cast32fto32s
+        LOCFRAME CSTACK, 14, STACK
+        FUNCALL DispTemp, LCD_SetAddr
+        LOCFRAME CSTACK, 14, STACK
+        FUNCALL DispTemp, LCD_WriteChar
+        LOCFRAME CSTACK, 14, STACK
+        FUNCALL DispTemp, LCD_WriteChar
+        LOCFRAME CSTACK, 14, STACK
+        FUNCALL DispTemp, LCD_WriteChar
+        LOCFRAME CSTACK, 14, STACK
+        FUNCALL DispTemp, LCD_WriteChar
+        LOCFRAME CSTACK, 14, STACK
+        PUSH.W  R10
+          CFI R10 Frame(CFA, -4)
+          CFI CFA SP+4
+        PUSH.W  R11
+          CFI R11 Frame(CFA, -6)
+          CFI CFA SP+6
+        PUSH.W  R8
+          CFI R8 Frame(CFA, -8)
+          CFI CFA SP+8
+        PUSH.W  R9
+          CFI R9 Frame(CFA, -10)
+          CFI CFA SP+10
+        PUSH.W  R6
+          CFI R6 Frame(CFA, -12)
+          CFI CFA SP+12
+        PUSH.W  R7
+          CFI R7 Frame(CFA, -14)
+          CFI CFA SP+14
+//  243     char ch1=0, ch2=0, ch3=0, ch4=0;
+        MOV.B   #0x0, R7
+        MOV.B   #0x0, R6
+        MOV.B   #0x0, R9
+        MOV.B   #0x0, R8
+//  244     long tmp=0;
+        MOV.W   #0x0, R10
+        MOV.W   #0x0, R11
+//  245     
+//  246     tmp = (long)Temper*1000;
+        MOV.W   &Temper, R12
+        MOV.W   &Temper + 2, R13
+        CALL    #_Cast32fto32s
+        MOV.W   #0x3e8, R14
+        MOV.W   #0x0, R15
+        CALL    #?Mul32
+        MOV.W   R12, R10
+        MOV.W   R13, R11
+//  247     ch1 = tmp/1000+0x30;
+        MOV.W   R10, R12
+        MOV.W   R11, R13
+        MOV.W   #0x3e8, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        ADD.B   #0x30, R12
+        MOV.B   R12, R7
+//  248     ch2 = tmp/100%10+0x30;
+        MOV.W   R10, R12
+        MOV.W   R11, R13
+        MOV.W   #0x64, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        MOV.W   #0xa, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        ADD.B   #0x30, R14
+        MOV.B   R14, R6
+//  249     ch3 = tmp/10%10+0x30;
+        MOV.W   R10, R12
+        MOV.W   R11, R13
+        MOV.W   #0xa, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        MOV.W   #0xa, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        ADD.B   #0x30, R14
+        MOV.B   R14, R9
+//  250     ch4 = tmp%10+0x30;
+        MOV.W   R10, R12
+        MOV.W   R11, R13
+        MOV.W   #0xa, R14
+        MOV.W   #0x0, R15
+        CALL    #?DivMod32s
+        ADD.B   #0x30, R14
+        MOV.B   R14, R8
+//  251     LCD_SetAddr(0,0);
+        MOV.B   #0x0, R13
+        MOV.B   #0x0, R12
+        CALL    #LCD_SetAddr
+//  252     LCD_WriteChar(ch1);
+        MOV.B   R7, R12
+        CALL    #LCD_WriteChar
+//  253     LCD_WriteChar(ch2);
+        MOV.B   R6, R12
+        CALL    #LCD_WriteChar
+//  254     LCD_WriteChar(ch3);
+        MOV.B   R9, R12
+        CALL    #LCD_WriteChar
+//  255     LCD_WriteChar(ch4);    
+        MOV.B   R8, R12
+        CALL    #LCD_WriteChar
+//  256     
+//  257 }
+        BR      #?Epilogue6
+          CFI EndBlock cfiBlock12
+
+        RSEG DATA16_ID:CONST:SORT:NOROOT(0)
+`?<Initializer for Str1>`:
+        DC8 0, 1, 2, 0, 3, 4, 5
+
+        RSEG DATA16_ID:CONST:SORT:NOROOT(0)
+`?<Initializer for Str2>`:
+        DC8 0, 6, 7, 0, 0, 9
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+?setjmp_save_r4:
+        REQUIRE ?setjmp_r4
+        REQUIRE ?longjmp_r4
+
+        RSEG CODE:CODE:REORDER:NOROOT(1)
+?setjmp_save_r5:
+        REQUIRE ?setjmp_r5
+        REQUIRE ?longjmp_r5
+
+        RSEG DATA16_C:CONST:SORT:NOROOT(0)
+`?<Constant "1:">`:
+        DC8 "1:"
+
+        RSEG DATA16_C:CONST:SORT:NOROOT(0)
+`?<Constant "2:">`:
+        DC8 "2:"
+
+        END
+//  258 
+//  259 
+//  260 
+// 
+// 694 bytes in segment CODE
+//  14 bytes in segment DATA16_AN
+//   6 bytes in segment DATA16_C
+//  13 bytes in segment DATA16_I
+//  13 bytes in segment DATA16_ID
+//   7 bytes in segment DATA16_Z
+// 
+// 694 bytes of CODE  memory
+//  19 bytes of CONST memory
+//  20 bytes of DATA  memory (+ 14 bytes shared)
+//
+//Errors: none
+//Warnings: none

@@ -1,0 +1,528 @@
+###############################################################################
+#                                                                             #
+#                                                       20/Jul/2013  15:18:00 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\main.c               #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\main.c -lC           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_cse      #
+#                     --no_unroll --no_inline --no_code_motion --no_tbaa      #
+#                     --debug -D__MSP430G2553__ -e --double=32 --dlib_config  #
+#                     "D:\IAR Systems\430\LIB\DLIB\dl430fn.h" -Ol             #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\main.lst      #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\main.r43       #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\main.c
+      1          /*
+      2           * main.c
+      3           *
+      4           * author:maemo
+      5           *date:2012/07/16 11:48
+      6           * history:
+      7           *
+      8           */
+      9          
+     10          #include <msp430g2553.h>   
+
+   \                                 In  segment DATA16_AN, at 0x2
+   \   unsigned char volatile IFG1
+   \                     IFG1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x1
+   \   unsigned char volatile IE2
+   \                     IE2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x3
+   \   unsigned char volatile IFG2
+   \                     IFG2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x56
+   \   unsigned char volatile DCOCTL
+   \                     DCOCTL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x57
+   \   unsigned char volatile BCSCTL1
+   \                     BCSCTL1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x58
+   \   unsigned char volatile BCSCTL2
+   \                     BCSCTL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x26
+   \   unsigned char volatile P1SEL
+   \                     P1SEL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x41
+   \   unsigned char volatile P1SEL2
+   \                     P1SEL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x12e
+   \   unsigned short const volatile TA0IV
+   \                     TA0IV:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x160
+   \   unsigned short volatile TA0CTL
+   \                     TA0CTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x172
+   \   unsigned short volatile TA0CCR0
+   \                     TA0CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x61
+   \   unsigned char volatile UCA0CTL1
+   \                     UCA0CTL1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x62
+   \   unsigned char volatile UCA0BR0
+   \                     UCA0BR0:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x63
+   \   unsigned char volatile UCA0BR1
+   \                     UCA0BR1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x64
+   \   unsigned char volatile UCA0MCTL
+   \                     UCA0MCTL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x66
+   \   unsigned char const volatile UCA0RXBUF
+   \                     UCA0RXBUF:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x67
+   \   unsigned char volatile UCA0TXBUF
+   \                     UCA0TXBUF:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x120
+   \   unsigned short volatile WDTCTL
+   \                     WDTCTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x10fe
+   \   unsigned char const volatile CALDCO_1MHZ
+   \                     CALDCO_1MHZ:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x10ff
+   \   unsigned char const volatile CALBC1_1MHZ
+   \                     CALBC1_1MHZ:
+   \   000000                DS8 1
+     11          #include "lcd.h"
+     12          #include "type.h"
+     13          
+     14          
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     15          uchar Str1[]    = {0, 1, 2, 0, 3, 4, 5};
+   \                     Str1:
+   \   000000                DS8 7
+   \   000007                REQUIRE `?<Initializer for Str1>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     16          uchar Str2[]    = {0, 6, 7, 0, 0, 9};
+   \                     Str2:
+   \   000000                DS8 6
+   \   000006                REQUIRE `?<Initializer for Str2>`
+     17          
+     18          void InitSysClk(void);
+     19          void InitDisplay();
+     20          void InitUart();   
+     21          void InitTimerA0();
+     22          
+
+   \                                 In  segment CODE, align 2
+     23          void main(void)
+   \                     main:
+     24          {
+     25          
+     26              WDTCTL          =       WDTPW + WDTHOLD;
+   \   000000   B240805A2001 MOV.W   #0x5a80, &0x120
+     27           
+     28              InitSysClk();
+   \   000006   B012....     CALL    #InitSysClk
+     29              
+     30          //    LCD_Init();         
+     31          //    InitDisplay();    
+     32              
+     33          //    InitUart();  
+     34              
+     35          	 __bis_SR_register(GIE);
+   \   00000A   32D2         BIS.W   #0x8, SR
+     36          //    UCA0TXBUF		=		0x00;
+     37          
+     38              LPM0;
+   \   00000C   32D01000     BIS.W   #0x10, SR
+     39          }
+   \   000010   3041         RET
+   \   000012                REQUIRE WDTCTL
+     40          
+     41          /*
+     42           * function:Init System Clock
+     43           * input: none
+     44           * output: none
+     45           * description: set MCLK/SMCLK source from DCO @ 1MHz
+     46           */
+
+   \                                 In  segment CODE, align 2
+     47          void InitSysClk(void)
+   \                     InitSysClk:
+     48          {
+     49          	if (CALBC1_1MHZ == 0XFF || CALDCO_1MHZ == 0XFF)
+   \   000000   F293FF10     CMP.B   #0xff, &0x10ff
+   \   000004   0324         JEQ     ??InitSysClk_0
+   \   000006   F293FE10     CMP.B   #0xff, &0x10fe
+   \   00000A   0120         JNE     ??InitSysClk_1
+     50          	{
+     51          		while(1);		        					/*if calibration constants erased, taps cpu*/
+   \                     ??InitSysClk_0:
+   \   00000C   FF3F         JMP     ??InitSysClk_0
+     52          	}
+     53          
+     54          	BCSCTL1         =       CALBC1_1MHZ;
+   \                     ??InitSysClk_1:
+   \   00000E   D242FF105700 MOV.B   &0x10ff, &0x57
+     55          	DCOCTL          =       CALDCO_1MHZ;			/* DCOCTL  Calibration Data for 1MHz */
+   \   000014   D242FE105600 MOV.B   &0x10fe, &0x56
+     56          //	BCSCTL3         |=      LFXT1S_0;		/* Mode 0 for LFXT1 : Normal operation */
+     57          	IFG1            &=      ~OFIFG;					/*clear OSCfault flag*/
+   \   00001A   E2C30200     BIC.B   #0x2, &0x2
+     58          
+     59          	BCSCTL2 |= SELM_0 + DIVM_0 + DIVS_0; /*set MCLK,SMCLK source from DCO*/
+   \   00001E   D24258005800 MOV.B   &0x58, &0x58
+     60          }
+   \   000024   3041         RET
+   \   000026                REQUIRE CALBC1_1MHZ
+   \   000026                REQUIRE CALDCO_1MHZ
+   \   000026                REQUIRE BCSCTL1
+   \   000026                REQUIRE DCOCTL
+   \   000026                REQUIRE IFG1
+   \   000026                REQUIRE BCSCTL2
+     61          
+     62          /*
+     63           * function:delayms
+     64           * input: none
+     65           * output: none
+     66           * description: set TACLK source from SMCLK = DCO/8 = 1MHZ
+     67           */
+     68          /*void DelayMs(unsigned long us)
+     69          {
+     70              unsigned int i=0;
+     71              
+     72              TACTL |= TASSEL_2 + ID_3;    
+     73              for (i=0; i<us; i++)
+     74              {
+     75                  TACCR0 = 1000;
+     76                  TACCTL0 &= ~CCIFG;
+     77                  TACTL |= MC_1;
+     78                  while((TACCTL0 & CCIFG)==0);
+     79                  TACTL &= ~MC_1;   
+     80              }
+     81          }*/
+     82          
+     83          /*
+     84          *Function Name: initi display
+     85          *
+     86          *Input        : none
+     87          *
+     88          *Output       : none
+     89          *
+     90          *description  : none
+     91          *
+     92          *author       : 2012/7/20, by Maemo
+     93          */
+
+   \                                 In  segment CODE, align 2
+     94          void InitDisplay()
+   \                     InitDisplay:
+     95          {
+     96          //    LCD_WriteCNString(0, 0, 6, Str1);       
+     97          //    LCD_WriteCNString(0, 1, 5, Str2);
+     98          //    LCD_WriteString(24, 2, "1:");
+     99          //    LCD_WriteCNString(0, 3, 5, Str2);    
+    100          //    LCD_WriteString(24, 5, "2:");  
+    101              LCD_WriteString(0, 0, "UartTest:");
+   \   000000   3E40....     MOV.W   #`?<Constant "UartTest:">`, R14
+   \   000004   4D43         MOV.B   #0x0, R13
+   \   000006   4C43         MOV.B   #0x0, R12
+   \   000008   3040....     BR      #LCD_WriteString
+    102          //    LCD_WriteString(0, 2, "E:");
+    103          //    LCD_WriteString(0, 4, "N:");
+    104              
+    105          }
+    106          
+    107          /*
+    108          uart:  8 bits data, no parity, 1 stop bit, 1M @ 9600 baud
+    109          */
+
+   \                                 In  segment CODE, align 2
+    110          void InitUart()
+   \                     InitUart:
+    111          {
+    112              UCA0CTL1		|=		UCSWRST;				//reset the USCI by set UCSWRST,init all register;
+   \   000000   D2D36100     BIS.B   #0x1, &0x61
+    113          	
+    114              P1SEL           |=      BIT1 +  BIT2;			//configure port fuction P1.1 and P1.2;
+   \   000004   F2D006002600 BIS.B   #0x6, &0x26
+    115              P1SEL2          |=      BIT1 +  BIT2; 
+   \   00000A   F2D006004100 BIS.B   #0x6, &0x41
+    116          	UCA0CTL1		|= 		UCSSEL_2;				//USCI closk source from SMCLK;	
+   \   000010   F2D080006100 BIS.B   #0x80, &0x61
+    117          	UCA0BR0			=		6;						//1Mhz @ 9600 baud;
+   \   000016   F24006006200 MOV.B   #0x6, &0x62
+    118          	UCA0BR1			= 		0;						//1Mhz @ 9600 baud;	
+   \   00001C   C2436300     MOV.B   #0x0, &0x63
+    119          	UCA0MCTL		|= 		UCOS16 + UCBRF3;		//oversampling mode is selected, 1Mhz @ 9600 baud;	
+   \   000020   F2D081006400 BIS.B   #0x81, &0x64
+    120          	
+    121          	UCA0CTL1		&=		~UCSWRST;				//Initialize USCI state machine	
+   \   000026   D2C36100     BIC.B   #0x1, &0x61
+    122          	IE2 			|= 		UCA0RXIE;           	// Enable USCI_A0 RX interrupt
+   \   00002A   D2D30100     BIS.B   #0x1, &0x1
+    123          	LCD_WriteString(0, 1,"init ok");
+   \   00002E   3E40....     MOV.W   #`?<Constant "init ok">`, R14
+   \   000032   5D43         MOV.B   #0x1, R13
+   \   000034   4C43         MOV.B   #0x0, R12
+   \   000036   B012....     CALL    #LCD_WriteString
+    124              LCD_SetAddr(0, 2);
+   \   00003A   6D43         MOV.B   #0x2, R13
+   \   00003C   4C43         MOV.B   #0x0, R12
+   \   00003E   3040....     BR      #LCD_SetAddr
+   \   000042                REQUIRE UCA0CTL1
+   \   000042                REQUIRE P1SEL
+   \   000042                REQUIRE P1SEL2
+   \   000042                REQUIRE UCA0BR0
+   \   000042                REQUIRE UCA0BR1
+   \   000042                REQUIRE UCA0MCTL
+   \   000042                REQUIRE IE2
+    125          }
+    126          
+    127          #pragma		vector = USCIAB0RX_VECTOR
+
+   \                                 In  segment CODE, align 2
+    128          __interrupt void USCI_A0_RX_ISR(void)
+   \                     USCI_A0_RX_ISR:
+    129          {
+   \   000000   0D12         PUSH.W  R13
+   \   000002   0C12         PUSH.W  R12
+   \   000004   0F12         PUSH.W  R15
+   \   000006   0E12         PUSH.W  R14
+    130          	//while (!(IFG2&UCA0TXIFG));						// USCI_A0 TX buffer ready?
+    131          	//UCA0TXBUF		=		UCA0RXBUF;				// TX -> RXed character
+    132          	LCD_WriteChar(0, 0, UCA0RXBUF);						//display what received
+   \   000008   5E426600     MOV.B   &0x66, R14
+   \   00000C   4D43         MOV.B   #0x0, R13
+   \   00000E   4C43         MOV.B   #0x0, R12
+   \   000010   B012....     CALL    #LCD_WriteChar
+    133          }
+   \   000014   3E41         POP.W   R14
+   \   000016   3F41         POP.W   R15
+   \   000018   3C41         POP.W   R12
+   \   00001A   3D41         POP.W   R13
+   \   00001C   0013         RETI
+   \   00001E                REQUIRE UCA0RXBUF
+    134          
+
+   \                                 In  segment CODE, align 2
+    135          void InitTimerA0()
+   \                     InitTimerA0:
+    136          {
+    137          	TACTL			=		TASSEL_2 + TAIE;		//Timera clock @ SMCLK 1MHz, enable interrupt;
+   \   000000   B24002026001 MOV.W   #0x202, &0x160
+    138          	TACCR0			= 		50000;					
+   \   000006   B24050C37201 MOV.W   #0xc350, &0x172
+    139          	TACTL			|=		MC_2;					//continous mode
+   \   00000C   B2D020006001 BIS.W   #0x20, &0x160
+    140          }
+   \   000012   3041         RET
+   \   000014                REQUIRE TA0CTL
+   \   000014                REQUIRE TA0CCR0
+    141          
+    142          #pragma	vector = TIMER0_A1_VECTOR
+
+   \                                 In  segment CODE, align 2
+    143          __interrupt void Timer0_ccr0_isr()
+   \                     Timer0_ccr0_isr:
+    144          {
+    145          	static uchar 	cnt=0;
+    146          	
+    147          	switch	(TAIV)
+   \   000000   B2900A002E01 CMP.W   #0xa, &0x12e
+   \   000006   1120         JNE     ??Timer0_ccr0_isr_2
+    148          	{
+    149                  case 0x0a:
+    150          			TACCR0			+=		50000;
+   \   000008   B25050C37201 ADD.W   #0xc350, &0x172
+    151          			cnt++;
+   \   00000E   D253....     ADD.B   #0x1, &??cnt
+    152          			if (20 == cnt)
+   \   000012   F2901400.... CMP.B   #0x14, &??cnt
+   \   000018   0820         JNE     ??Timer0_ccr0_isr_2
+    153          			{
+    154          				cnt = 0;
+   \   00001A   C243....     MOV.B   #0x0, &??cnt
+    155          				while (!(IFG2&UCA0TXIFG));
+   \                     ??Timer0_ccr0_isr_0:
+   \   00001E   E2B30300     BIT.B   #0x2, &0x3
+   \   000022   FD2B         JNC     ??Timer0_ccr0_isr_0
+    156          				UCA0TXBUF	=	0x33;
+   \   000024   F24033006700 MOV.B   #0x33, &0x67
+    157          				
+    158          			}
+    159          			break;
+    160          		default:
+    161          			break;
+    162          	}
+    163          }
+   \                     ??Timer0_ccr0_isr_2:
+   \   00002A   0013         RETI
+   \   00002C                REQUIRE TA0CCR0
+   \   00002C                REQUIRE IFG2
+   \   00002C                REQUIRE UCA0TXBUF
+   \   00002C                REQUIRE TA0IV
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     ??cnt:
+   \   000000                DS8 1
+
+   \                                 In  segment INTVEC, offset 0xe, root
+   \                     `??USCI_A0_RX_ISR??INTVEC 14`:
+   \   00000E   ....         DC16    USCI_A0_RX_ISR
+
+   \                                 In  segment INTVEC, offset 0x10, root
+   \                     `??Timer0_ccr0_isr??INTVEC 16`:
+   \   000010   ....         DC16    Timer0_ccr0_isr
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for Str1>`:
+   \   000000   000102000304 DC8 0, 1, 2, 0, 3, 4, 5
+   \            05          
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for Str2>`:
+   \   000000   000607000009 DC8 0, 6, 7, 0, 0, 9
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "UartTest:">`:
+   \   000000   556172745465 DC8 "UartTest:"
+   \            73743A00    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "init ok">`:
+   \   000000   696E6974206F DC8 "init ok"
+   \            6B00        
+    164          
+    165          
+    166          
+    167          
+    168          
+    169          
+    170          
+    171          
+    172          
+    173          
+    174          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       2  InitDisplay
+             2 -> LCD_WriteString
+       2  InitSysClk
+       2  InitTimerA0
+       2  InitUart
+             2 -> LCD_SetAddr
+             2 -> LCD_WriteString
+       4  Timer0_ccr0_isr
+      12  USCI_A0_RX_ISR
+            12 -> LCD_WriteChar
+       2  main
+             2 -> InitSysClk
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      10  ?<Constant "UartTest:">
+       8  ?<Constant "init ok">
+       7  ?<Initializer for Str1>
+       6  ?<Initializer for Str2>
+       2  ??Timer0_ccr0_isr??INTVEC 16
+       2  ??USCI_A0_RX_ISR??INTVEC 14
+       1  BCSCTL1
+       1  BCSCTL2
+       1  CALBC1_1MHZ
+       1  CALDCO_1MHZ
+       1  DCOCTL
+       1  IE2
+       1  IFG1
+       1  IFG2
+      12  InitDisplay
+      38  InitSysClk
+      20  InitTimerA0
+      66  InitUart
+       1  P1SEL
+       1  P1SEL2
+       7  Str1
+       6  Str2
+       2  TA0CCR0
+       2  TA0CTL
+       2  TA0IV
+      44  Timer0_ccr0_isr
+       1  UCA0BR0
+       1  UCA0BR1
+       1  UCA0CTL1
+       1  UCA0MCTL
+       1  UCA0RXBUF
+       1  UCA0TXBUF
+      30  USCI_A0_RX_ISR
+       2  WDTCTL
+       1  cnt
+      18  main
+
+ 
+ 228 bytes in segment CODE
+  24 bytes in segment DATA16_AN
+  18 bytes in segment DATA16_C
+  13 bytes in segment DATA16_I
+  13 bytes in segment DATA16_ID
+   1 byte  in segment DATA16_Z
+   4 bytes in segment INTVEC
+ 
+ 228 bytes of CODE  memory
+  31 bytes of CONST memory (+  4 bytes shared)
+  14 bytes of DATA  memory (+ 24 bytes shared)
+
+Errors: none
+Warnings: none

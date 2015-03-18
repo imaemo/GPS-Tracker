@@ -1,0 +1,1918 @@
+###############################################################################
+#                                                                             #
+#                                                       27/Sep/2013  10:05:57 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\gps_v1.c             #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\gps_v1.c -lC         #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_unroll   #
+#                     --no_inline --no_tbaa --debug -D__MSP430G2553__ -e      #
+#                     --double=32 --dlib_config "D:\IAR                       #
+#                     Systems\430\LIB\DLIB\dl430fn.h" -Om                     #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\gps_v1.lst    #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\gps_v1.r43     #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\gps_v1.c
+      1          /*
+      2           * main.c
+      3           *
+      4           * author:maemo
+      5           *date:2012/07/16 11:48
+      6           * history:
+      7           *
+      8           */
+      9          
+     10          #include <msp430g2553.h>   
+
+   \                                 In  segment DATA16_AN, at 0x2
+   \   unsigned char volatile IFG1
+   \                     IFG1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x1
+   \   unsigned char volatile IE2
+   \                     IE2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x56
+   \   unsigned char volatile DCOCTL
+   \                     DCOCTL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x57
+   \   unsigned char volatile BCSCTL1
+   \                     BCSCTL1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x58
+   \   unsigned char volatile BCSCTL2
+   \                     BCSCTL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x20
+   \   unsigned char const volatile P1IN
+   \                     P1IN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x21
+   \   unsigned char volatile P1OUT
+   \                     P1OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x22
+   \   unsigned char volatile P1DIR
+   \                     P1DIR:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x23
+   \   unsigned char volatile P1IFG
+   \                     P1IFG:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x24
+   \   unsigned char volatile P1IES
+   \                     P1IES:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x25
+   \   unsigned char volatile P1IE
+   \                     P1IE:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x26
+   \   unsigned char volatile P1SEL
+   \                     P1SEL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x41
+   \   unsigned char volatile P1SEL2
+   \                     P1SEL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x27
+   \   unsigned char volatile P1REN
+   \                     P1REN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x28
+   \   unsigned char const volatile P2IN
+   \                     P2IN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x29
+   \   unsigned char volatile P2OUT
+   \                     P2OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2a
+   \   unsigned char volatile P2DIR
+   \                     P2DIR:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2b
+   \   unsigned char volatile P2IFG
+   \                     P2IFG:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2c
+   \   unsigned char volatile P2IES
+   \                     P2IES:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2d
+   \   unsigned char volatile P2IE
+   \                     P2IE:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2e
+   \   unsigned char volatile P2SEL
+   \                     P2SEL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x42
+   \   unsigned char volatile P2SEL2
+   \                     P2SEL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2f
+   \   unsigned char volatile P2REN
+   \                     P2REN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x160
+   \   unsigned short volatile TA0CTL
+   \                     TA0CTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x162
+   \   unsigned short volatile TA0CCTL0
+   \                     TA0CCTL0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x172
+   \   unsigned short volatile TA0CCR0
+   \                     TA0CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x61
+   \   unsigned char volatile UCA0CTL1
+   \                     UCA0CTL1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x62
+   \   unsigned char volatile UCA0BR0
+   \                     UCA0BR0:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x63
+   \   unsigned char volatile UCA0BR1
+   \                     UCA0BR1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x64
+   \   unsigned char volatile UCA0MCTL
+   \                     UCA0MCTL:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x66
+   \   unsigned char const volatile UCA0RXBUF
+   \                     UCA0RXBUF:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x67
+   \   unsigned char volatile UCA0TXBUF
+   \                     UCA0TXBUF:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x120
+   \   unsigned short volatile WDTCTL
+   \                     WDTCTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x10fe
+   \   unsigned char const volatile CALDCO_1MHZ
+   \                     CALDCO_1MHZ:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x10ff
+   \   unsigned char const volatile CALBC1_1MHZ
+   \                     CALBC1_1MHZ:
+   \   000000                DS8 1
+     11          #include <stdio.h>
+     12          #include "pff.h"
+     13          #include "lcd.h"
+     14          #include "type.h"
+     15          #include "neo-6m.h"
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_rcv_start
+   \                     g_rcv_start:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_rcv_ok
+   \                     g_rcv_ok:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_rcv_cnt
+   \                     g_rcv_cnt:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_rcv_buf[80]
+   \                     g_rcv_buf:
+   \   000000                DS8 80
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_comma[15]
+   \                     g_comma:
+   \   000000                DS8 15
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   uchar g_comma_cnt
+   \                     g_comma_cnt:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \   msg_gprmc g_rmc_data
+   \                     g_rmc_data:
+   \   000000                DS8 49
+
+   \                                 In  segment CODE, align 2
+   \   __cc_version2 msg_gprmc rmc_dec(uchar *, uchar *)
+   \                     rmc_dec:
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   31803200     SUB.W   #0x32, SP
+   \   00000A   0A4C         MOV.W   R12, R10
+   \   00000C   0B4E         MOV.W   R14, R11
+   \   00000E   4F43         MOV.B   #0x0, R15
+   \   000010   0C41         MOV.W   SP, R12
+   \   000012   0C53         ADD.W   #0x0, R12
+   \   000014   3E403100     MOV.W   #0x31, R14
+   \   000018   B012....     CALL    #?ClearMemoryBytes
+   \   00001C   5C4B0100     MOV.B   0x1(R11), R12
+   \   000020   6E4B         MOV.B   @R11, R14
+   \   000022   0C8E         SUB.W   R14, R12
+   \   000024   3C53         ADD.W   #0xffff, R12
+   \   000026   3C900900     CMP.W   #0x9, R12
+   \   00002A   0E20         JNE     ??rmc_dec_6
+   \   00002C   0A3C         JMP     ??rmc_dec_7
+   \                     ??rmc_dec_0:
+   \   00002E   4C4F         MOV.B   R15, R12
+   \   000030   6E4B         MOV.B   @R11, R14
+   \   000032   0E5C         ADD.W   R12, R14
+   \   000034   084D         MOV.W   R13, R8
+   \   000036   085E         ADD.W   R14, R8
+   \   000038   0C51         ADD.W   SP, R12
+   \   00003A   DC4801000000 MOV.B   0x1(R8), 0(R12)
+   \   000040   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_7:
+   \   000042   7F900900     CMP.B   #0x9, R15
+   \   000046   F32B         JNC     ??rmc_dec_0
+   \                     ??rmc_dec_6:
+   \   000048   5E4B0200     MOV.B   0x2(R11), R14
+   \   00004C   0F4D         MOV.W   R13, R15
+   \   00004E   0F5E         ADD.W   R14, R15
+   \   000050   D14FFFFF0900 MOV.B   0xffff(R15), 0x9(SP)
+   \   000056   5F4B0300     MOV.B   0x3(R11), R15
+   \   00005A   0F8E         SUB.W   R14, R15
+   \   00005C   3F53         ADD.W   #0xffff, R15
+   \   00005E   3F900A00     CMP.W   #0xa, R15
+   \   000062   1120         JNE     ??rmc_dec_8
+   \   000064   4F43         MOV.B   #0x0, R15
+   \   000066   0C3C         JMP     ??rmc_dec_9
+   \                     ??rmc_dec_1:
+   \   000068   5E4B0200     MOV.B   0x2(R11), R14
+   \   00006C   0E5F         ADD.W   R15, R14
+   \   00006E   084D         MOV.W   R13, R8
+   \   000070   085E         ADD.W   R14, R8
+   \   000072   0E41         MOV.W   SP, R14
+   \   000074   0E53         ADD.W   #0x0, R14
+   \   000076   0E5F         ADD.W   R15, R14
+   \   000078   DE4801000A00 MOV.B   0x1(R8), 0xa(R14)
+   \   00007E   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_9:
+   \   000080   7F900A00     CMP.B   #0xa, R15
+   \   000084   F12B         JNC     ??rmc_dec_1
+   \                     ??rmc_dec_8:
+   \   000086   5E4B0400     MOV.B   0x4(R11), R14
+   \   00008A   0F4D         MOV.W   R13, R15
+   \   00008C   0F5E         ADD.W   R14, R15
+   \   00008E   D14FFFFF1400 MOV.B   0xffff(R15), 0x14(SP)
+   \   000094   5F4B0500     MOV.B   0x5(R11), R15
+   \   000098   0F8E         SUB.W   R14, R15
+   \   00009A   3F53         ADD.W   #0xffff, R15
+   \   00009C   3F900B00     CMP.W   #0xb, R15
+   \   0000A0   1120         JNE     ??rmc_dec_10
+   \   0000A2   4F43         MOV.B   #0x0, R15
+   \   0000A4   0C3C         JMP     ??rmc_dec_11
+   \                     ??rmc_dec_2:
+   \   0000A6   5E4B0400     MOV.B   0x4(R11), R14
+   \   0000AA   0E5F         ADD.W   R15, R14
+   \   0000AC   084D         MOV.W   R13, R8
+   \   0000AE   085E         ADD.W   R14, R8
+   \   0000B0   0E41         MOV.W   SP, R14
+   \   0000B2   0E53         ADD.W   #0x0, R14
+   \   0000B4   0E5F         ADD.W   R15, R14
+   \   0000B6   DE4801001500 MOV.B   0x1(R8), 0x15(R14)
+   \   0000BC   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_11:
+   \   0000BE   7F900B00     CMP.B   #0xb, R15
+   \   0000C2   F12B         JNC     ??rmc_dec_2
+   \                     ??rmc_dec_10:
+   \   0000C4   5E4B0600     MOV.B   0x6(R11), R14
+   \   0000C8   0F4D         MOV.W   R13, R15
+   \   0000CA   0F5E         ADD.W   R14, R15
+   \   0000CC   D14FFFFF2000 MOV.B   0xffff(R15), 0x20(SP)
+   \   0000D2   5F4B0700     MOV.B   0x7(R11), R15
+   \   0000D6   0F8E         SUB.W   R14, R15
+   \   0000D8   3F53         ADD.W   #0xffff, R15
+   \   0000DA   3F900500     CMP.W   #0x5, R15
+   \   0000DE   1120         JNE     ??rmc_dec_12
+   \   0000E0   4F43         MOV.B   #0x0, R15
+   \   0000E2   0C3C         JMP     ??rmc_dec_13
+   \                     ??rmc_dec_3:
+   \   0000E4   5E4B0600     MOV.B   0x6(R11), R14
+   \   0000E8   0E5F         ADD.W   R15, R14
+   \   0000EA   084D         MOV.W   R13, R8
+   \   0000EC   085E         ADD.W   R14, R8
+   \   0000EE   0E41         MOV.W   SP, R14
+   \   0000F0   0E53         ADD.W   #0x0, R14
+   \   0000F2   0E5F         ADD.W   R15, R14
+   \   0000F4   DE4801002100 MOV.B   0x1(R8), 0x21(R14)
+   \   0000FA   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_13:
+   \   0000FC   7F900500     CMP.B   #0x5, R15
+   \   000100   F12B         JNC     ??rmc_dec_3
+   \                     ??rmc_dec_12:
+   \   000102   5E4B0800     MOV.B   0x8(R11), R14
+   \   000106   5F4B0700     MOV.B   0x7(R11), R15
+   \   00010A   0E8F         SUB.W   R15, R14
+   \   00010C   3E53         ADD.W   #0xffff, R14
+   \   00010E   3E900500     CMP.W   #0x5, R14
+   \   000112   1120         JNE     ??rmc_dec_14
+   \   000114   4F43         MOV.B   #0x0, R15
+   \   000116   0C3C         JMP     ??rmc_dec_15
+   \                     ??rmc_dec_4:
+   \   000118   5E4B0700     MOV.B   0x7(R11), R14
+   \   00011C   0E5F         ADD.W   R15, R14
+   \   00011E   084D         MOV.W   R13, R8
+   \   000120   085E         ADD.W   R14, R8
+   \   000122   0E41         MOV.W   SP, R14
+   \   000124   0E53         ADD.W   #0x0, R14
+   \   000126   0E5F         ADD.W   R15, R14
+   \   000128   DE4801002600 MOV.B   0x1(R8), 0x26(R14)
+   \   00012E   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_15:
+   \   000130   7F900500     CMP.B   #0x5, R15
+   \   000134   F12B         JNC     ??rmc_dec_4
+   \                     ??rmc_dec_14:
+   \   000136   5E4B0900     MOV.B   0x9(R11), R14
+   \   00013A   5F4B0800     MOV.B   0x8(R11), R15
+   \   00013E   0E8F         SUB.W   R15, R14
+   \   000140   3E53         ADD.W   #0xffff, R14
+   \   000142   3E900600     CMP.W   #0x6, R14
+   \   000146   1120         JNE     ??rmc_dec_16
+   \   000148   4F43         MOV.B   #0x0, R15
+   \   00014A   0C3C         JMP     ??rmc_dec_17
+   \                     ??rmc_dec_5:
+   \   00014C   5E4B0800     MOV.B   0x8(R11), R14
+   \   000150   0E5F         ADD.W   R15, R14
+   \   000152   084D         MOV.W   R13, R8
+   \   000154   085E         ADD.W   R14, R8
+   \   000156   0E41         MOV.W   SP, R14
+   \   000158   0E53         ADD.W   #0x0, R14
+   \   00015A   0E5F         ADD.W   R15, R14
+   \   00015C   DE4801002B00 MOV.B   0x1(R8), 0x2b(R14)
+   \   000162   5F53         ADD.B   #0x1, R15
+   \                     ??rmc_dec_17:
+   \   000164   7F900600     CMP.B   #0x6, R15
+   \   000168   F12B         JNC     ??rmc_dec_5
+   \                     ??rmc_dec_16:
+   \   00016A   0C4A         MOV.W   R10, R12
+   \   00016C   0E41         MOV.W   SP, R14
+   \   00016E   0E53         ADD.W   #0x0, R14
+   \   000170   3D403100     MOV.W   #0x31, R13
+   \   000174   B012....     CALL    #?CopyMemoryBytes
+   \   000178   31503200     ADD.W   #0x32, SP
+   \   00017C   3040....     BR      #?Epilogue3
+
+   \                                 In  segment CODE, align 2
+   \   __cc_version2 uchar get_msg_type(uchar *, uchar *)
+   \                     get_msg_type:
+   \   000000   FC9052000200 CMP.B   #0x52, 0x2(R12)
+   \   000006   0A20         JNE     ??get_msg_type_0
+   \   000008   FC904D000300 CMP.B   #0x4d, 0x3(R12)
+   \   00000E   0620         JNE     ??get_msg_type_0
+   \   000010   FC9043000400 CMP.B   #0x43, 0x4(R12)
+   \   000016   0220         JNE     ??get_msg_type_0
+   \   000018   5C43         MOV.B   #0x1, R12
+   \   00001A   3041         RET
+   \                     ??get_msg_type_0:
+   \   00001C   4C43         MOV.B   #0x0, R12
+   \   00001E   3041         RET
+     16          #include "diskio.h"
+     17          
+     18          /* key1 p1.0 key2 p1.7 key3 p2.7 key4 p2.6 */
+     19          #define KEY1 0x01  
+     20          #define KEY2 0x80
+     21          #define KEY3 0x80
+     22          #define  KEY4 0x40
+     23          
+     24          #define LIGHT   0x20   
+     25          #define LIGHT_ON()    (P2OUT |= LIGHT)
+     26          #define LIGHT_OFF()   (P2OUT &= ~LIGHT)   
+     27          #define LIGHT_TRG()   (P2OUT ^= LIGHT)   
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     28          uchar g_record  = 0;
+   \                     g_record:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     29          uchar key12_buf=0, key34_buf=0, key_trg=0;
+   \                     key12_buf:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     key34_buf:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     key_trg:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     30          uchar config_flag=0, record_flag=0, uart_flag=0, file_select=1, light_flag=1,time_flag=0;
+   \                     config_flag:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     record_flag:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     uart_flag:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+   \                     file_select:
+   \   000000                DS8 1
+   \   000001                REQUIRE `?<Initializer for file_select>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+   \                     light_flag:
+   \   000000                DS8 1
+   \   000001                REQUIRE `?<Initializer for light_flag>`
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     time_flag:
+   \   000000                DS8 1
+     31          
+     32          extern msg_gprmc g_rmc_data;
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     33          uchar Str1[]    = {0, 1, 2, 0, 3, 4, 5};
+   \                     Str1:
+   \   000000                DS8 7
+   \   000007                REQUIRE `?<Initializer for Str1>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     34          uchar Str2[]    = {0, 6, 7, 0, 0, 9};
+   \                     Str2:
+   \   000000                DS8 6
+   \   000006                REQUIRE `?<Initializer for Str2>`
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+     35          const uchar dat_tab1[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+   \                     dat_tab1:
+   \   000000   1F1C1F1E1F1E DC8 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+   \            1F1F1E1F1E1F
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+     36          const uchar dat_tab2[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+   \                     dat_tab2:
+   \   000000   1F1C1F1E1F1E DC8 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+   \            1F1F1E1F1E1F
+     37          void InitSysClk(void);
+     38          void InitDisplay();
+     39          void InitUart();  
+     40          void InitKey();
+     41          void InitTimerA0();
+     42          void DispUpdate();
+     43          void DispTime();
+     44          
+     45          
+
+   \                                 In  segment CODE, align 2
+     46          void main(void)
+   \                     main:
+     47          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   31805E00     SUB.W   #0x5e, SP
+     48              uchar flag= 0x05;
+                           ^
+Warning[Pe550]: variable "flag" was set but never used
+     49          	uchar write_cnt=0;
+   \   00000C   4B43         MOV.B   #0x0, R11
+     50          	FATFS fatfs;			/* File system object */
+     51          	DIR dir;				/* Directory object */
+                 	    ^
+Warning[Pe177]: variable "dir" was declared but never referenced
+     52          	FILINFO fno;			/* File information object */ 
+                 	        ^
+Warning[Pe177]: variable "fno" was declared but never referenced
+     53              FRESULT f_open,rc;
+                             ^
+Warning[Pe550]: variable "f_open" was set but never used
+
+      FRESULT f_open,rc;
+                     ^
+"E:\WorkSpace\IAR_MSP430\GPS_V1\src\gps_v1.c",53  Warning[Pe550]: variable "rc"
+          was set but never used
+     54              uchar   buff[64];
+                             ^
+Warning[Pe177]: variable "buff" was declared but never referenced
+     55              WORD    br=0,bw=0,record=0;
+                             ^
+Warning[Pe177]: variable "br" was declared but never referenced
+
+      WORD    br=0,bw=0,record=0;
+                        ^
+"E:\WorkSpace\IAR_MSP430\GPS_V1\src\gps_v1.c",55  Warning[Pe177]: variable
+          "record" was declared but never referenced
+   \   00000E   81430000     MOV.W   #0x0, 0(SP)
+     56              uchar wr_str[]={"ok!"};
+                           ^
+Warning[Pe177]: variable "wr_str" was declared but never referenced
+     57              uchar init_flag=0;
+                           ^
+Warning[Pe550]: variable "init_flag" was set but never used
+     58              WDTCTL          =       WDTPW + WDTHOLD;
+   \   000012   B240805A2001 MOV.W   #0x5a80, &0x120
+     59              
+     60              uchar i=0;
+                           ^
+Warning[Pe177]: variable "i" was declared but never referenced
+     61              InitSysClk();
+   \   000018   B012....     CALL    #InitSysClk
+     62              InitKey();
+   \   00001C   B012....     CALL    #InitKey
+     63              InitTimerA0();
+   \   000020   B012....     CALL    #InitTimerA0
+     64              LCD_Init();   
+   \   000024   B012....     CALL    #LCD_Init
+     65              InitDisplay();    
+   \   000028   B012....     CALL    #InitDisplay
+     66              
+     67          //    InitUart();  
+     68              
+     69              __delay_cycles(1000);
+   \   00002C                ////////////// Start of 1000 cycles delay.
+   \   00002C   003C         JMP     ??main_16
+   \                     ??main_16:
+   \   00002E   3F404B01     MOV.W   #0x14b, R15
+   \                     ??main_15:
+   \   000032   3F53         ADD.W   #0xffff, R15
+   \   000034   FE2F         JC      ??main_15
+   \   000036                ////////////// End of delay code.
+     70          	 __bis_SR_register(GIE);
+   \   000036   32D2         BIS.W   #0x8, SR
+     71               
+     72              init_flag = disk_initialize();
+   \   000038   B012....     CALL    #disk_initialize
+     73          
+     74              UCA0TXBUF		=		0x00;
+   \   00003C   C2436700     MOV.B   #0x0, &0x67
+     75              
+     76              flag = pf_mount(&fatfs);     
+   \   000040   0C41         MOV.W   SP, R12
+   \   000042   3C503400     ADD.W   #0x34, R12
+   \   000046   B012....     CALL    #pf_mount
+     77              f_open = pf_open("record_1.txt");
+   \   00004A   3A40....     MOV.W   #pf_open, R10
+   \   00004E   3C40....     MOV.W   #`?<Constant "record_1.txt">`, R12
+   \   000052   8A12         CALL    R10
+   \   000054   053C         JMP     ??main_0
+     78          //    rc= pf_write(wr_str, sizeof(wr_str), &bw);
+     79          //    rc = pf_write(0, 0, &bw);
+     80          //
+     81          //    pf_lseek(0);
+     82          //    rc = pf_read(&buff[0], 1, &br);
+     83          //    if (rc == 0)
+     84          //        LCD_WriteString(0, 3, "Read ok!"); 
+     85          //    if (br == 1) {
+     86          //        LCD_WriteChar(6, 5, buff[0]);
+     87          //    }
+     88             
+     89              
+     90              while (1) {       
+     91          
+     92          		if (g_rcv_ok ) {
+     93                      g_rcv_ok = 0;
+     94          			if (1 == get_msg_type(g_rcv_buf, g_comma)) {			// GPRMC msg
+     95                          g_rmc_data = rmc_dec(g_rcv_buf, g_comma);
+     96                          time_flag = 1;
+     97                          IE2 &= 	~UCA0RXIE;           	// clear USCI_A0 RX interrupt				                
+     98          				if (g_rmc_data.nv_status == 'A'  ) {
+     99                              
+    100                              g_rmc_data.nv_status = 'N';
+    101                              if (g_rmc_data.speed[0] >='0' && g_rmc_data.speed[2] >= '3' && record_flag) {
+    102          					DispUpdate();                    
+    103          //					pf_lseek(record);
+    104          					rc = pf_write(g_rcv_buf, g_rcv_cnt, &bw);
+    105          //                    record = record+bw;
+    106          //                    LCD_WriteChar(30, 1, bw/100+0x30);
+    107          //                    LCD_WriteChar(35, 1, bw/10%10+0x30);
+    108          //                    LCD_WriteChar(40, 1, bw%10+0x30);
+    109          //                    rc = pf_write(wr_str, sizeof(wr_str), &bw);
+    110          //					record = record+bw;
+    111          //                    bw = 2;
+    112          //					rc = pf_write(0, 0, &bw);
+    113          					write_cnt++;
+    114          					LCD_WriteString(0, 3, "wr:");
+    115          					LCD_WriteChar(13, 3, write_cnt/100+'0');
+    116          					LCD_WriteChar(18, 3, write_cnt/10%10+'0');
+    117                              LCD_WriteChar(23, 3, write_cnt%10+'0');
+    118                              }
+    119          				}
+    120                          IE2 |= 	UCA0RXIE;           	// Enable USCI_A0 RX interrupt
+    121          			}		
+    122          		}
+    123                  
+    124                  if (time_flag) {
+    125                      time_flag = 0;
+    126                      DispTime();
+    127                  }
+    128                  
+    129          		if (config_flag) {
+    130          			switch(config_flag) {
+    131          				case 1:
+    132          //                    LIGHT_TRG();
+    133                              if (record_flag)
+    134                                  LCD_WriteIcon(20, 0, 6);
+    135                              else
+    136                                  LCD_WriteIcon(20, 0, 5); 
+    137          					break;
+    138          				case 2:		
+    139          //                    LIGHT_TRG();
+    140                            if (uart_flag){ 
+    141          						InitUart();
+    142                                  LCD_WriteIcon(60, 0, 13);
+    143                            } else { 
+    144          						UCA0CTL1 &= ~UCSWRST;
+    145                                  LCD_WriteIcon(60, 0, 12);
+    146                            }
+    147          					break;
+    148          				case 3:	
+    149          //                  LIGHT_TRG();
+    150          //                  pf_lseek(0);              
+    151                            if (1 == file_select) {
+    152                                  rc = pf_write(0, 0, &bw);
+    153          						f_open = pf_open("record_1.txt");
+    154          //                        bw = 0;
+    155                                  LCD_WriteIcon(40, 0, 7);                  
+    156                            } else if (2 == file_select){     
+    157                                  rc = pf_write(0, 0, &bw);
+    158          						f_open = pf_open("record_2.txt");
+    159          //                        bw = 0;
+    160                                  LCD_WriteIcon(40, 0, 8);
+    161                            } else if (3 == file_select){
+    162                                  rc = pf_write(0, 0, &bw);
+    163          						f_open = pf_open("record_3.txt");
+    164            //                      bw = 0;
+    165                                  LCD_WriteIcon(40, 0, 9);               
+    166                            } else if (4 == file_select) {
+    167                                  rc = pf_write(0, 0, &bw);
+    168          						f_open = pf_open("record_4.txt");
+    169              //                    bw = 0;
+    170                                  LCD_WriteIcon(40, 0, 10);
+    171                            }
+    172                            
+    173          				  break;
+    174                          case 4:
+    175                            if (light_flag)
+    176                              LIGHT_ON();
+    177                            else
+    178                              LIGHT_OFF();
+   \                     ??main_2:
+   \   000056   F2C020002900 BIC.B   #0x20, &0x29
+    179          				default:break;
+    180          			}
+    181          			config_flag=0;
+   \                     ??main_1:
+   \   00005C   C243....     MOV.B   #0x0, &config_flag
+   \                     ??main_0:
+   \   000060   C293....     CMP.B   #0x0, &g_rcv_ok
+   \   000064   6C24         JEQ     ??main_3
+   \   000066   C243....     MOV.B   #0x0, &g_rcv_ok
+   \   00006A   3D40....     MOV.W   #g_comma, R13
+   \   00006E   3C40....     MOV.W   #g_rcv_buf, R12
+   \   000072   B012....     CALL    #get_msg_type
+   \   000076   5C93         CMP.B   #0x1, R12
+   \   000078   6220         JNE     ??main_3
+   \   00007A   3E40....     MOV.W   #g_comma, R14
+   \   00007E   3D40....     MOV.W   #g_rcv_buf, R13
+   \   000082   0C41         MOV.W   SP, R12
+   \   000084   2C53         ADD.W   #0x2, R12
+   \   000086   B012....     CALL    #rmc_dec
+   \   00008A   3C40....     MOV.W   #g_rmc_data, R12
+   \   00008E   0E41         MOV.W   SP, R14
+   \   000090   2E53         ADD.W   #0x2, R14
+   \   000092   3D403100     MOV.W   #0x31, R13
+   \   000096   B012....     CALL    #?CopyMemoryBytes
+   \   00009A   D243....     MOV.B   #0x1, &time_flag
+   \   00009E   D2C30100     BIC.B   #0x1, &0x1
+   \   0000A2   F2904100.... CMP.B   #0x41, &g_rmc_data + 9
+   \   0000A8   4820         JNE     ??main_4
+   \   0000AA   F2404E00.... MOV.B   #0x4e, &g_rmc_data + 9
+   \   0000B0   78403000     MOV.B   #0x30, R8
+   \   0000B4   C298....     CMP.B   R8, &g_rmc_data + 33
+   \   0000B8   4028         JNC     ??main_4
+   \   0000BA   F2903300.... CMP.B   #0x33, &g_rmc_data + 35
+   \   0000C0   3C28         JNC     ??main_4
+   \   0000C2   C293....     CMP.B   #0x0, &record_flag
+   \   0000C6   3924         JEQ     ??main_4
+   \   0000C8   B012....     CALL    #DispUpdate
+   \   0000CC   0E41         MOV.W   SP, R14
+   \   0000CE   0E53         ADD.W   #0x0, R14
+   \   0000D0   5D42....     MOV.B   &g_rcv_cnt, R13
+   \   0000D4   3C40....     MOV.W   #g_rcv_buf, R12
+   \   0000D8   B012....     CALL    #pf_write
+   \   0000DC   5B53         ADD.B   #0x1, R11
+   \   0000DE   79400300     MOV.B   #0x3, R9
+   \   0000E2   3E40....     MOV.W   #`?<Constant "wr:">`, R14
+   \   0000E6   4D49         MOV.B   R9, R13
+   \   0000E8   4C43         MOV.B   #0x0, R12
+   \   0000EA   B012....     CALL    #LCD_WriteString
+   \   0000EE   4C4B         MOV.B   R11, R12
+   \   0000F0   7E406400     MOV.B   #0x64, R14
+   \   0000F4   B012....     CALL    #?DivMod8u
+   \   0000F8   4C58         ADD.B   R8, R12
+   \   0000FA   4E4C         MOV.B   R12, R14
+   \   0000FC   4D49         MOV.B   R9, R13
+   \   0000FE   7C400D00     MOV.B   #0xd, R12
+   \   000102   B012....     CALL    #LCD_WriteChar
+   \   000106   4C4B         MOV.B   R11, R12
+   \   000108   7E400A00     MOV.B   #0xa, R14
+   \   00010C   B012....     CALL    #?DivMod8u
+   \   000110   7E400A00     MOV.B   #0xa, R14
+   \   000114   B012....     CALL    #?DivMod8u
+   \   000118   4E58         ADD.B   R8, R14
+   \   00011A   4D49         MOV.B   R9, R13
+   \   00011C   7C401200     MOV.B   #0x12, R12
+   \   000120   B012....     CALL    #LCD_WriteChar
+   \   000124   4C4B         MOV.B   R11, R12
+   \   000126   7E400A00     MOV.B   #0xa, R14
+   \   00012A   B012....     CALL    #?DivMod8u
+   \   00012E   4E58         ADD.B   R8, R14
+   \   000130   4D49         MOV.B   R9, R13
+   \   000132   7C401700     MOV.B   #0x17, R12
+   \   000136   B012....     CALL    #LCD_WriteChar
+   \                     ??main_4:
+   \   00013A   D2D30100     BIS.B   #0x1, &0x1
+   \                     ??main_3:
+   \   00013E   C293....     CMP.B   #0x0, &time_flag
+   \   000142   0424         JEQ     ??main_5
+   \   000144   C243....     MOV.B   #0x0, &time_flag
+   \   000148   B012....     CALL    #DispTime
+   \                     ??main_5:
+   \   00014C   C293....     CMP.B   #0x0, &config_flag
+   \   000150   8727         JEQ     ??main_0
+   \   000152   5E42....     MOV.B   &config_flag, R14
+   \   000156   5E83         SUB.B   #0x1, R14
+   \   000158   0724         JEQ     ??main_6
+   \   00015A   5E83         SUB.B   #0x1, R14
+   \   00015C   1824         JEQ     ??main_7
+   \   00015E   5E83         SUB.B   #0x1, R14
+   \   000160   2D24         JEQ     ??main_8
+   \   000162   5E83         SUB.B   #0x1, R14
+   \   000164   7924         JEQ     ??main_9
+   \   000166   7A3F         JMP     ??main_1
+   \                     ??main_6:
+   \   000168   C293....     CMP.B   #0x0, &record_flag
+   \   00016C   0824         JEQ     ??main_10
+   \   00016E   7E400600     MOV.B   #0x6, R14
+   \   000172   4D43         MOV.B   #0x0, R13
+   \   000174   7C401400     MOV.B   #0x14, R12
+   \   000178   B012....     CALL    #LCD_WriteIcon
+   \   00017C   6F3F         JMP     ??main_1
+   \                     ??main_10:
+   \   00017E   7E400500     MOV.B   #0x5, R14
+   \   000182   4D43         MOV.B   #0x0, R13
+   \   000184   7C401400     MOV.B   #0x14, R12
+   \   000188   B012....     CALL    #LCD_WriteIcon
+   \   00018C   673F         JMP     ??main_1
+   \                     ??main_7:
+   \   00018E   C293....     CMP.B   #0x0, &uart_flag
+   \   000192   0A24         JEQ     ??main_11
+   \   000194   B012....     CALL    #InitUart
+   \   000198   7E400D00     MOV.B   #0xd, R14
+   \   00019C   4D43         MOV.B   #0x0, R13
+   \   00019E   7C403C00     MOV.B   #0x3c, R12
+   \   0001A2   B012....     CALL    #LCD_WriteIcon
+   \   0001A6   5A3F         JMP     ??main_1
+   \                     ??main_11:
+   \   0001A8   D2C36100     BIC.B   #0x1, &0x61
+   \   0001AC   7E400C00     MOV.B   #0xc, R14
+   \   0001B0   4D43         MOV.B   #0x0, R13
+   \   0001B2   7C403C00     MOV.B   #0x3c, R12
+   \   0001B6   B012....     CALL    #LCD_WriteIcon
+   \   0001BA   503F         JMP     ??main_1
+   \                     ??main_8:
+   \   0001BC   5E42....     MOV.B   &file_select, R14
+   \   0001C0   5E93         CMP.B   #0x1, R14
+   \   0001C2   1120         JNE     ??main_12
+   \   0001C4   0E41         MOV.W   SP, R14
+   \   0001C6   0E53         ADD.W   #0x0, R14
+   \   0001C8   0D43         MOV.W   #0x0, R13
+   \   0001CA   0C43         MOV.W   #0x0, R12
+   \   0001CC   B012....     CALL    #pf_write
+   \   0001D0   3C40....     MOV.W   #`?<Constant "record_1.txt">`, R12
+   \   0001D4   8A12         CALL    R10
+   \   0001D6   7E400700     MOV.B   #0x7, R14
+   \   0001DA   4D43         MOV.B   #0x0, R13
+   \   0001DC   7C402800     MOV.B   #0x28, R12
+   \   0001E0   B012....     CALL    #LCD_WriteIcon
+   \   0001E4   3B3F         JMP     ??main_1
+   \                     ??main_12:
+   \   0001E6   6E93         CMP.B   #0x2, R14
+   \   0001E8   1020         JNE     ??main_13
+   \   0001EA   0E41         MOV.W   SP, R14
+   \   0001EC   0E53         ADD.W   #0x0, R14
+   \   0001EE   0D43         MOV.W   #0x0, R13
+   \   0001F0   0C43         MOV.W   #0x0, R12
+   \   0001F2   B012....     CALL    #pf_write
+   \   0001F6   3C40....     MOV.W   #`?<Constant "record_2.txt">`, R12
+   \   0001FA   8A12         CALL    R10
+   \   0001FC   7E42         MOV.B   #0x8, R14
+   \   0001FE   4D43         MOV.B   #0x0, R13
+   \   000200   7C402800     MOV.B   #0x28, R12
+   \   000204   B012....     CALL    #LCD_WriteIcon
+   \   000208   293F         JMP     ??main_1
+   \                     ??main_13:
+   \   00020A   7E900300     CMP.B   #0x3, R14
+   \   00020E   1120         JNE     ??main_14
+   \   000210   0E41         MOV.W   SP, R14
+   \   000212   0E53         ADD.W   #0x0, R14
+   \   000214   0D43         MOV.W   #0x0, R13
+   \   000216   0C43         MOV.W   #0x0, R12
+   \   000218   B012....     CALL    #pf_write
+   \   00021C   3C40....     MOV.W   #`?<Constant "record_3.txt">`, R12
+   \   000220   8A12         CALL    R10
+   \   000222   7E400900     MOV.B   #0x9, R14
+   \   000226   4D43         MOV.B   #0x0, R13
+   \   000228   7C402800     MOV.B   #0x28, R12
+   \   00022C   B012....     CALL    #LCD_WriteIcon
+   \   000230   153F         JMP     ??main_1
+   \                     ??main_14:
+   \   000232   6E92         CMP.B   #0x4, R14
+   \   000234   1323         JNE     ??main_1
+   \   000236   0E41         MOV.W   SP, R14
+   \   000238   0E53         ADD.W   #0x0, R14
+   \   00023A   0D43         MOV.W   #0x0, R13
+   \   00023C   0C43         MOV.W   #0x0, R12
+   \   00023E   B012....     CALL    #pf_write
+   \   000242   3C40....     MOV.W   #`?<Constant "record_4.txt">`, R12
+   \   000246   8A12         CALL    R10
+   \   000248   7E400A00     MOV.B   #0xa, R14
+   \   00024C   4D43         MOV.B   #0x0, R13
+   \   00024E   7C402800     MOV.B   #0x28, R12
+   \   000252   B012....     CALL    #LCD_WriteIcon
+   \   000256   023F         JMP     ??main_1
+   \                     ??main_9:
+   \   000258   C293....     CMP.B   #0x0, &light_flag
+   \   00025C   FC26         JEQ     ??main_2
+   \   00025E   F2D020002900 BIS.B   #0x20, &0x29
+   \   000264   FB3E         JMP     ??main_1
+   \   000266                REQUIRE WDTCTL
+   \   000266                REQUIRE UCA0TXBUF
+   \   000266                REQUIRE IE2
+   \   000266                REQUIRE UCA0CTL1
+   \   000266                REQUIRE P2OUT
+    182          		}
+    183          	}
+    184          }
+    185          
+    186          /*
+    187           * function:Init System Clock
+    188           * input: none
+    189           * output: none
+    190           * description: set MCLK/SMCLK source from DCO @ 1MHz
+    191           */
+
+   \                                 In  segment CODE, align 2
+    192          void InitSysClk(void)
+   \                     InitSysClk:
+    193          {
+    194          	if (CALBC1_1MHZ == 0XFF || CALDCO_1MHZ == 0XFF)
+   \   000000   F293FF10     CMP.B   #0xff, &0x10ff
+   \   000004   0324         JEQ     ??InitSysClk_0
+   \   000006   F293FE10     CMP.B   #0xff, &0x10fe
+   \   00000A   0120         JNE     ??InitSysClk_1
+    195          	{
+    196          		while(1);		        					/*if calibration constants erased, taps cpu*/
+   \                     ??InitSysClk_0:
+   \   00000C   FF3F         JMP     ??InitSysClk_0
+    197          	}
+    198          
+    199          	BCSCTL1         =       CALBC1_1MHZ;
+   \                     ??InitSysClk_1:
+   \   00000E   D242FF105700 MOV.B   &0x10ff, &0x57
+    200          	DCOCTL          =       CALDCO_1MHZ;			/* DCOCTL  Calibration Data for 1MHz */
+   \   000014   D242FE105600 MOV.B   &0x10fe, &0x56
+    201          //	BCSCTL3         |=      LFXT1S_0;		/* Mode 0 for LFXT1 : Normal operation */
+    202          	IFG1            &=      ~OFIFG;					/*clear OSCfault flag*/
+   \   00001A   E2C30200     BIC.B   #0x2, &0x2
+    203          
+    204          	BCSCTL2 |= SELM_0 + DIVM_0 + DIVS_0; /*set MCLK,SMCLK source from DCO*/
+   \   00001E   D24258005800 MOV.B   &0x58, &0x58
+    205          }
+   \   000024   3041         RET
+   \   000026                REQUIRE CALBC1_1MHZ
+   \   000026                REQUIRE CALDCO_1MHZ
+   \   000026                REQUIRE BCSCTL1
+   \   000026                REQUIRE DCOCTL
+   \   000026                REQUIRE IFG1
+   \   000026                REQUIRE BCSCTL2
+    206          
+    207          
+    208          /*
+    209          *Function Name: initi display
+    210          *
+    211          *Input        : none
+    212          *
+    213          *Output       : none
+    214          *
+    215          *description  : none
+    216          *
+    217          *author       : 2012/7/20, by Maemo
+    218          */
+
+   \                                 In  segment CODE, align 2
+    219          void InitDisplay()
+   \                     InitDisplay:
+    220          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+    221          //    LCD_WriteCNString(0, 0, 6, Str1);       
+    222          //    LCD_WriteCNString(0, 1, 5, Str2);
+    223          //    LCD_WriteString(24, 2, "1:");
+    224          //    LCD_WriteCNString(0, 3, 5, Str2);    
+    225          //    LCD_WriteString(24, 5, "2:"); 
+    226            
+    227          	/* GPS */
+    228              LCD_WriteIcon(0, 5, 0); LCD_WriteIcon(8, 5, 1);  LCD_WriteIcon(16, 5, 2); 
+   \   000004   3A40....     MOV.W   #LCD_WriteIcon, R10
+   \   000008   7B400500     MOV.B   #0x5, R11
+   \   00000C   4E43         MOV.B   #0x0, R14
+   \   00000E   4D4B         MOV.B   R11, R13
+   \   000010   4C43         MOV.B   #0x0, R12
+   \   000012   8A12         CALL    R10
+   \   000014   5E43         MOV.B   #0x1, R14
+   \   000016   4D4B         MOV.B   R11, R13
+   \   000018   7C42         MOV.B   #0x8, R12
+   \   00001A   8A12         CALL    R10
+   \   00001C   6E43         MOV.B   #0x2, R14
+   \   00001E   4D4B         MOV.B   R11, R13
+   \   000020   7C401000     MOV.B   #0x10, R12
+   \   000024   8A12         CALL    R10
+    229          	/* signal */
+    230          //	LCD_WriteIconX(40, 0, 0, 10);	
+    231              LCD_WriteIconX(0, 0, 10, 10);
+   \   000026   7F400A00     MOV.B   #0xa, R15
+   \   00002A   4E4F         MOV.B   R15, R14
+   \   00002C   4D43         MOV.B   #0x0, R13
+   \   00002E   4C43         MOV.B   #0x0, R12
+   \   000030   B012....     CALL    #LCD_WriteIconX
+    232              /* stop */
+    233              LCD_WriteIcon(20, 0, 5);
+   \   000034   4E4B         MOV.B   R11, R14
+   \   000036   4D43         MOV.B   #0x0, R13
+   \   000038   7C401400     MOV.B   #0x14, R12
+   \   00003C   8A12         CALL    R10
+    234              /* file */
+    235              LCD_WriteIcon(40, 0, 7);
+   \   00003E   7E400700     MOV.B   #0x7, R14
+   \   000042   4D43         MOV.B   #0x0, R13
+   \   000044   7C402800     MOV.B   #0x28, R12
+   \   000048   8A12         CALL    R10
+    236              /* N: E: */
+    237              LCD_WriteIcon(0, 1, 3); LCD_WriteChar(8, 1, ':'); 
+   \   00004A   7E400300     MOV.B   #0x3, R14
+   \   00004E   5D43         MOV.B   #0x1, R13
+   \   000050   4C43         MOV.B   #0x0, R12
+   \   000052   8A12         CALL    R10
+   \   000054   7E403A00     MOV.B   #0x3a, R14
+   \   000058   5D43         MOV.B   #0x1, R13
+   \   00005A   7C42         MOV.B   #0x8, R12
+   \   00005C   B012....     CALL    #LCD_WriteChar
+    238          	LCD_WriteIcon(0, 2, 4); LCD_WriteChar(8, 2, ':'); 
+   \   000060   6E42         MOV.B   #0x4, R14
+   \   000062   6D43         MOV.B   #0x2, R13
+   \   000064   4C43         MOV.B   #0x0, R12
+   \   000066   8A12         CALL    R10
+   \   000068   7E403A00     MOV.B   #0x3a, R14
+   \   00006C   6D43         MOV.B   #0x2, R13
+   \   00006E   7C42         MOV.B   #0x8, R12
+   \   000070   B012....     CALL    #LCD_WriteChar
+    239              
+    240          //	LCD_WriteChar(12, 2, '3'); LCD_WriteIconX(18, 2, 20, 4);
+    241          //	LCD_WriteChar(22, 2, '4'); LCD_WriteIconX(28, 2, 24, 2);
+    242          //	LCD_WriteChar(30, 2, '5'); LCD_WriteIconX(36, 2, 26, 4);
+    243          	
+    244              
+    245          //    LCD_WriteString(0, 0, " GPS ", 1);
+    246          //	LCD_WriteChar(0, 1, 'N', 0); LCD_WriteChar(5, 1, ':', 0);
+    247          //	LCD_WriteChar(0, 2, 'E', 0); LCD_WriteChar(5, 2, ':', 0);    
+    248          //	LCD_WriteString(0, 3, "Speed:", 0);
+    249          //	LCD_WriteString(0, 4, "Time:", 0);	
+    250          	
+    251          }
+   \   000074   3B41         POP.W   R11
+   \   000076   3A41         POP.W   R10
+   \   000078   3041         RET
+    252          
+    253          /*
+    254          uart:  8 bits data, no parity, 1 stop bit, 1M @ 9600 baud
+    255          */
+
+   \                                 In  segment CODE, align 2
+    256          void InitUart()
+   \                     InitUart:
+    257          {
+    258              UCA0CTL1		|=		UCSWRST;				//reset the USCI by set UCSWRST,init all register;
+   \   000000   D2D36100     BIS.B   #0x1, &0x61
+    259          	
+    260              P1SEL           |=      BIT1 +  BIT2;			//configure port fuction P1.1 and P1.2;
+   \   000004   F2D006002600 BIS.B   #0x6, &0x26
+    261              P1SEL2          |=      BIT1 +  BIT2; 
+   \   00000A   F2D006004100 BIS.B   #0x6, &0x41
+    262          	UCA0CTL1		|= 		UCSSEL_2;				//USCI closk source from SMCLK;	
+   \   000010   F2D080006100 BIS.B   #0x80, &0x61
+    263          	UCA0BR0			=		6;						//1Mhz @ 9600 baud;
+   \   000016   F24006006200 MOV.B   #0x6, &0x62
+    264          	UCA0BR1			= 		0;						//1Mhz @ 9600 baud;	
+   \   00001C   C2436300     MOV.B   #0x0, &0x63
+    265          	UCA0MCTL		|= 		UCOS16 + UCBRF3;		//oversampling mode is selected, 1Mhz @ 9600 baud;	
+   \   000020   F2D081006400 BIS.B   #0x81, &0x64
+    266          	
+    267          	UCA0CTL1		&=		~UCSWRST;				//Initialize USCI state machine	
+   \   000026   D2C36100     BIC.B   #0x1, &0x61
+    268          	IE2 			|= 		UCA0RXIE;           	// Enable USCI_A0 RX interrupt
+   \   00002A   D2D30100     BIS.B   #0x1, &0x1
+    269          //	LCD_WriteString(0, 1,"init ok");
+    270          //    LCD_SetAddr(0, 2);
+    271          } 
+   \   00002E   3041         RET
+   \   000030                REQUIRE UCA0CTL1
+   \   000030                REQUIRE P1SEL
+   \   000030                REQUIRE P1SEL2
+   \   000030                REQUIRE UCA0BR0
+   \   000030                REQUIRE UCA0BR1
+   \   000030                REQUIRE UCA0MCTL
+   \   000030                REQUIRE IE2
+    272          
+    273          #pragma		vector = USCIAB0RX_VECTOR
+
+   \                                 In  segment CODE, align 2
+    274          __interrupt void USCI_A0_RX_ISR(void)
+   \                     USCI_A0_RX_ISR:
+    275          {
+   \   000000   0D12         PUSH.W  R13
+   \   000002   0F12         PUSH.W  R15
+   \   000004   0E12         PUSH.W  R14
+    276          	//while (!(IFG2&UCA0TXIFG));						// USCI_A0 TX buffer ready?
+    277          	//UCA0TXBUF		=		UCA0RXBUF;				// TX -> RXed character
+    278              // if ((UCA0RXBUF != 0x0D) && (UCA0RXBUF != 0x0A))
+    279          	// LCD_WriteChar(UCA0RXBUF);						//display what received
+    280          	uchar tmp = 0;
+    281          					
+    282          	
+    283          	tmp	= UCA0RXBUF;							//stor the buf first	
+   \   000006   5D426600     MOV.B   &0x66, R13
+    284          	
+    285          	if (g_rcv_start)
+   \   00000A   C293....     CMP.B   #0x0, &g_rcv_start
+   \   00000E   1A24         JEQ     ??USCI_A0_RX_ISR_0
+    286          	{
+    287          		if ('*' == tmp)
+   \   000010   5E42....     MOV.B   &g_rcv_cnt, R14
+   \   000014   4F4E         MOV.B   R14, R15
+   \   000016   7D902A00     CMP.B   #0x2a, R13
+   \   00001A   0720         JNE     ??USCI_A0_RX_ISR_1
+    288          		{
+    289          			g_rcv_ok 	= 1;
+   \   00001C   D243....     MOV.B   #0x1, &g_rcv_ok
+    290          			g_rcv_start = 0;
+   \   000020   C243....     MOV.B   #0x0, &g_rcv_start
+    291                      g_rcv_buf[g_rcv_cnt] = '\0';
+   \   000024   CF43....     MOV.B   #0x0, g_rcv_buf(R15)
+   \   000028   0D3C         JMP     ??USCI_A0_RX_ISR_0
+    292          		}		
+    293          		else
+    294          		{
+    295          			g_rcv_buf[g_rcv_cnt] = tmp;
+   \                     ??USCI_A0_RX_ISR_1:
+   \   00002A   CF4D....     MOV.B   R13, g_rcv_buf(R15)
+    296          			if (',' == tmp)
+   \   00002E   7D902C00     CMP.B   #0x2c, R13
+   \   000032   0620         JNE     ??USCI_A0_RX_ISR_2
+    297          			{
+    298          				g_comma[g_comma_cnt] = g_rcv_cnt;				//store the comma's count 
+   \   000034   5F42....     MOV.B   &g_comma_cnt, R15
+   \   000038   CF4E....     MOV.B   R14, g_comma(R15)
+    299          				g_comma_cnt++;									//in order to decode the message	
+   \   00003C   D253....     ADD.B   #0x1, &g_comma_cnt
+    300          			}
+    301          			g_rcv_cnt++;
+   \                     ??USCI_A0_RX_ISR_2:
+   \   000040   D253....     ADD.B   #0x1, &g_rcv_cnt
+    302          		}
+    303          	}
+    304          	
+    305          	if ('$' == tmp)
+   \                     ??USCI_A0_RX_ISR_0:
+   \   000044   7D902400     CMP.B   #0x24, R13
+   \   000048   0820         JNE     ??USCI_A0_RX_ISR_3
+    306          	{
+    307          		g_rcv_start = 1;
+   \   00004A   D243....     MOV.B   #0x1, &g_rcv_start
+    308          		g_rcv_cnt 	= 0;
+   \   00004E   C243....     MOV.B   #0x0, &g_rcv_cnt
+    309          		g_comma_cnt = 0;
+   \   000052   C243....     MOV.B   #0x0, &g_comma_cnt
+    310                  g_rcv_ok    = 0;
+   \   000056   C243....     MOV.B   #0x0, &g_rcv_ok
+    311          	}
+    312          }
+   \                     ??USCI_A0_RX_ISR_3:
+   \   00005A   3E41         POP.W   R14
+   \   00005C   3F41         POP.W   R15
+   \   00005E   3D41         POP.W   R13
+   \   000060   0013         RETI
+   \   000062                REQUIRE UCA0RXBUF
+    313          
+
+   \                                 In  segment CODE, align 2
+    314          void InitTimerA0()
+   \                     InitTimerA0:
+    315          {
+    316          	TACTL			=		TASSEL_2 ;		//Timera clock @ SMCLK 1MHz
+   \   000000   B24000026001 MOV.W   #0x200, &0x160
+    317          	TACCR0			= 		50000;					
+   \   000006   B24050C37201 MOV.W   #0xc350, &0x172
+    318          	TACCTL0			|= 		CCIE;			// enable CCIFG
+   \   00000C   B2D010006201 BIS.W   #0x10, &0x162
+    319          }
+   \   000012   3041         RET
+   \   000014                REQUIRE TA0CTL
+   \   000014                REQUIRE TA0CCR0
+   \   000014                REQUIRE TA0CCTL0
+    320          
+    321          #pragma	vector = TIMER0_A0_VECTOR
+
+   \                                 In  segment CODE, align 2
+    322          __interrupt void Timer0_ccr0_isr()
+   \                     Timer0_ccr0_isr:
+    323          {
+   \   000000   0E12         PUSH.W  R14
+    324          	uchar tmp = 0;
+    325          
+    326          	if (1 == key_trg) {
+   \   000002   D293....     CMP.B   #0x1, &key_trg
+   \   000006   2220         JNE     ??Timer0_ccr0_isr_0
+    327          		tmp = ((~P1IN) &(KEY1+KEY2));
+   \   000008   7E408100     MOV.B   #0x81, R14
+   \   00000C   5EC22000     BIC.B   &0x20, R14
+    328          		if (tmp == KEY1) {
+   \   000010   5E93         CMP.B   #0x1, R14
+   \   000012   0E20         JNE     ??Timer0_ccr0_isr_1
+    329          			config_flag = 1;
+   \   000014   D243....     MOV.B   #0x1, &config_flag
+    330          			if  (uart_flag)					/*Ö»ÓÐÔÚuart´ò¿ªÊ±²ÅÄÜÊ¹ÓÃ¼ÇÂ¼Êý¾Ý*/
+   \   000018   C293....     CMP.B   #0x0, &uart_flag
+   \   00001C   3D24         JEQ     ??Timer0_ccr0_isr_2
+    331          				record_flag = !record_flag;	
+   \   00001E   C293....     CMP.B   #0x0, &record_flag
+   \   000022   0220         JNE     ??Timer0_ccr0_isr_3
+   \   000024   5E43         MOV.B   #0x1, R14
+   \   000026   013C         JMP     ??Timer0_ccr0_isr_4
+   \                     ??Timer0_ccr0_isr_3:
+   \   000028   4E43         MOV.B   #0x0, R14
+   \                     ??Timer0_ccr0_isr_4:
+   \   00002A   C24E....     MOV.B   R14, &record_flag
+   \   00002E   343C         JMP     ??Timer0_ccr0_isr_2
+    332          		} else if (tmp == KEY2) {
+   \                     ??Timer0_ccr0_isr_1:
+   \   000030   7E908000     CMP.B   #0x80, R14
+   \   000034   3120         JNE     ??Timer0_ccr0_isr_2
+    333          			config_flag = 2;				
+   \   000036   E243....     MOV.B   #0x2, &config_flag
+    334          			uart_flag = !uart_flag;			
+   \   00003A   C293....     CMP.B   #0x0, &uart_flag
+   \   00003E   0220         JNE     ??Timer0_ccr0_isr_5
+   \   000040   5E43         MOV.B   #0x1, R14
+   \   000042   013C         JMP     ??Timer0_ccr0_isr_6
+   \                     ??Timer0_ccr0_isr_5:
+   \   000044   4E43         MOV.B   #0x0, R14
+   \                     ??Timer0_ccr0_isr_6:
+   \   000046   C24E....     MOV.B   R14, &uart_flag
+   \   00004A   263C         JMP     ??Timer0_ccr0_isr_2
+    335          		}
+    336                  key_trg = 0;
+    337          	} else if (2 == key_trg) {
+   \                     ??Timer0_ccr0_isr_0:
+   \   00004C   E293....     CMP.B   #0x2, &key_trg
+   \   000050   2520         JNE     ??Timer0_ccr0_isr_7
+    338          		tmp = ((~P2IN)&(KEY3+KEY4));
+   \   000052   7E40C000     MOV.B   #0xc0, R14
+   \   000056   5EC22800     BIC.B   &0x28, R14
+    339          		if (tmp == KEY3) {						
+   \   00005A   7E908000     CMP.B   #0x80, R14
+   \   00005E   0F20         JNE     ??Timer0_ccr0_isr_8
+    340          			config_flag = 3;
+   \   000060   F2400300.... MOV.B   #0x3, &config_flag
+    341          			if (!record_flag) {				/*Ö»ÓÐµ±Ã»ÓÐ¼ÇÂ¼Êý¾ÝµÄÊ±ºò²ÅÄÜ¸ü¸Ä¼ÇÂ¼ÎÄ¼þ*/
+   \   000066   C293....     CMP.B   #0x0, &record_flag
+   \   00006A   1620         JNE     ??Timer0_ccr0_isr_2
+    342          				file_select++;
+   \   00006C   D253....     ADD.B   #0x1, &file_select
+    343          				if (file_select == 5)
+   \   000070   F2900500.... CMP.B   #0x5, &file_select
+   \   000076   1020         JNE     ??Timer0_ccr0_isr_2
+    344          				file_select = 1;
+   \   000078   D243....     MOV.B   #0x1, &file_select
+   \   00007C   0D3C         JMP     ??Timer0_ccr0_isr_2
+    345          			}
+    346          		} else if (tmp == KEY4) {
+   \                     ??Timer0_ccr0_isr_8:
+   \   00007E   7E904000     CMP.B   #0x40, R14
+   \   000082   0A20         JNE     ??Timer0_ccr0_isr_2
+    347          			config_flag = 4;
+   \   000084   E242....     MOV.B   #0x4, &config_flag
+    348          			light_flag = !light_flag;			
+   \   000088   C293....     CMP.B   #0x0, &light_flag
+   \   00008C   0220         JNE     ??Timer0_ccr0_isr_9
+   \   00008E   5E43         MOV.B   #0x1, R14
+   \   000090   013C         JMP     ??Timer0_ccr0_isr_10
+   \                     ??Timer0_ccr0_isr_9:
+   \   000092   4E43         MOV.B   #0x0, R14
+   \                     ??Timer0_ccr0_isr_10:
+   \   000094   C24E....     MOV.B   R14, &light_flag
+    349          		}
+    350                  key_trg = 0;
+   \                     ??Timer0_ccr0_isr_2:
+   \   000098   C243....     MOV.B   #0x0, &key_trg
+    351          	}
+    352          	TACTL &= ~MC_1;
+   \                     ??Timer0_ccr0_isr_7:
+   \   00009C   B2C010006001 BIC.W   #0x10, &0x160
+    353          }
+   \   0000A2   3E41         POP.W   R14
+   \   0000A4   0013         RETI
+   \   0000A6                REQUIRE P1IN
+   \   0000A6                REQUIRE P2IN
+   \   0000A6                REQUIRE TA0CTL
+    354          
+
+   \                                 In  segment CODE, align 2
+    355          void InitKey()
+   \                     InitKey:
+    356          {
+    357              P2SEL &= ~(KEY3+KEY4);  P2SEL2 &= ~(KEY3+KEY4);
+   \   000000   7E403F00     MOV.B   #0x3f, R14
+   \   000004   C2FE2E00     AND.B   R14, &0x2e
+   \   000008   C2FE4200     AND.B   R14, &0x42
+    358              P1DIR &= ~(KEY1+KEY2);  P2DIR &= ~(KEY3+KEY4);
+   \   00000C   F2F07E002200 AND.B   #0x7e, &0x22
+   \   000012   C2FE2A00     AND.B   R14, &0x2a
+    359              P1REN |= (KEY1+KEY2);   P2REN |= (KEY3+KEY4);   /* enable pull-up */
+   \   000016   7F408100     MOV.B   #0x81, R15
+   \   00001A   C2DF2700     BIS.B   R15, &0x27
+   \   00001E   7D40C000     MOV.B   #0xc0, R13
+   \   000022   C2DD2F00     BIS.B   R13, &0x2f
+    360              P1OUT |= (KEY1+KEY2);   P2OUT |= (KEY3+KEY4);   /* enable pull-up */
+   \   000026   C2DF2100     BIS.B   R15, &0x21
+   \   00002A   C2DD2900     BIS.B   R13, &0x29
+    361              P1IES |= (KEY1+KEY2);   P2IES |= (KEY3+KEY4);   /* high to low edge */
+   \   00002E   C2DF2400     BIS.B   R15, &0x24
+   \   000032   C2DD2C00     BIS.B   R13, &0x2c
+    362              P1IFG &= ~(KEY1+KEY2);  P2IFG &= ~(KEY3+KEY4); 
+   \   000036   F2F07E002300 AND.B   #0x7e, &0x23
+   \   00003C   C2FE2B00     AND.B   R14, &0x2b
+    363              P1IE |= (KEY1+KEY2);    P2IE |= (KEY3+KEY4);
+   \   000040   C2DF2500     BIS.B   R15, &0x25
+   \   000044   C2DD2D00     BIS.B   R13, &0x2d
+    364          }
+   \   000048   3041         RET
+   \   00004A                REQUIRE P2SEL
+   \   00004A                REQUIRE P2SEL2
+   \   00004A                REQUIRE P1DIR
+   \   00004A                REQUIRE P2DIR
+   \   00004A                REQUIRE P1REN
+   \   00004A                REQUIRE P2REN
+   \   00004A                REQUIRE P1OUT
+   \   00004A                REQUIRE P2OUT
+   \   00004A                REQUIRE P1IES
+   \   00004A                REQUIRE P2IES
+   \   00004A                REQUIRE P1IFG
+   \   00004A                REQUIRE P2IFG
+   \   00004A                REQUIRE P1IE
+   \   00004A                REQUIRE P2IE
+    365          
+    366          #pragma vector=PORT1_VECTOR
+
+   \                                 In  segment CODE, align 2
+    367          __interrupt void key12_isr()
+   \                     key12_isr:
+    368          {
+    369          	key_trg = 1;
+   \   000000   D243....     MOV.B   #0x1, &key_trg
+    370          	key12_buf = P1IFG;
+   \   000004   D2422300.... MOV.B   &0x23, &key12_buf
+    371          	P1IFG = 0;
+   \   00000A   C2432300     MOV.B   #0x0, &0x23
+    372          	TACTL |= MC_1;
+   \   00000E   B2D010006001 BIS.W   #0x10, &0x160
+    373          }
+   \   000014   0013         RETI
+   \   000016                REQUIRE P1IFG
+   \   000016                REQUIRE TA0CTL
+    374          
+    375          #pragma vector=PORT2_VECTOR
+
+   \                                 In  segment CODE, align 2
+    376          __interrupt void key34_isr()
+   \                     key34_isr:
+    377          {
+   \   000000   0D12         PUSH.W  R13
+   \   000002   0C12         PUSH.W  R12
+   \   000004   0F12         PUSH.W  R15
+   \   000006   0E12         PUSH.W  R14
+    378              LCD_WriteChar(0, 3, 'o');
+   \   000008   7E406F00     MOV.B   #0x6f, R14
+   \   00000C   7D400300     MOV.B   #0x3, R13
+   \   000010   4C43         MOV.B   #0x0, R12
+   \   000012   B012....     CALL    #LCD_WriteChar
+    379          	key_trg = 2;
+   \   000016   E243....     MOV.B   #0x2, &key_trg
+    380          	key34_buf = P2IFG;
+   \   00001A   D2422B00.... MOV.B   &0x2b, &key34_buf
+    381          	P2IFG = 0;
+   \   000020   C2432B00     MOV.B   #0x0, &0x2b
+    382          	TACTL |= MC_1;
+   \   000024   B2D010006001 BIS.W   #0x10, &0x160
+    383          }
+   \   00002A   3E41         POP.W   R14
+   \   00002C   3F41         POP.W   R15
+   \   00002E   3C41         POP.W   R12
+   \   000030   3D41         POP.W   R13
+   \   000032   0013         RETI
+   \   000034                REQUIRE P2IFG
+   \   000034                REQUIRE TA0CTL
+    384          	
+    385          
+    386          
+    387          
+    388          
+
+   \                                 In  segment CODE, align 2
+    389          void DispUpdate()
+   \                     DispUpdate:
+    390          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+    391              LCD_WriteIconX(0, 0, 0, 10);
+   \   000004   3A40....     MOV.W   #LCD_WriteIconX, R10
+   \   000008   7F400A00     MOV.B   #0xa, R15
+   \   00000C   4E43         MOV.B   #0x0, R14
+   \   00000E   4D43         MOV.B   #0x0, R13
+   \   000010   4C43         MOV.B   #0x0, R12
+   \   000012   8A12         CALL    R10
+    392          	LCD_WriteCharX(12, 1, 2, &g_rmc_data.latitude[0]);  	/* dd */
+   \   000014   3B40....     MOV.W   #LCD_WriteCharX, R11
+   \   000018   3F40....     MOV.W   #g_rmc_data + 10, R15
+   \   00001C   6E43         MOV.B   #0x2, R14
+   \   00001E   5D43         MOV.B   #0x1, R13
+   \   000020   7C400C00     MOV.B   #0xc, R12
+   \   000024   8B12         CALL    R11
+    393          	LCD_WriteIconX(22, 1, 20, 4);							/* åº¦ */
+   \   000026   6F42         MOV.B   #0x4, R15
+   \   000028   7E401400     MOV.B   #0x14, R14
+   \   00002C   5D43         MOV.B   #0x1, R13
+   \   00002E   7C401600     MOV.B   #0x16, R12
+   \   000032   8A12         CALL    R10
+    394          	LCD_WriteCharX(26, 1, 2, &g_rmc_data.latitude[2]);		/* mm */
+   \   000034   3F40....     MOV.W   #g_rmc_data + 12, R15
+   \   000038   6E43         MOV.B   #0x2, R14
+   \   00003A   5D43         MOV.B   #0x1, R13
+   \   00003C   7C401A00     MOV.B   #0x1a, R12
+   \   000040   8B12         CALL    R11
+    395          	LCD_WriteIconX(36, 1, 24, 2);							/* åˆ†' */
+   \   000042   6F43         MOV.B   #0x2, R15
+   \   000044   7E401800     MOV.B   #0x18, R14
+   \   000048   5D43         MOV.B   #0x1, R13
+   \   00004A   7C402400     MOV.B   #0x24, R12
+   \   00004E   8A12         CALL    R10
+    396          	LCD_WriteCharX(38, 1, 3, &g_rmc_data.latitude[5]);       /* ss */
+   \   000050   3F40....     MOV.W   #g_rmc_data + 15, R15
+   \   000054   7E400300     MOV.B   #0x3, R14
+   \   000058   5D43         MOV.B   #0x1, R13
+   \   00005A   7C402600     MOV.B   #0x26, R12
+   \   00005E   8B12         CALL    R11
+    397          	
+    398          	LCD_WriteCharX(12, 2, 3, &g_rmc_data.longitude[0]);  	/* dd */
+   \   000060   3F40....     MOV.W   #g_rmc_data + 21, R15
+   \   000064   7E400300     MOV.B   #0x3, R14
+   \   000068   6D43         MOV.B   #0x2, R13
+   \   00006A   7C400C00     MOV.B   #0xc, R12
+   \   00006E   8B12         CALL    R11
+    399          	LCD_WriteIconX(27, 2, 20, 4);							/* åº¦ */
+   \   000070   6F42         MOV.B   #0x4, R15
+   \   000072   7E401400     MOV.B   #0x14, R14
+   \   000076   6D43         MOV.B   #0x2, R13
+   \   000078   7C401B00     MOV.B   #0x1b, R12
+   \   00007C   8A12         CALL    R10
+    400          	LCD_WriteCharX(31, 2, 2, &g_rmc_data.longitude[3]);		/* mm */
+   \   00007E   3F40....     MOV.W   #g_rmc_data + 24, R15
+   \   000082   6E43         MOV.B   #0x2, R14
+   \   000084   6D43         MOV.B   #0x2, R13
+   \   000086   7C401F00     MOV.B   #0x1f, R12
+   \   00008A   8B12         CALL    R11
+    401          	LCD_WriteIconX(42, 2, 24, 2);							/* åˆ†' */
+   \   00008C   6F43         MOV.B   #0x2, R15
+   \   00008E   7E401800     MOV.B   #0x18, R14
+   \   000092   6D43         MOV.B   #0x2, R13
+   \   000094   7C402A00     MOV.B   #0x2a, R12
+   \   000098   8A12         CALL    R10
+    402          	LCD_WriteCharX(45, 2, 3, &g_rmc_data.longitude[6]);       /* ss */
+   \   00009A   3F40....     MOV.W   #g_rmc_data + 27, R15
+   \   00009E   7E400300     MOV.B   #0x3, R14
+   \   0000A2   6D43         MOV.B   #0x2, R13
+   \   0000A4   7C402D00     MOV.B   #0x2d, R12
+   \   0000A8   8B12         CALL    R11
+    403          	
+    404          //	LCD_WriteChar(0, 1, g_rmc_data.ns_indicator);
+    405          //	LCD_WriteCharX(12, 1, 10, &g_rmc_data.latitude[0]);
+    406          //	LCD_WriteChar(0, 2, g_rmc_data.ew_indicator);
+    407          //	LCD_WriteCharX(12, 2, 11, &g_rmc_data.longitude[0]);
+    408          //	LCD_WriteCharX(36, 3, 5, &g_rmc_data.speed[0]);
+    409          //	LCD_WriteCharX(36, 4, 6, &g_rmc_data.utc_time[0]);
+    410          
+    411          }
+   \   0000AA   3B41         POP.W   R11
+   \   0000AC   3A41         POP.W   R10
+   \   0000AE   3041         RET
+    412          
+
+   \                                 In  segment CODE, align 2
+    413          void DispTime()
+   \                     DispTime:
+    414          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0612         PUSH.W  R6
+   \   00000A   0712         PUSH.W  R7
+   \   00000C   0412         PUSH.W  R4
+   \   00000E   0512         PUSH.W  R5
+    415          	uchar tmp_min =0,tmp_hou=0, tmp_day=0, tmp_year=0, tmp_month=0;
+    416          	
+    417          	tmp_min = (g_rmc_data.utc_time[2]-'0')*10+g_rmc_data.utc_time[3]-'0';	/*get the minutes */
+   \   000010   5542....     MOV.B   &g_rmc_data + 2, R5
+   \   000014   4555         RLA.B   R5
+   \   000016   4E45         MOV.B   R5, R14
+   \   000018   4555         RLA.B   R5
+   \   00001A   4555         RLA.B   R5
+   \   00001C   455E         ADD.B   R14, R5
+   \   00001E   5552....     ADD.B   &g_rmc_data + 3, R5
+   \   000022   7550F000     ADD.B   #0xf0, R5
+    418          	tmp_hou	= (g_rmc_data.utc_time[0]-'0')*10 + g_rmc_data.utc_time[1]-'0'; /* get the hour */
+    419          	tmp_day = (g_rmc_data.date[0]-'0')*10+ g_rmc_data.date[1]-'0'; 	/* get the day */
+   \   000026   5842....     MOV.B   &g_rmc_data + 43, R8
+   \   00002A   4858         RLA.B   R8
+   \   00002C   4E48         MOV.B   R8, R14
+   \   00002E   4858         RLA.B   R8
+   \   000030   4858         RLA.B   R8
+   \   000032   485E         ADD.B   R14, R8
+   \   000034   5852....     ADD.B   &g_rmc_data + 44, R8
+   \   000038   7850F000     ADD.B   #0xf0, R8
+    420          	tmp_month = (g_rmc_data.date[2]-'0')*10+g_rmc_data.date[3]-'0';	/* get the month */
+   \   00003C   5A42....     MOV.B   &g_rmc_data + 45, R10
+   \   000040   4A5A         RLA.B   R10
+   \   000042   4E4A         MOV.B   R10, R14
+   \   000044   4A5A         RLA.B   R10
+   \   000046   4A5A         RLA.B   R10
+   \   000048   4A5E         ADD.B   R14, R10
+   \   00004A   5A52....     ADD.B   &g_rmc_data + 46, R10
+   \   00004E   7A50F000     ADD.B   #0xf0, R10
+    421          	tmp_year = (g_rmc_data.date[4]-'0')*10+g_rmc_data.date[5]-'0';	/* get thd year */	
+    422          	
+    423          	tmp_hou  = tmp_hou + 8;	
+   \   000052   5B42....     MOV.B   &g_rmc_data, R11
+   \   000056   4B5B         RLA.B   R11
+   \   000058   4E4B         MOV.B   R11, R14
+   \   00005A   4B5B         RLA.B   R11
+   \   00005C   4B5B         RLA.B   R11
+   \   00005E   4B5E         ADD.B   R14, R11
+   \   000060   5B52....     ADD.B   &g_rmc_data + 1, R11
+   \   000064   7B82         SUB.B   #0x8, R11
+    424          	if (tmp_hou>= 24) {				/* the date need to change */
+   \   000066   7B901800     CMP.B   #0x18, R11
+   \   00006A   1328         JNC     ??DispTime_1
+    425          		tmp_hou = tmp_hou - 24;
+   \   00006C   7B50E800     ADD.B   #0xe8, R11
+    426          		if (0==(tmp_year%4)) {		/* run nian*/
+   \   000070   4F4A         MOV.B   R10, R15
+   \   000072   5E42....     MOV.B   &g_rmc_data + 47, R14
+   \   000076   4E5E         RLA.B   R14
+   \   000078   4D4E         MOV.B   R14, R13
+   \   00007A   4E5E         RLA.B   R14
+   \   00007C   4E5E         RLA.B   R14
+   \   00007E   4E5D         ADD.B   R13, R14
+   \   000080   5E52....     ADD.B   &g_rmc_data + 48, R14
+   \   000084   7EB00300     BIT.B   #0x3, R14
+   \   000088   6620         JNE     ??DispTime_2
+    427          			if (tmp_day == dat_tab2[tmp_month-1]) { /* judge if it is end of the month */
+   \   00008A   589F....     CMP.B   LWRD(dat_tab2 - 1)(R15), R8
+   \   00008E   6624         JEQ     ??DispTime_3
+    428          				tmp_day = 1;
+    429          				tmp_month = tmp_month+1;
+    430          				if (13 == tmp_month)
+    431          					tmp_month = 1;
+    432          			} else
+    433          				tmp_day = tmp_day+1;
+    434          		} else {
+    435          			if (tmp_day == dat_tab1[tmp_month-1]) {
+    436          				tmp_day = 1;
+    437          				tmp_month = tmp_month+1;
+    438          				if (13 == tmp_month)
+    439          					tmp_month = 1;
+    440          			} else 
+    441          				tmp_day = tmp_day+1;
+   \                     ??DispTime_0:
+   \   000090   5853         ADD.B   #0x1, R8
+    442          		}		
+    443          	}
+    444          	/* month*/
+    445          	LCD_WriteChar(30, 5, tmp_month/10+'0'); LCD_WriteChar(35, 5, tmp_month%10+'0');  		
+   \                     ??DispTime_1:
+   \   000092   3940....     MOV.W   #LCD_WriteChar, R9
+   \   000096   76400500     MOV.B   #0x5, R6
+   \   00009A   74403000     MOV.B   #0x30, R4
+   \   00009E   77400A00     MOV.B   #0xa, R7
+   \   0000A2   4C4A         MOV.B   R10, R12
+   \   0000A4   4E47         MOV.B   R7, R14
+   \   0000A6   B012....     CALL    #?DivMod8u
+   \   0000AA   4C54         ADD.B   R4, R12
+   \   0000AC   4E4C         MOV.B   R12, R14
+   \   0000AE   4D46         MOV.B   R6, R13
+   \   0000B0   7C401E00     MOV.B   #0x1e, R12
+   \   0000B4   8912         CALL    R9
+   \   0000B6   4C4A         MOV.B   R10, R12
+   \   0000B8   4E47         MOV.B   R7, R14
+   \   0000BA   B012....     CALL    #?DivMod8u
+   \   0000BE   4E54         ADD.B   R4, R14
+   \   0000C0   4D46         MOV.B   R6, R13
+   \   0000C2   7C402300     MOV.B   #0x23, R12
+   \   0000C6   8912         CALL    R9
+    446          	LCD_WriteChar(40, 5, '-');								/* - */
+   \   0000C8   7E402D00     MOV.B   #0x2d, R14
+   \   0000CC   4D46         MOV.B   R6, R13
+   \   0000CE   7C402800     MOV.B   #0x28, R12
+   \   0000D2   8912         CALL    R9
+    447          	/* day */
+    448          	LCD_WriteChar(45, 5, tmp_day/10+'0'); LCD_WriteChar(50, 5, tmp_day%10+'0');			
+   \   0000D4   4C48         MOV.B   R8, R12
+   \   0000D6   4E47         MOV.B   R7, R14
+   \   0000D8   B012....     CALL    #?DivMod8u
+   \   0000DC   4C54         ADD.B   R4, R12
+   \   0000DE   4E4C         MOV.B   R12, R14
+   \   0000E0   4D46         MOV.B   R6, R13
+   \   0000E2   7C402D00     MOV.B   #0x2d, R12
+   \   0000E6   8912         CALL    R9
+   \   0000E8   4C48         MOV.B   R8, R12
+   \   0000EA   4E47         MOV.B   R7, R14
+   \   0000EC   B012....     CALL    #?DivMod8u
+   \   0000F0   4E54         ADD.B   R4, R14
+   \   0000F2   4D46         MOV.B   R6, R13
+   \   0000F4   7C403200     MOV.B   #0x32, R12
+   \   0000F8   8912         CALL    R9
+    449          	/* hour */
+    450          	LCD_WriteChar(60, 5, tmp_hou/10+'0'); LCD_WriteChar(65, 5, tmp_hou%10+'0');		
+   \   0000FA   4C4B         MOV.B   R11, R12
+   \   0000FC   4E47         MOV.B   R7, R14
+   \   0000FE   B012....     CALL    #?DivMod8u
+   \   000102   4C54         ADD.B   R4, R12
+   \   000104   4E4C         MOV.B   R12, R14
+   \   000106   4D46         MOV.B   R6, R13
+   \   000108   7C403C00     MOV.B   #0x3c, R12
+   \   00010C   8912         CALL    R9
+   \   00010E   4C4B         MOV.B   R11, R12
+   \   000110   4E47         MOV.B   R7, R14
+   \   000112   B012....     CALL    #?DivMod8u
+   \   000116   4E54         ADD.B   R4, R14
+   \   000118   4D46         MOV.B   R6, R13
+   \   00011A   7C404100     MOV.B   #0x41, R12
+   \   00011E   8912         CALL    R9
+    451          	LCD_WriteChar(70, 5, ':');								/* : */
+   \   000120   7E403A00     MOV.B   #0x3a, R14
+   \   000124   4D46         MOV.B   R6, R13
+   \   000126   7C404600     MOV.B   #0x46, R12
+   \   00012A   8912         CALL    R9
+    452          	/* min */
+    453          	LCD_WriteChar(74, 5, tmp_min/10+'0'); LCD_WriteChar(79, 5, tmp_min%10+'0');		
+   \   00012C   4C45         MOV.B   R5, R12
+   \   00012E   4E47         MOV.B   R7, R14
+   \   000130   B012....     CALL    #?DivMod8u
+   \   000134   4C54         ADD.B   R4, R12
+   \   000136   4E4C         MOV.B   R12, R14
+   \   000138   4D46         MOV.B   R6, R13
+   \   00013A   7C404A00     MOV.B   #0x4a, R12
+   \   00013E   8912         CALL    R9
+   \   000140   4C45         MOV.B   R5, R12
+   \   000142   4E47         MOV.B   R7, R14
+   \   000144   B012....     CALL    #?DivMod8u
+   \   000148   4E54         ADD.B   R4, R14
+   \   00014A   4D46         MOV.B   R6, R13
+   \   00014C   7C404F00     MOV.B   #0x4f, R12
+   \   000150   8912         CALL    R9
+    454          	
+    455          }
+   \   000152   3040....     BR      #?Epilogue8
+   \                     ??DispTime_2:
+   \   000156   589F....     CMP.B   LWRD(dat_tab1 - 1)(R15), R8
+   \   00015A   9A23         JNE     ??DispTime_0
+   \                     ??DispTime_3:
+   \   00015C   5843         MOV.B   #0x1, R8
+   \   00015E   5A53         ADD.B   #0x1, R10
+   \   000160   7A900D00     CMP.B   #0xd, R10
+   \   000164   9623         JNE     ??DispTime_1
+   \   000166   5A43         MOV.B   #0x1, R10
+   \   000168   943F         JMP     ??DispTime_1
+
+   \                                 In  segment INTVEC, offset 0x4, root
+   \                     `??key12_isr??INTVEC 4`:
+   \   000004   ....         DC16    key12_isr
+
+   \                                 In  segment INTVEC, offset 0x6, root
+   \                     `??key34_isr??INTVEC 6`:
+   \   000006   ....         DC16    key34_isr
+
+   \                                 In  segment INTVEC, offset 0xe, root
+   \                     `??USCI_A0_RX_ISR??INTVEC 14`:
+   \   00000E   ....         DC16    USCI_A0_RX_ISR
+
+   \                                 In  segment INTVEC, offset 0x12, root
+   \                     `??Timer0_ccr0_isr??INTVEC 18`:
+   \   000012   ....         DC16    Timer0_ccr0_isr
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for file_select>`:
+   \   000000   01           DC8 1
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for light_flag>`:
+   \   000000   01           DC8 1
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for Str1>`:
+   \   000000   000102000304 DC8 0, 1, 2, 0, 3, 4, 5
+   \            05          
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for Str2>`:
+   \   000000   000607000009 DC8 0, 6, 7, 0, 0, 9
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \   000000   000000000000 DC8 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            000000000000
+   \            000000000000
+   \            00000000    
+   \   000016   000000000000 DC8 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            000000000000
+   \            000000000000
+   \            00000000    
+   \   00002C   0000000000   DC8 0, 0, 0, 0, 0
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "record_1.txt">`:
+   \   000000   7265636F7264 DC8 "record_1.txt"
+   \            5F312E747874
+   \            00          
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "wr:">`:
+   \   000000   77723A00     DC8 "wr:"
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "record_2.txt">`:
+   \   000000   7265636F7264 DC8 "record_2.txt"
+   \            5F322E747874
+   \            00          
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "record_3.txt">`:
+   \   000000   7265636F7264 DC8 "record_3.txt"
+   \            5F332E747874
+   \            00          
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "record_4.txt">`:
+   \   000000   7265636F7264 DC8 "record_4.txt"
+   \            5F342E747874
+   \            00          
+    456          
+    457          
+    458          
+    459          
+    460          
+    461          
+    462          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      18  DispTime
+             18 -> LCD_WriteChar
+       6  DispUpdate
+              6 -> LCD_WriteCharX
+              6 -> LCD_WriteIconX
+       6  InitDisplay
+              6 -> LCD_WriteChar
+              6 -> LCD_WriteIcon
+              6 -> LCD_WriteIconX
+       2  InitKey
+       2  InitSysClk
+       2  InitTimerA0
+       2  InitUart
+       6  Timer0_ccr0_isr
+      10  USCI_A0_RX_ISR
+       2  get_msg_type
+       4  key12_isr
+      12  key34_isr
+             12 -> LCD_WriteChar
+     104  main
+            104 -> DispTime
+            104 -> DispUpdate
+            104 -> InitDisplay
+            104 -> InitKey
+            104 -> InitSysClk
+            104 -> InitTimerA0
+            104 -> InitUart
+            104 -> LCD_Init
+            104 -> LCD_WriteChar
+            104 -> LCD_WriteIcon
+            104 -> LCD_WriteString
+            104 -> disk_initialize
+            104 -> get_msg_type
+            104 -> pf_mount
+            104 -> pf_open
+            104 -> pf_write
+            104 -> rmc_dec
+      58  rmc_dec
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      13  ?<Constant "record_1.txt">
+      13  ?<Constant "record_2.txt">
+      13  ?<Constant "record_3.txt">
+      13  ?<Constant "record_4.txt">
+       4  ?<Constant "wr:">
+      49  ?<Constant {{0}, 0, {0}, 0, {0}, 0, {0}, {0},
+       7  ?<Initializer for Str1>
+       6  ?<Initializer for Str2>
+       1  ?<Initializer for file_select>
+       1  ?<Initializer for light_flag>
+       2  ??Timer0_ccr0_isr??INTVEC 18
+       2  ??USCI_A0_RX_ISR??INTVEC 14
+       2  ??key12_isr??INTVEC 4
+       2  ??key34_isr??INTVEC 6
+       1  BCSCTL1
+       1  BCSCTL2
+       1  CALBC1_1MHZ
+       1  CALDCO_1MHZ
+       1  DCOCTL
+     362  DispTime
+     176  DispUpdate
+       1  IE2
+       1  IFG1
+     122  InitDisplay
+      74  InitKey
+      38  InitSysClk
+      20  InitTimerA0
+      48  InitUart
+       1  P1DIR
+       1  P1IE
+       1  P1IES
+       1  P1IFG
+       1  P1IN
+       1  P1OUT
+       1  P1REN
+       1  P1SEL
+       1  P1SEL2
+       1  P2DIR
+       1  P2IE
+       1  P2IES
+       1  P2IFG
+       1  P2IN
+       1  P2OUT
+       1  P2REN
+       1  P2SEL
+       1  P2SEL2
+       7  Str1
+       6  Str2
+       2  TA0CCR0
+       2  TA0CCTL0
+       2  TA0CTL
+     166  Timer0_ccr0_isr
+       1  UCA0BR0
+       1  UCA0BR1
+       1  UCA0CTL1
+       1  UCA0MCTL
+       1  UCA0RXBUF
+       1  UCA0TXBUF
+      98  USCI_A0_RX_ISR
+       2  WDTCTL
+       1  config_flag
+      12  dat_tab1
+      12  dat_tab2
+       1  file_select
+      15  g_comma
+       1  g_comma_cnt
+      80  g_rcv_buf
+       1  g_rcv_cnt
+       1  g_rcv_ok
+       1  g_rcv_start
+       1  g_record
+      49  g_rmc_data
+      32  get_msg_type
+       1  key12_buf
+      22  key12_isr
+       1  key34_buf
+      52  key34_isr
+       1  key_trg
+       1  light_flag
+     614  main
+       1  record_flag
+     384  rmc_dec
+       1  time_flag
+       1  uart_flag
+
+ 
+ 2 208 bytes in segment CODE
+    39 bytes in segment DATA16_AN
+   129 bytes in segment DATA16_C
+    15 bytes in segment DATA16_I
+    15 bytes in segment DATA16_ID
+   156 bytes in segment DATA16_Z
+     8 bytes in segment INTVEC
+ 
+ 2 208 bytes of CODE  memory
+   144 bytes of CONST memory (+  8 bytes shared)
+   171 bytes of DATA  memory (+ 39 bytes shared)
+
+Errors: none
+Warnings: 11

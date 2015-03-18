@@ -1,0 +1,1219 @@
+###############################################################################
+#                                                                             #
+#                                                       25/Sep/2013  21:08:07 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\lcd.c                #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\lcd.c -lC            #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_unroll   #
+#                     --no_inline --no_tbaa --debug -D__MSP430G2553__ -e      #
+#                     --double=32 --dlib_config "D:\IAR                       #
+#                     Systems\430\LIB\DLIB\dl430fn.h" -Om                     #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\lcd.lst       #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\lcd.r43        #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\lcd.c
+      1          /*
+      2          *description:lcd file
+      3          *author: maemo
+      4          *date: 2012/07/16 22:43
+      5          *
+      6          */
+      7          #include "lcd.h"   
+      8          #include <msp430g2553.h>
+
+   \                                 In  segment DATA16_AN, at 0x29
+   \   unsigned char volatile P2OUT
+   \                     P2OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x2a
+   \   unsigned char volatile P2DIR
+   \                     P2DIR:
+   \   000000                DS8 1
+      9          #include "enchar6x8.h"
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \   unsigned char const font6x8[95][6]
+   \                     font6x8:
+   \   000000   000000000000 DC8 0, 0, 0, 0, 0, 0, 0, 0, 79, 0, 0, 0, 0, 7, 0, 7, 0, 0, 20, 127, 20
+   \            00004F000000
+   \            000700070000
+   \            147F14      
+   \   000015   7F1400242A7F DC8 127, 20, 0, 36, 42, 127, 42, 18, 0, 35, 19, 8, 100, 98, 0, 54, 73
+   \            2A1200231308
+   \            6462003649  
+   \   000026   552250000005 DC8 85, 34, 80, 0, 0, 5, 3, 0, 0, 0, 0, 28, 34, 65, 0, 0, 0, 65, 34, 28
+   \            03000000001C
+   \            224100000041
+   \            221C        
+   \   00003A   000014083E08 DC8 0, 0, 20, 8, 62, 8, 20, 0, 8, 8, 62, 8, 8, 0, 0, 80, 48, 0, 0, 0, 8
+   \            140008083E08
+   \            080000503000
+   \            000008      
+   \   00004F   080808080000 DC8 8, 8, 8, 8, 0, 0, 96, 96, 0, 0, 0, 32, 16, 8, 4, 2, 0, 62, 81, 73
+   \            606000000020
+   \            10080402003E
+   \            5149        
+   \   000063   453E0000427F DC8 69, 62, 0, 0, 66, 127, 64, 0, 0, 66, 97, 81, 73, 70, 0, 33, 65, 69
+   \            400000426151
+   \            494600214145
+   \   000075   4B3100181412 DC8 75, 49, 0, 24, 20, 18, 127, 16, 0, 39, 69, 69, 69, 57, 0, 60, 74
+   \            7F1000274545
+   \            4539003C4A  
+   \   000086   494930000171 DC8 73, 73, 48, 0, 1, 113, 9, 5, 3, 0, 54, 73, 73, 73, 54, 0, 6, 73, 73
+   \            090503003649
+   \            494936000649
+   \            49          
+   \   000099   291E00003636 DC8 41, 30, 0, 0, 54, 54, 0, 0, 0, 0, 86, 54, 0, 0, 0, 8, 20, 34, 65, 0
+   \            000000005636
+   \            000000081422
+   \            4100        
+   \   0000AD   001414141414 DC8 0, 20, 20, 20, 20, 20, 0, 0, 65, 34, 20, 8, 0, 2, 1, 81, 9, 6, 0
+   \            000041221408
+   \            000201510906
+   \            00          
+   \   0000C0   324979413E00 DC8 50, 73, 121, 65, 62, 0, 126, 17, 17, 17, 126, 0, 127, 73, 73, 73
+   \            7E1111117E00
+   \            7F494949    
+   \   0000D0   36003E414141 DC8 54, 0, 62, 65, 65, 65, 34, 0, 127, 65, 65, 34, 28, 0, 127, 73, 73
+   \            22007F414122
+   \            1C007F4949  
+   \   0000E1   4941007F0909 DC8 73, 65, 0, 127, 9, 9, 9, 1, 0, 62, 65, 73, 73, 122, 0, 127, 8, 8, 8
+   \            0901003E4149
+   \            497A007F0808
+   \            08          
+   \   0000F4   7F0000417F41 DC8 127, 0, 0, 65, 127, 65, 0, 0, 32, 64, 65, 63, 1, 0, 127, 8, 20, 34
+   \            00002040413F
+   \            01007F081422
+   \   000106   41007F404040 DC8 65, 0, 127, 64, 64, 64, 64, 0, 127, 2, 12, 2, 127, 0, 127, 4, 8, 16
+   \            40007F020C02
+   \            7F007F040810
+   \   000118   7F003E414141 DC8 127, 0, 62, 65, 65, 65, 62, 0, 127, 9, 9, 9, 6, 0, 62, 65, 81, 33
+   \            3E007F090909
+   \            06003E415121
+   \   00012A   5E007F091929 DC8 94, 0, 127, 9, 25, 41, 70, 0, 70, 73, 73, 73, 49, 0, 1, 1, 127, 1
+   \            460046494949
+   \            310001017F01
+   \   00013C   01003F404040 DC8 1, 0, 63, 64, 64, 64, 63, 0, 31, 32, 64, 32, 31, 0, 63, 64, 56, 64
+   \            3F001F204020
+   \            1F003F403840
+   \   00014E   3F0063140814 DC8 63, 0, 99, 20, 8, 20, 99, 0, 7, 8, 112, 8, 7, 0, 97, 81, 73, 69, 67
+   \            630007087008
+   \            070061514945
+   \            43          
+   \   000161   00007F414100 DC8 0, 0, 127, 65, 65, 0, 0, 2, 4, 8, 16, 32, 0, 0, 65, 65, 127, 0, 0
+   \            000204081020
+   \            000041417F00
+   \            00          
+   \   000174   040201020400 DC8 4, 2, 1, 2, 4, 0, 64, 64, 64, 64, 64, 0, 0, 1, 2, 4, 0, 0, 32, 84
+   \            404040404000
+   \            000102040000
+   \            2054        
+   \   000188   545478007F48 DC8 84, 84, 120, 0, 127, 72, 68, 68, 56, 0, 56, 68, 68, 68, 32, 0, 56
+   \            444438003844
+   \            4444200038  
+   \   000199   4444487F0038 DC8 68, 68, 72, 127, 0, 56, 84, 84, 84, 24, 0, 8, 126, 9, 1, 2, 0, 12
+   \            545454180008
+   \            7E090102000C
+   \   0001AB   5252523E007F DC8 82, 82, 82, 62, 0, 127, 8, 4, 4, 120, 0, 0, 68, 125, 64, 0, 0, 32
+   \            080404780000
+   \            447D40000020
+   \   0001BD   40443D00007F DC8 64, 68, 61, 0, 0, 127, 16, 40, 68, 0, 0, 0, 65, 127, 64, 0, 0, 124
+   \            102844000000
+   \            417F4000007C
+   \   0001CF   04180478007C DC8 4, 24, 4, 120, 0, 124, 8, 4, 4, 120, 0, 56, 68, 68, 68, 56, 0, 124
+   \            080404780038
+   \            44444438007C
+   \   0001E1   141414080008 DC8 20, 20, 20, 8, 0, 8, 20, 20, 24, 124, 0, 124, 8, 4, 4, 8, 0, 72, 84
+   \            1414187C007C
+   \            080404080048
+   \            54          
+   \   0001F4   54542000043F DC8 84, 84, 32, 0, 4, 63, 68, 64, 32, 0, 60, 64, 64, 32, 124, 0, 28, 32
+   \            444020003C40
+   \            40207C001C20
+   \   000206   40201C003C40 DC8 64, 32, 28, 0, 60, 64, 48, 64, 60, 0, 68, 40, 16, 40, 68, 0, 12, 80
+   \            30403C004428
+   \            102844000C50
+   \   000218   50503C004464 DC8 80, 80, 60, 0, 68, 100, 84, 76, 68, 0, 0, 8, 54, 65, 0, 0, 0, 0
+   \            544C44000008
+   \            364100000000
+   \   00022A   7F0000000041 DC8 127, 0, 0, 0, 0, 65, 54, 8, 0, 0, 8, 4, 8, 16, 8, 0
+   \            360800000804
+   \            08100800    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \   unsigned char const icon[14][8]
+   \                     icon:
+   \   000000   FFFFC39DB5AD DC8 255, 255, 195, 157, 181, 173, 203, 255, 255, 255, 129, 237, 237
+   \            CBFFFFFF81ED
+   \            ED          
+   \   00000D   EDF3FFFFDBB5 DC8 237, 243, 255, 255, 219, 181, 181, 205, 251, 255, 255, 255, 129
+   \            B5CDFBFFFFFF
+   \            81          
+   \   00001A   FBF7EFDF81FF DC8 251, 247, 239, 223, 129, 255, 255, 255, 129, 181, 181, 181, 255
+   \            FFFF81B5B5B5
+   \            FF          
+   \   000027   FF00007F3E1C DC8 255, 0, 0, 127, 62, 28, 8, 0, 0, 0, 62, 62, 0, 62, 62, 62, 0, 128
+   \            080000003E3E
+   \            003E3E3E0080
+   \   000039   8080BE808080 DC8 128, 128, 190, 128, 128, 128, 128, 128, 128, 186, 170, 170, 174
+   \            808080BAAAAA
+   \            AE          
+   \   000046   80808080AAAA DC8 128, 128, 128, 128, 170, 170, 170, 190, 128, 128, 128, 128, 142
+   \            AABE80808080
+   \            8E          
+   \   000053   8888BE808080 DC8 136, 136, 190, 128, 128, 128, 128, 174, 170, 186, 128, 128, 128, 0
+   \            80AEAABA8080
+   \            8000        
+   \   000061   000000000000 DC8 0, 0, 0, 0, 0, 0, 0, 8, 14, 2, 62, 32, 56, 8, 0
+   \            00080E023E20
+   \            380800      
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \   unsigned char const iconx[30]
+   \                     iconx:
+   \   000000   0103053F0533 DC8 1, 3, 5, 63, 5, 51, 1, 60, 0, 63, 1, 3, 5, 63, 5, 3, 37, 24, 24, 36
+   \            013C003F0103
+   \            053F05032518
+   \            1824        
+   \   000014   0E0A0E000E00 DC8 14, 10, 14, 0, 14, 0, 6, 0, 6, 0
+   \            06000600    
+     10          #include "CN_Char.h"
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \   unsigned char const FontLib[10][24]
+   \                     FontLib:
+   \   000000   000000000000 DC8 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+   \            000000000000
+   \            000000000000
+   \            0000000000  
+   \   000017   00F212927E92 DC8 0, 242, 18, 146, 126, 146, 18, 146, 126, 146, 18, 242, 0, 15, 1, 0
+   \            12927E9212F2
+   \            000F0100    
+   \   000027   000201000000 DC8 0, 2, 1, 0, 0, 0, 9, 15, 0, 152, 212, 179, 136, 0, 72, 72, 255, 36
+   \            090F0098D4B3
+   \            88004848FF24
+   \   000039   A52600040402 DC8 165, 38, 0, 4, 4, 2, 2, 8, 8, 4, 3, 5, 8, 14, 0, 136, 255, 72, 0
+   \            020808040305
+   \            080E0088FF48
+   \            00          
+   \   00004C   4CA4958694A4 DC8 76, 164, 149, 134, 148, 164, 76, 0, 8, 15, 0, 0, 8, 8, 8, 15, 8, 8
+   \            4C00080F0000
+   \            0808080F0808
+   \   00005E   080018D654FF DC8 8, 0, 24, 214, 84, 255, 84, 212, 16, 252, 0, 0, 255, 0, 0, 7, 0, 15
+   \            54D410FC0000
+   \            FF000007000F
+   \   000070   040700010808 DC8 4, 7, 0, 1, 8, 8, 15, 0, 32, 39, 165, 165, 103, 56, 103, 165, 173
+   \            0F002027A5A5
+   \            673867A5AD  
+   \   000081   372000010F0A DC8 55, 32, 0, 1, 15, 10, 10, 14, 0, 14, 10, 10, 15, 1, 0, 56, 0, 255
+   \            0A0E000E0A0A
+   \            0F01003800FF
+   \   000093   1008020202FE DC8 16, 8, 2, 2, 2, 254, 2, 2, 0, 8, 6, 1, 2, 12, 0, 8, 8, 15, 0, 0, 0
+   \            020200080601
+   \            020C0008080F
+   \            000000      
+   \   0000A8   22441008F794 DC8 34, 68, 16, 8, 247, 148, 148, 244, 4, 252, 0, 0, 4, 2, 1, 0, 7, 8
+   \            94F404FC0000
+   \            040201000708
+   \   0000BA   080809090E00 DC8 8, 8, 9, 9, 14, 0, 130, 130, 186, 170, 170, 171, 170, 170, 186, 130
+   \            8282BAAAAAAB
+   \            AAAABA82    
+   \   0000CA   820009080602 DC8 130, 0, 9, 8, 6, 2, 2, 2, 2, 6, 8, 8, 13, 0, 130, 114, 2, 2, 130
+   \            020202060808
+   \            0D0082720202
+   \            82          
+   \   0000DD   7E8202423202 DC8 126, 130, 2, 66, 50, 2, 0, 8, 8, 4, 2, 1, 0, 1, 2, 4, 8, 8, 0
+   \            000808040201
+   \            000102040808
+   \            00          
+     11          
+     12          #define RST     0x01
+     13          #define SCE     0x02   
+     14          #define DC      0x04
+     15          #define SDIN    0x08
+     16          #define SCLK    0x10
+     17          
+     18          
+     19          #define SCLK_SET (P2OUT |= SCLK)
+     20          #define SCLK_CLR (P2OUT &= ~SCLK)
+     21          
+     22          #define SDIN_SET (P2OUT |= SDIN)
+     23          #define SDIN_CLR (P2OUT &= ~SDIN)
+     24          //#define SDIN_SET(X) (P1OUT ^= (X)<<1)   /*  0000 0001 ^ 0000 0000 = 0000 0001   */
+     25          
+     26          #define DC_SET (P2OUT |= DC)
+     27          #define DC_CLR (P2OUT &= ~DC)
+     28          //#define DC_SET(X) (P1OUT ^= (X)<<2)     /*1111 0000  ^ 0000 0100 = 1111 0100*/
+     29          
+     30          #define RST_SET (P2OUT |= RST)
+     31          #define RST_CLR (P2OUT &= ~RST)  
+     32          
+     33          #define SCE_SET (P2OUT |= SCE)
+     34          #define SCE_CLR (P2OUT &= ~SCE)
+     35          
+     36          
+     37          
+     38          
+     39          
+     40          #define PD_HORIZON_BASIC 	0x20
+     41          #define PD_HORIZON_EXTEND	0x21
+     42          #define BASIC_NORMAL_MODE 	0x0c
+     43          #define BASIC_INVERSE_MODE  0x0d
+     44          #define BASIC_SET_Y_ADDR	0x40
+     45          #define BASIC_SET_X_ADDR	0x80
+     46          #define EXTEND_TEMP_CTL 	0x04
+     47          #define EXTEND_BIAS_SYS		0x10
+     48          #define EXTEND_SET_VOP		0x80
+     49          
+     50          
+     51          
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     52          uchar FontLink[4][7];
+   \                     FontLink:
+   \   000000                DS8 28
+     53          
+     54          
+     55          /*
+     56          *description:initialize a byte 
+     57          *author:maemo
+     58          *date:2012/07/16 21:17
+     59          *input: none
+     60          *output: none
+     61          *history:
+     62          */
+
+   \                                 In  segment CODE, align 2
+     63          void LCD_Init(void)
+   \                     LCD_Init:
+     64          {
+   \   000000   0A12         PUSH.W  R10
+     65              P2DIR   |= 0x3f;                
+   \   000002   F2D03F002A00 BIS.B   #0x3f, &0x2a
+     66              RST_CLR;
+   \   000008   D2C32900     BIC.B   #0x1, &0x29
+     67              __delay_cycles(100);				
+   \   00000C                ////////////// Start of 100 cycles delay.
+   \   00000C   003C         JMP     ??LCD_Init_5
+   \                     ??LCD_Init_5:
+   \   00000E   3F401F00     MOV.W   #0x1f, R15
+   \                     ??LCD_Init_4:
+   \   000012   3F53         ADD.W   #0xffff, R15
+   \   000014   FE2F         JC      ??LCD_Init_4
+   \   000016                ////////////// End of delay code.
+     68              RST_SET;
+   \   000016   D2D32900     BIS.B   #0x1, &0x29
+     69              SCE_SET;									//close lcd
+   \   00001A   E2D32900     BIS.B   #0x2, &0x29
+     70              LCD_WriteByte(PD_HORIZON_EXTEND, 0);		//use extended instructions
+   \   00001E   3A40....     MOV.W   #LCD_WriteByte, R10
+   \   000022   4D43         MOV.B   #0x0, R13
+   \   000024   7C402100     MOV.B   #0x21, R12
+   \   000028   8A12         CALL    R10
+     71              LCD_WriteByte(EXTEND_SET_VOP|0x48, 0);		//set Vop, Vlcd=3.06+0.06*Vop,work voltage6.0<Vlcd<9.0
+   \   00002A   4D43         MOV.B   #0x0, R13
+   \   00002C   7C40C800     MOV.B   #0xc8, R12
+   \   000030   8A12         CALL    R10
+     72              LCD_WriteByte(EXTEND_TEMP_CTL|0x02, 0);		//set temperature coefficient
+   \   000032   4D43         MOV.B   #0x0, R13
+   \   000034   7C400600     MOV.B   #0x6, R12
+   \   000038   8A12         CALL    R10
+     73              LCD_WriteByte(EXTEND_BIAS_SYS|0x03, 0);		//set bias system 	
+   \   00003A   4D43         MOV.B   #0x0, R13
+   \   00003C   7C401300     MOV.B   #0x13, R12
+   \   000040   8A12         CALL    R10
+     74              LCD_WriteByte(PD_HORIZON_BASIC, 0);			//use basic instructions
+   \   000042   4D43         MOV.B   #0x0, R13
+   \   000044   7C402000     MOV.B   #0x20, R12
+   \   000048   8A12         CALL    R10
+     75              LCD_WriteByte(BASIC_NORMAL_MODE, 0);		//display control set normal mode
+   \   00004A   4D43         MOV.B   #0x0, R13
+   \   00004C   7C400C00     MOV.B   #0xc, R12
+   \   000050   8A12         CALL    R10
+     76              LCD_Clear();
+   \   000052   B012....     CALL    #LCD_Clear
+     77              SCE_CLR;
+   \   000056   E2C32900     BIC.B   #0x2, &0x29
+     78              for (uchar i=0; i<4; i++)
+   \   00005A   4E43         MOV.B   #0x0, R14
+   \   00005C   0E3C         JMP     ??LCD_Init_2
+     79              {
+     80                  for (uchar j=0; j<7; j++)
+     81                  {
+     82                      FontLink[i][j] = 0;
+   \                     ??LCD_Init_0:
+   \   00005E   4D4E         MOV.B   R14, R13
+   \   000060   0A4D         MOV.W   R13, R10
+   \   000062   0D5D         RLA.W   R13
+   \   000064   0A5D         ADD.W   R13, R10
+   \   000066   0D5D         RLA.W   R13
+   \   000068   0D5A         ADD.W   R10, R13
+   \   00006A   0D5F         ADD.W   R15, R13
+   \   00006C   CD43....     MOV.B   #0x0, FontLink(R13)
+     83                  }
+   \   000070   5F53         ADD.B   #0x1, R15
+   \                     ??LCD_Init_1:
+   \   000072   7F900700     CMP.B   #0x7, R15
+   \   000076   F32B         JNC     ??LCD_Init_0
+   \   000078   5E53         ADD.B   #0x1, R14
+   \                     ??LCD_Init_2:
+   \   00007A   6E92         CMP.B   #0x4, R14
+   \   00007C   022C         JC      ??LCD_Init_3
+   \   00007E   4F43         MOV.B   #0x0, R15
+   \   000080   F83F         JMP     ??LCD_Init_1
+     84              }
+     85          } 
+   \                     ??LCD_Init_3:
+   \   000082   3A41         POP.W   R10
+   \   000084   3041         RET
+   \   000086                REQUIRE P2DIR
+   \   000086                REQUIRE P2OUT
+     86           
+     87          /*
+     88          *description:write a byte 
+     89          *author:maemo
+     90          *date:2012/07/16 21:17
+     91          *input: data, cmd
+     92          *output: none
+     93          *history:
+     94          */
+
+   \                                 In  segment CODE, align 2
+     95          void LCD_WriteByte(uchar data, uchar cmd)
+   \                     LCD_WriteByte:
+     96          {
+     97              uchar i=0;
+   \   000000   4E43         MOV.B   #0x0, R14
+     98          	
+     99                SCE_CLR;
+   \   000002   E2C32900     BIC.B   #0x2, &0x29
+    100          //	__delay_cycles(100);
+    101              if (cmd)
+   \   000006   4D93         CMP.B   #0x0, R13
+   \   000008   0324         JEQ     ??LCD_WriteByte_2
+    102              {
+    103          	    DC_SET;
+   \   00000A   E2D22900     BIS.B   #0x4, &0x29
+   \   00000E   0A3C         JMP     ??LCD_WriteByte_3
+    104              }
+    105              else
+    106              {
+    107                  DC_CLR;
+   \                     ??LCD_WriteByte_2:
+   \   000010   E2C22900     BIC.B   #0x4, &0x29
+   \   000014   073C         JMP     ??LCD_WriteByte_3
+    108              }
+    109          	
+    110          	
+    111              for (i=0; i<8; i++)
+    112              {
+    113                  SCLK_CLR;
+    114                  if (data&0x80)						//msb first
+    115                  {
+    116                      SDIN_SET;
+    117                  }
+    118                  else
+    119                  {
+    120                      SDIN_CLR;
+   \                     ??LCD_WriteByte_0:
+   \   000016   F2C22900     BIC.B   #0x8, &0x29
+    121                  }		
+    122                  data <<= 1;
+   \                     ??LCD_WriteByte_1:
+   \   00001A   4C5C         RLA.B   R12
+    123                  SCLK_SET;
+   \   00001C   F2D010002900 BIS.B   #0x10, &0x29
+   \   000022   5E53         ADD.B   #0x1, R14
+   \                     ??LCD_WriteByte_3:
+   \   000024   7E92         CMP.B   #0x8, R14
+   \   000026   082C         JC      ??LCD_WriteByte_4
+   \   000028   F2C010002900 BIC.B   #0x10, &0x29
+   \   00002E   4C93         CMP.B   #0x0, R12
+   \   000030   F237         JGE     ??LCD_WriteByte_0
+   \   000032   F2D22900     BIS.B   #0x8, &0x29
+   \   000036   F13F         JMP     ??LCD_WriteByte_1
+    124              }
+    125              SCE_SET;
+   \                     ??LCD_WriteByte_4:
+   \   000038   E2D32900     BIS.B   #0x2, &0x29
+    126          }
+   \   00003C   3041         RET
+   \   00003E                REQUIRE P2OUT
+    127          
+    128          
+    129          
+
+   \                                 In  segment CODE, align 2
+    130          void LCD_Clear(void)
+   \                     LCD_Clear:
+    131          {
+   \   000000   0A12         PUSH.W  R10
+    132              uint i=0;
+   \   000002   0A43         MOV.W   #0x0, R10
+    133              LCD_SetAddr(0, 0);
+   \   000004   4D43         MOV.B   #0x0, R13
+   \   000006   4C43         MOV.B   #0x0, R12
+   \   000008   B012....     CALL    #LCD_SetAddr
+    134              for (i=0; i<504; i++)
+   \   00000C   053C         JMP     ??LCD_Clear_1
+    135              {
+    136                  LCD_WriteByte(0, 1);
+   \                     ??LCD_Clear_0:
+   \   00000E   5D43         MOV.B   #0x1, R13
+   \   000010   4C43         MOV.B   #0x0, R12
+   \   000012   B012....     CALL    #LCD_WriteByte
+    137              }
+   \   000016   1A53         ADD.W   #0x1, R10
+   \                     ??LCD_Clear_1:
+   \   000018   3A90F801     CMP.W   #0x1f8, R10
+   \   00001C   F82B         JNC     ??LCD_Clear_0
+    138          }
+   \   00001E   3A41         POP.W   R10
+   \   000020   3041         RET
+    139          /*
+    140          *description:set the address 
+    141          *date:2012/07/16 22:50
+    142          *input: x address 0 --- 83, y address 0 --- 5 
+    143          *output: none
+    144          *other:the address counter is automatically increase by 1
+    145          *history:
+    146          */
+
+   \                                 In  segment CODE, align 2
+    147          void LCD_SetAddr(uchar x, uchar y)
+   \                     LCD_SetAddr:
+    148          {
+   \   000000   4F4D         MOV.B   R13, R15
+    149              LCD_WriteByte(BASIC_SET_X_ADDR|x, 0);
+   \   000002   4D43         MOV.B   #0x0, R13
+   \   000004   7CD08000     BIS.B   #0x80, R12
+   \   000008   B012....     CALL    #LCD_WriteByte
+    150              LCD_WriteByte(BASIC_SET_Y_ADDR|y, 0);
+   \   00000C   4D43         MOV.B   #0x0, R13
+   \   00000E   7FD04000     BIS.B   #0x40, R15
+   \   000012   4C4F         MOV.B   R15, R12
+   \   000014   3040....     BR      #LCD_WriteByte
+    151          }
+    152          
+    153          /*
+    154          *description:write a char ,6 * 8 
+    155          *date:2012/07/16 22:23
+    156          *input: x address 0 --- 83, y address 0 --- 5,  data -- to be displayed
+    157          *output: none
+    158          *other:the address counter is automatically increase by 1
+    159          *history:
+    160          */
+
+   \                                 In  segment CODE, align 2
+    161          void LCD_WriteChar(uchar x, uchar y, uchar data)
+   \                     LCD_WriteChar:
+    162          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   4A4E         MOV.B   R14, R10
+    163              unsigned char line;
+    164          
+    165              data -= 32;
+   \   000004   7A50E000     ADD.B   #0xe0, R10
+    166              LCD_SetAddr(x, y);
+   \   000008   B012....     CALL    #LCD_SetAddr
+    167              
+    168              for (line=0; line<5; line++)
+   \   00000C   4F43         MOV.B   #0x0, R15
+   \   00000E   0C3C         JMP     ??LCD_WriteChar_1
+    169              {
+    170                  LCD_WriteByte(font6x8[data][line], 1);
+   \                     ??LCD_WriteChar_0:
+   \   000010   5D43         MOV.B   #0x1, R13
+   \   000012   4E4A         MOV.B   R10, R14
+   \   000014   0E5E         RLA.W   R14
+   \   000016   0C4E         MOV.W   R14, R12
+   \   000018   0E5E         RLA.W   R14
+   \   00001A   0E5C         ADD.W   R12, R14
+   \   00001C   0E5F         ADD.W   R15, R14
+   \   00001E   5C4E....     MOV.B   font6x8(R14), R12
+   \   000022   B012....     CALL    #LCD_WriteByte
+    171              }      
+   \   000026   5F53         ADD.B   #0x1, R15
+   \                     ??LCD_WriteChar_1:
+   \   000028   7F900500     CMP.B   #0x5, R15
+   \   00002C   F12B         JNC     ??LCD_WriteChar_0
+    172          
+    173          }
+   \   00002E   3A41         POP.W   R10
+   \   000030   3041         RET
+    174          
+
+   \                                 In  segment CODE, align 2
+    175          void LCD_WriteCharX(uchar x, uchar y, uchar cnt, uchar *pdata)
+   \                     LCD_WriteCharX:
+    176          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   4A4E         MOV.B   R14, R10
+   \   00000A   0B4F         MOV.W   R15, R11
+    177              unsigned char i, line;
+    178          
+    179              LCD_SetAddr(x, y);
+   \   00000C   B012....     CALL    #LCD_SetAddr
+    180          
+    181              for  (i=0; i<cnt; i++)
+   \   000010   4843         MOV.B   #0x0, R8
+   \   000012   133C         JMP     ??LCD_WriteCharX_2
+    182              {
+    183                  for (line=0; line<5; line++)
+    184                  {
+    185                      LCD_WriteByte(font6x8[*(pdata+i)-32][line], 1);
+   \                     ??LCD_WriteCharX_0:
+   \   000014   5D43         MOV.B   #0x1, R13
+   \   000016   4C4F         MOV.B   R15, R12
+   \   000018   0E4B         MOV.W   R11, R14
+   \   00001A   0E58         ADD.W   R8, R14
+   \   00001C   6E4E         MOV.B   @R14, R14
+   \   00001E   0E5E         RLA.W   R14
+   \   000020   094E         MOV.W   R14, R9
+   \   000022   0E5E         RLA.W   R14
+   \   000024   0E59         ADD.W   R9, R14
+   \   000026   0C5E         ADD.W   R14, R12
+   \   000028   5C4C....     MOV.B   LWRD(font6x8 - 192)(R12), R12
+   \   00002C   B012....     CALL    #LCD_WriteByte
+    186                  }
+   \   000030   5F53         ADD.B   #0x1, R15
+   \                     ??LCD_WriteCharX_1:
+   \   000032   7F900500     CMP.B   #0x5, R15
+   \   000036   EE2B         JNC     ??LCD_WriteCharX_0
+   \   000038   5853         ADD.B   #0x1, R8
+   \                     ??LCD_WriteCharX_2:
+   \   00003A   489A         CMP.B   R10, R8
+   \   00003C   022C         JC      ??LCD_WriteCharX_3
+   \   00003E   4F43         MOV.B   #0x0, R15
+   \   000040   F83F         JMP     ??LCD_WriteCharX_1
+    187              }
+    188          
+    189          
+    190          }
+   \                     ??LCD_WriteCharX_3:
+   \   000042   3040....     BR      #?Epilogue4
+    191          
+    192          
+    193          /*
+    194          *description:write a string ,6 * 8 
+    195          *date: 2012/07/16 22:23
+    196          *input: x address 0 --- 83, y address 0 --- 5,  data -- to be displayed
+    197          *output: none
+    198          *other:the address counter is automatically increase by 1
+    199          *history:
+    200          *
+    201          */
+
+   \                                 In  segment CODE, align 2
+    202          void LCD_WriteString(uchar x, uchar y, uchar *pStr)
+   \                     LCD_WriteString:
+    203          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   4A4C         MOV.B   R12, R10
+   \   000008   4B4D         MOV.B   R13, R11
+   \   00000A   084E         MOV.W   R14, R8
+    204              LCD_SetAddr(x, y);
+   \   00000C   B012....     CALL    #LCD_SetAddr
+   \   000010   073C         JMP     ??LCD_WriteString_1
+    205              while(*pStr)
+    206              {
+    207                  LCD_WriteChar(x, y, *pStr);
+   \                     ??LCD_WriteString_0:
+   \   000012   7E48         MOV.B   @R8+, R14
+   \   000014   4D4B         MOV.B   R11, R13
+   \   000016   4C4A         MOV.B   R10, R12
+   \   000018   B012....     CALL    #LCD_WriteChar
+    208                  pStr++;
+    209                  x = x+5;
+   \   00001C   7A500500     ADD.B   #0x5, R10
+    210              }
+   \                     ??LCD_WriteString_1:
+   \   000020   C8930000     CMP.B   #0x0, 0(R8)
+   \   000024   F623         JNE     ??LCD_WriteString_0
+    211          }
+   \   000026   3040....     BR      #?Epilogue3
+    212          
+
+   \                                 In  segment CODE, align 2
+    213          void LCD_WriteCN(uchar x, uchar y, uchar Index)
+   \                     LCD_WriteCN:
+    214          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   484E         MOV.B   R14, R8
+    215              uchar i=0, data=0;
+   \   00000A   4A43         MOV.B   #0x0, R10
+    216          	
+    217              switch(y)
+   \   00000C   4D83         SUB.B   #0x0, R13
+   \   00000E   0724         JEQ     ??LCD_WriteCN_8
+   \   000010   5D83         SUB.B   #0x1, R13
+   \   000012   4924         JEQ     ??LCD_WriteCN_9
+   \   000014   5D83         SUB.B   #0x1, R13
+   \   000016   9824         JEQ     ??LCD_WriteCN_10
+   \   000018   5D83         SUB.B   #0x1, R13
+   \   00001A   DC24         JEQ     ??LCD_WriteCN_11
+   \   00001C   2D3D         JMP     ??LCD_WriteCN_12
+    218              {
+    219                  case 0:
+    220                  FontLink[0][x] = Index;
+   \                     ??LCD_WriteCN_8:
+   \   00001E   4B4C         MOV.B   R12, R11
+   \   000020   CB4E....     MOV.B   R14, FontLink(R11)
+    221                  LCD_SetAddr(12*x, 0);
+   \   000024   4C5C         RLA.B   R12
+   \   000026   4C5C         RLA.B   R12
+   \   000028   4E4C         MOV.B   R12, R14
+   \   00002A   4C5C         RLA.B   R12
+   \   00002C   4C5E         ADD.B   R14, R12
+   \   00002E   494C         MOV.B   R12, R9
+   \   000030   4D43         MOV.B   #0x0, R13
+   \   000032   B012....     CALL    #LCD_SetAddr
+    222                  for (i=0; i<12; i++ )							/*高8位*/
+   \   000036   0D3C         JMP     ??LCD_WriteCN_13
+    223                  {
+    224                          LCD_WriteByte(FontLib[Index][i], 1)	;
+   \                     ??LCD_WriteCN_0:
+   \   000038   4F48         MOV.B   R8, R15
+   \   00003A   0F5F         RLA.W   R15
+   \   00003C   0F5F         RLA.W   R15
+   \   00003E   0F5F         RLA.W   R15
+   \   000040   0E4F         MOV.W   R15, R14
+   \   000042   0F5F         RLA.W   R15
+   \   000044   0F5E         ADD.W   R14, R15
+   \   000046   0F5A         ADD.W   R10, R15
+   \   000048   5C4F....     MOV.B   FontLib(R15), R12
+   \   00004C   B012....     CALL    #LCD_WriteByte
+    225                  }
+   \   000050   5A53         ADD.B   #0x1, R10
+   \                     ??LCD_WriteCN_13:
+   \   000052   7A900C00     CMP.B   #0xc, R10
+   \   000056   5D43         MOV.B   #0x1, R13
+   \   000058   EF2B         JNC     ??LCD_WriteCN_0
+    226                  LCD_SetAddr(12*x, 1);
+   \   00005A   4C49         MOV.B   R9, R12
+   \   00005C   B012....     CALL    #LCD_SetAddr
+    227                  for (i=0; i<12; i++)							/*低四位,凑成8位*/
+   \   000060   4A43         MOV.B   #0x0, R10
+   \                     ??LCD_WriteCN_1:
+   \   000062   7A900C00     CMP.B   #0xc, R10
+   \   000066   082D         JC      ??LCD_WriteCN_12
+    228                  {	/*由两部分组成 == 当前字的后12字节的低四位 + 下一字的前12字节低四位, 后者成为高四位*/
+    229                          /*					0000 xxxx    +    mmmm nnnn 左移四位 nnnn 0000 = nnnn xxxx*/
+    230                          data = FontLib[Index][i+12] | (FontLib[FontLink[1][x]][i]<<4);
+    231                          LCD_WriteByte(data, 1);
+   \   000068   4E4A         MOV.B   R10, R14
+   \   00006A   5D43         MOV.B   #0x1, R13
+   \   00006C   5F4B....     MOV.B   FontLink + 7(R11), R15
+   \   000070   0F5F         RLA.W   R15
+   \   000072   0F5F         RLA.W   R15
+   \   000074   0F5F         RLA.W   R15
+   \   000076   094F         MOV.W   R15, R9
+   \   000078   0F5F         RLA.W   R15
+   \   00007A   0F59         ADD.W   R9, R15
+   \   00007C   0F5E         ADD.W   R14, R15
+   \   00007E   5C4F....     MOV.B   FontLib(R15), R12
+   \   000082   4C5C         RLA.B   R12
+   \   000084   4C5C         RLA.B   R12
+   \   000086   4C5C         RLA.B   R12
+   \   000088   4C5C         RLA.B   R12
+   \   00008A   4F48         MOV.B   R8, R15
+   \   00008C   0F5F         RLA.W   R15
+   \   00008E   0F5F         RLA.W   R15
+   \   000090   0F5F         RLA.W   R15
+   \   000092   094F         MOV.W   R15, R9
+   \   000094   0F5F         RLA.W   R15
+   \   000096   0F59         ADD.W   R9, R15
+   \   000098   0E5F         ADD.W   R15, R14
+   \   00009A   5CDE....     BIS.B   FontLib + 12(R14), R12
+   \   00009E   B012....     CALL    #LCD_WriteByte
+    232                  }
+   \   0000A2   5A53         ADD.B   #0x1, R10
+   \   0000A4   DE3F         JMP     ??LCD_WriteCN_1
+    233                  break;
+    234                  
+    235                  case 1:
+    236                  FontLink[1][x] = Index;
+   \                     ??LCD_WriteCN_9:
+   \   0000A6   4B4C         MOV.B   R12, R11
+   \   0000A8   CB4E....     MOV.B   R14, FontLink + 7(R11)
+    237                  LCD_SetAddr(12*x, 1);                          /*高四位，凑成8位*/					
+   \   0000AC   4C5C         RLA.B   R12
+   \   0000AE   4C5C         RLA.B   R12
+   \   0000B0   4E4C         MOV.B   R12, R14
+   \   0000B2   4C5C         RLA.B   R12
+   \   0000B4   4C5E         ADD.B   R14, R12
+   \   0000B6   494C         MOV.B   R12, R9
+   \   0000B8   5D43         MOV.B   #0x1, R13
+   \   0000BA   B012....     CALL    #LCD_SetAddr
+    238                  for (i=0; i<12; i++)
+   \   0000BE   1E3C         JMP     ??LCD_WriteCN_14
+    239                  {	/*8位数由两部分组成 == 当前字的前12字节低四位 + 上一列同一位置的字后12位的位四位，前者变成高四位*/ 
+    240                          /*				   xxxx yyyy 左移四位 yyyy 0000  + 0000 nnnn == yyyy nnnn						*/ 
+    241                          data = FontLib[Index][i]<<4 | FontLib[FontLink[0][x]][i+12];	
+    242                          LCD_WriteByte(data, 1);
+   \                     ??LCD_WriteCN_2:
+   \   0000C0   5D43         MOV.B   #0x1, R13
+   \   0000C2   5F4B....     MOV.B   FontLink(R11), R15
+   \   0000C6   0F5F         RLA.W   R15
+   \   0000C8   0F5F         RLA.W   R15
+   \   0000CA   0F5F         RLA.W   R15
+   \   0000CC   0E4F         MOV.W   R15, R14
+   \   0000CE   0F5F         RLA.W   R15
+   \   0000D0   0F5E         ADD.W   R14, R15
+   \   0000D2   0E4A         MOV.W   R10, R14
+   \   0000D4   0E5F         ADD.W   R15, R14
+   \   0000D6   4F48         MOV.B   R8, R15
+   \   0000D8   0F5F         RLA.W   R15
+   \   0000DA   0F5F         RLA.W   R15
+   \   0000DC   0F5F         RLA.W   R15
+   \   0000DE   0C4F         MOV.W   R15, R12
+   \   0000E0   0F5F         RLA.W   R15
+   \   0000E2   0F5C         ADD.W   R12, R15
+   \   0000E4   0F5A         ADD.W   R10, R15
+   \   0000E6   5C4F....     MOV.B   FontLib(R15), R12
+   \   0000EA   4C5C         RLA.B   R12
+   \   0000EC   4C5C         RLA.B   R12
+   \   0000EE   4C5C         RLA.B   R12
+   \   0000F0   4C5C         RLA.B   R12
+   \   0000F2   5CDE....     BIS.B   FontLib + 12(R14), R12
+   \   0000F6   B012....     CALL    #LCD_WriteByte
+    243                  }
+   \   0000FA   5A53         ADD.B   #0x1, R10
+   \                     ??LCD_WriteCN_14:
+   \   0000FC   7A900C00     CMP.B   #0xc, R10
+   \   000100   DF2B         JNC     ??LCD_WriteCN_2
+    244                  LCD_SetAddr(12*x, 2);                          /*低8位*/
+   \   000102   6D43         MOV.B   #0x2, R13
+   \   000104   4C49         MOV.B   R9, R12
+   \   000106   B012....     CALL    #LCD_SetAddr
+    245                  for (i=0; i<12; i++)
+   \   00010A   4A43         MOV.B   #0x0, R10
+   \                     ??LCD_WriteCN_3:
+   \   00010C   7A900C00     CMP.B   #0xc, R10
+   \   000110   B32C         JC      ??LCD_WriteCN_12
+    246                  {	/*低8位由两部分 == 前12字节的高四位 + 后12字节的低四位， 高-》低，低-》高 */
+    247                          /*  	xxxxx yyyy 右移四位	0000 xxxx + 0000 mmmm 左移四位 mmmm 0000 = mmmm xxxx	*/
+    248                          data = FontLib[Index][i]>>4 | FontLib[Index][i+12]<<4;
+    249                          LCD_WriteByte(data, 1);
+   \   000112   4F48         MOV.B   R8, R15
+   \   000114   0F5F         RLA.W   R15
+   \   000116   0F5F         RLA.W   R15
+   \   000118   0F5F         RLA.W   R15
+   \   00011A   0B4F         MOV.W   R15, R11
+   \   00011C   0F5F         RLA.W   R15
+   \   00011E   0F5B         ADD.W   R11, R15
+   \   000120   0F5A         ADD.W   R10, R15
+   \   000122   3F50....     ADD.W   #FontLib, R15
+   \   000126   5D43         MOV.B   #0x1, R13
+   \   000128   5E4F0C00     MOV.B   0xc(R15), R14
+   \   00012C   4E5E         RLA.B   R14
+   \   00012E   4E5E         RLA.B   R14
+   \   000130   4E5E         RLA.B   R14
+   \   000132   4E5E         RLA.B   R14
+   \   000134   6C4F         MOV.B   @R15, R12
+   \   000136   0C11         RRA.W   R12
+   \   000138   4C11         RRA.B   R12
+   \   00013A   4C11         RRA.B   R12
+   \   00013C   4C11         RRA.B   R12
+   \   00013E   4CDE         BIS.B   R14, R12
+   \   000140   B012....     CALL    #LCD_WriteByte
+    250                  }
+   \   000144   5A53         ADD.B   #0x1, R10
+   \   000146   E23F         JMP     ??LCD_WriteCN_3
+    251                  break;
+    252                  
+    253                  case 2:
+    254                  FontLink[2][x] = Index;
+   \                     ??LCD_WriteCN_10:
+   \   000148   4B4C         MOV.B   R12, R11
+   \   00014A   CB4E....     MOV.B   R14, FontLink + 14(R11)
+    255                  LCD_SetAddr(12*x, 3);
+   \   00014E   4C5C         RLA.B   R12
+   \   000150   4C5C         RLA.B   R12
+   \   000152   4E4C         MOV.B   R12, R14
+   \   000154   4C5C         RLA.B   R12
+   \   000156   4C5E         ADD.B   R14, R12
+   \   000158   494C         MOV.B   R12, R9
+   \   00015A   7D400300     MOV.B   #0x3, R13
+   \   00015E   B012....     CALL    #LCD_SetAddr
+    256                  for (i=0; i<12; i++)							/*高8位*/
+   \   000162   0E3C         JMP     ??LCD_WriteCN_15
+    257                  {
+    258                          LCD_WriteByte(FontLib[Index][i], 1);
+   \                     ??LCD_WriteCN_4:
+   \   000164   5D43         MOV.B   #0x1, R13
+   \   000166   4F48         MOV.B   R8, R15
+   \   000168   0F5F         RLA.W   R15
+   \   00016A   0F5F         RLA.W   R15
+   \   00016C   0F5F         RLA.W   R15
+   \   00016E   0E4F         MOV.W   R15, R14
+   \   000170   0F5F         RLA.W   R15
+   \   000172   0F5E         ADD.W   R14, R15
+   \   000174   0F5A         ADD.W   R10, R15
+   \   000176   5C4F....     MOV.B   FontLib(R15), R12
+   \   00017A   B012....     CALL    #LCD_WriteByte
+    259                  }
+   \   00017E   5A53         ADD.B   #0x1, R10
+   \                     ??LCD_WriteCN_15:
+   \   000180   7A900C00     CMP.B   #0xc, R10
+   \   000184   EF2B         JNC     ??LCD_WriteCN_4
+    260                  LCD_SetAddr(12*x, 4);
+   \   000186   6D42         MOV.B   #0x4, R13
+   \   000188   4C49         MOV.B   R9, R12
+   \   00018A   B012....     CALL    #LCD_SetAddr
+    261                  for (i=0; i<12; i++)							/*低四位，凑成8位*/
+   \   00018E   4A43         MOV.B   #0x0, R10
+   \                     ??LCD_WriteCN_5:
+   \   000190   7A900C00     CMP.B   #0xc, R10
+   \   000194   712C         JC      ??LCD_WriteCN_12
+    262                  {	/*由两部分组成 == 当前字的后12字节的低8位 + 下一字的前12字节的低四位，后者变成高四位*/
+    263                          /*					0000 xxxx   +     mmmm nnnn 左移四位 = nnnn xxxx*/
+    264                          data = FontLib[Index][i+12] | (FontLib[FontLink[3][x]][i]<<4);
+    265                          LCD_WriteByte(data, 1);				
+   \   000196   4E4A         MOV.B   R10, R14
+   \   000198   5D43         MOV.B   #0x1, R13
+   \   00019A   5F4B....     MOV.B   FontLink + 21(R11), R15
+   \   00019E   0F5F         RLA.W   R15
+   \   0001A0   0F5F         RLA.W   R15
+   \   0001A2   0F5F         RLA.W   R15
+   \   0001A4   094F         MOV.W   R15, R9
+   \   0001A6   0F5F         RLA.W   R15
+   \   0001A8   0F59         ADD.W   R9, R15
+   \   0001AA   0F5E         ADD.W   R14, R15
+   \   0001AC   5C4F....     MOV.B   FontLib(R15), R12
+   \   0001B0   4C5C         RLA.B   R12
+   \   0001B2   4C5C         RLA.B   R12
+   \   0001B4   4C5C         RLA.B   R12
+   \   0001B6   4C5C         RLA.B   R12
+   \   0001B8   4F48         MOV.B   R8, R15
+   \   0001BA   0F5F         RLA.W   R15
+   \   0001BC   0F5F         RLA.W   R15
+   \   0001BE   0F5F         RLA.W   R15
+   \   0001C0   094F         MOV.W   R15, R9
+   \   0001C2   0F5F         RLA.W   R15
+   \   0001C4   0F59         ADD.W   R9, R15
+   \   0001C6   0E5F         ADD.W   R15, R14
+   \   0001C8   5CDE....     BIS.B   FontLib + 12(R14), R12
+   \   0001CC   B012....     CALL    #LCD_WriteByte
+    266                  }
+   \   0001D0   5A53         ADD.B   #0x1, R10
+   \   0001D2   DE3F         JMP     ??LCD_WriteCN_5
+    267                  break;
+    268                  
+    269                  case 3:
+    270                  FontLink[3][x] = Index;
+   \                     ??LCD_WriteCN_11:
+   \   0001D4   4B4C         MOV.B   R12, R11
+   \   0001D6   CB4E....     MOV.B   R14, FontLink + 21(R11)
+    271                  LCD_SetAddr(12*x, 4);
+   \   0001DA   4C5C         RLA.B   R12
+   \   0001DC   4C5C         RLA.B   R12
+   \   0001DE   4E4C         MOV.B   R12, R14
+   \   0001E0   4C5C         RLA.B   R12
+   \   0001E2   4C5E         ADD.B   R14, R12
+   \   0001E4   494C         MOV.B   R12, R9
+   \   0001E6   6D42         MOV.B   #0x4, R13
+   \   0001E8   B012....     CALL    #LCD_SetAddr
+    272                  for (i=0; i<12; i++)							/*高四位，凑8位*/
+   \   0001EC   1E3C         JMP     ??LCD_WriteCN_16
+    273                  {	/*8位数由两部分组成 == 当前字的前12字节低四位 + 上一列同一位置的字后12位的低四位，前者变成高四位*/ 
+    274                          /*				   xxxx yyyy 左移四位 yyyy 0000  + 0000 nnnn == yyyy nnnn						*/ 
+    275                          data = FontLib[Index][i]<<4 | FontLib[FontLink[2][x]][i+12];
+    276                          LCD_WriteByte(data, 1);
+   \                     ??LCD_WriteCN_6:
+   \   0001EE   5D43         MOV.B   #0x1, R13
+   \   0001F0   5F4B....     MOV.B   FontLink + 14(R11), R15
+   \   0001F4   0F5F         RLA.W   R15
+   \   0001F6   0F5F         RLA.W   R15
+   \   0001F8   0F5F         RLA.W   R15
+   \   0001FA   0E4F         MOV.W   R15, R14
+   \   0001FC   0F5F         RLA.W   R15
+   \   0001FE   0F5E         ADD.W   R14, R15
+   \   000200   0E4A         MOV.W   R10, R14
+   \   000202   0E5F         ADD.W   R15, R14
+   \   000204   4F48         MOV.B   R8, R15
+   \   000206   0F5F         RLA.W   R15
+   \   000208   0F5F         RLA.W   R15
+   \   00020A   0F5F         RLA.W   R15
+   \   00020C   0C4F         MOV.W   R15, R12
+   \   00020E   0F5F         RLA.W   R15
+   \   000210   0F5C         ADD.W   R12, R15
+   \   000212   0F5A         ADD.W   R10, R15
+   \   000214   5C4F....     MOV.B   FontLib(R15), R12
+   \   000218   4C5C         RLA.B   R12
+   \   00021A   4C5C         RLA.B   R12
+   \   00021C   4C5C         RLA.B   R12
+   \   00021E   4C5C         RLA.B   R12
+   \   000220   5CDE....     BIS.B   FontLib + 12(R14), R12
+   \   000224   B012....     CALL    #LCD_WriteByte
+    277                  }
+   \   000228   5A53         ADD.B   #0x1, R10
+   \                     ??LCD_WriteCN_16:
+   \   00022A   7A900C00     CMP.B   #0xc, R10
+   \   00022E   DF2B         JNC     ??LCD_WriteCN_6
+    278                  LCD_SetAddr(12*x, 5);
+   \   000230   7D400500     MOV.B   #0x5, R13
+   \   000234   4C49         MOV.B   R9, R12
+   \   000236   B012....     CALL    #LCD_SetAddr
+    279                  for (i=0; i<12; i++)							/*低8位*/
+   \   00023A   4A43         MOV.B   #0x0, R10
+   \   00023C   1A3C         JMP     ??LCD_WriteCN_17
+    280                  {	/*低8位由两部分 == 前12字节的高四位 + 后12字节的低四位， 高-》低，低-》高 */
+    281                          /*  	xxxxx yyyy 右移四位	0000 xxxx + 0000 mmmm 左移四位 mmmm 0000 = mmmm xxxx	*/
+    282                          data = FontLib[Index][i]>>4 | FontLib[Index][i+12]<<4;
+    283                          LCD_WriteByte( data , 1);
+   \                     ??LCD_WriteCN_7:
+   \   00023E   4F48         MOV.B   R8, R15
+   \   000240   0F5F         RLA.W   R15
+   \   000242   0F5F         RLA.W   R15
+   \   000244   0F5F         RLA.W   R15
+   \   000246   0B4F         MOV.W   R15, R11
+   \   000248   0F5F         RLA.W   R15
+   \   00024A   0F5B         ADD.W   R11, R15
+   \   00024C   0F5A         ADD.W   R10, R15
+   \   00024E   3F50....     ADD.W   #FontLib, R15
+   \   000252   5D43         MOV.B   #0x1, R13
+   \   000254   5E4F0C00     MOV.B   0xc(R15), R14
+   \   000258   4E5E         RLA.B   R14
+   \   00025A   4E5E         RLA.B   R14
+   \   00025C   4E5E         RLA.B   R14
+   \   00025E   4E5E         RLA.B   R14
+   \   000260   6C4F         MOV.B   @R15, R12
+   \   000262   0C11         RRA.W   R12
+   \   000264   4C11         RRA.B   R12
+   \   000266   4C11         RRA.B   R12
+   \   000268   4C11         RRA.B   R12
+   \   00026A   4CDE         BIS.B   R14, R12
+   \   00026C   B012....     CALL    #LCD_WriteByte
+    284                  }
+   \   000270   5A53         ADD.B   #0x1, R10
+   \                     ??LCD_WriteCN_17:
+   \   000272   7A900C00     CMP.B   #0xc, R10
+   \   000276   E32B         JNC     ??LCD_WriteCN_7
+    285                  break;	
+    286                  default:
+    287                          ;
+    288              }
+    289          
+    290          }
+   \                     ??LCD_WriteCN_12:
+   \   000278   3040....     BR      #?Epilogue4
+    291          
+
+   \                                 In  segment CODE, align 2
+    292          void LCD_WriteCNString(uchar x, uchar y, uchar length, uchar pStr[])
+   \                     LCD_WriteCNString:
+    293          {	
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0612         PUSH.W  R6
+   \   00000A   484C         MOV.B   R12, R8
+   \   00000C   494D         MOV.B   R13, R9
+   \   00000E   4A4E         MOV.B   R14, R10
+   \   000010   064F         MOV.W   R15, R6
+    294              uchar i, j , count;
+    295              
+    296              i = x;
+    297              j = y;
+    298              count = 1;
+   \   000012   5B43         MOV.B   #0x1, R11
+   \   000014   113C         JMP     ??LCD_WriteCNString_1
+    299              while (count<=length)
+    300              {
+    301                  if (i>6)
+   \                     ??LCD_WriteCNString_0:
+   \   000016   78900700     CMP.B   #0x7, R8
+   \   00001A   0528         JNC     ??LCD_WriteCNString_2
+    302                  {
+    303                      i=0;
+   \   00001C   4843         MOV.B   #0x0, R8
+    304                      j++;
+   \   00001E   5953         ADD.B   #0x1, R9
+    305                      if (j>3)
+   \   000020   6992         CMP.B   #0x4, R9
+   \   000022   0128         JNC     ??LCD_WriteCNString_2
+    306                      {
+    307                          j=0;
+   \   000024   4943         MOV.B   #0x0, R9
+    308                      }
+    309                  }        
+    310                  LCD_WriteCN(i, j, pStr[count] );
+   \                     ??LCD_WriteCNString_2:
+   \   000026   0F46         MOV.W   R6, R15
+   \   000028   0F5B         ADD.W   R11, R15
+   \   00002A   6E4F         MOV.B   @R15, R14
+   \   00002C   4D49         MOV.B   R9, R13
+   \   00002E   4C48         MOV.B   R8, R12
+   \   000030   B012....     CALL    #LCD_WriteCN
+    311                  count++;
+   \   000034   5B53         ADD.B   #0x1, R11
+    312                  i++;
+   \   000036   5853         ADD.B   #0x1, R8
+    313              }
+   \                     ??LCD_WriteCNString_1:
+   \   000038   4A9B         CMP.B   R11, R10
+   \   00003A   ED2F         JC      ??LCD_WriteCNString_0
+    314          }
+   \   00003C   3040....     BR      #?Epilogue5
+    315          
+
+   \                                 In  segment CODE, align 2
+    316          void LCD_WriteIcon(uchar x, uchar y, uchar index)
+   \                     LCD_WriteIcon:
+    317          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   4A4E         MOV.B   R14, R10
+    318              uchar i=0;
+   \   000006   4B43         MOV.B   #0x0, R11
+    319              
+    320              LCD_SetAddr(x, y);
+   \   000008   B012....     CALL    #LCD_SetAddr
+    321              for (i=0; i<8; i++) 
+   \   00000C   0B3C         JMP     ??LCD_WriteIcon_1
+    322                LCD_WriteByte(icon[index][i], 1);
+   \                     ??LCD_WriteIcon_0:
+   \   00000E   5D43         MOV.B   #0x1, R13
+   \   000010   4F4A         MOV.B   R10, R15
+   \   000012   0F5F         RLA.W   R15
+   \   000014   0F5F         RLA.W   R15
+   \   000016   0F5F         RLA.W   R15
+   \   000018   0F5B         ADD.W   R11, R15
+   \   00001A   5C4F....     MOV.B   icon(R15), R12
+   \   00001E   B012....     CALL    #LCD_WriteByte
+   \   000022   5B53         ADD.B   #0x1, R11
+   \                     ??LCD_WriteIcon_1:
+   \   000024   7B92         CMP.B   #0x8, R11
+   \   000026   F32B         JNC     ??LCD_WriteIcon_0
+    323          	  
+    324          }
+   \   000028   3B41         POP.W   R11
+   \   00002A   3A41         POP.W   R10
+   \   00002C   3041         RET
+    325          
+
+   \                                 In  segment CODE, align 2
+    326          void LCD_WriteIconX(uchar x, uchar y, uchar index, uchar len)
+   \                     LCD_WriteIconX:
+    327          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   4A4E         MOV.B   R14, R10
+   \   000008   4B4F         MOV.B   R15, R11
+    328          	uchar i=0;
+   \   00000A   4843         MOV.B   #0x0, R8
+    329          	
+    330              LCD_SetAddr(x, y);
+   \   00000C   B012....     CALL    #LCD_SetAddr
+    331          	for (i=0; i<len; i++) 
+   \   000010   083C         JMP     ??LCD_WriteIconX_1
+    332          		LCD_WriteByte(iconx[index+i], 1);
+   \                     ??LCD_WriteIconX_0:
+   \   000012   5D43         MOV.B   #0x1, R13
+   \   000014   4F4A         MOV.B   R10, R15
+   \   000016   0F58         ADD.W   R8, R15
+   \   000018   5C4F....     MOV.B   iconx(R15), R12
+   \   00001C   B012....     CALL    #LCD_WriteByte
+   \   000020   5853         ADD.B   #0x1, R8
+   \                     ??LCD_WriteIconX_1:
+   \   000022   489B         CMP.B   R11, R8
+   \   000024   F62B         JNC     ??LCD_WriteIconX_0
+    333          		
+    334          }
+   \   000026   3040....     BR      #?Epilogue3
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       4  LCD_Clear
+             4 -> LCD_SetAddr
+             4 -> LCD_WriteByte
+       4  LCD_Init
+             4 -> LCD_Clear
+             4 -> LCD_WriteByte
+       2  LCD_SetAddr
+             2 -> LCD_WriteByte
+       2  LCD_WriteByte
+      10  LCD_WriteCN
+            10 -> LCD_SetAddr
+            10 -> LCD_WriteByte
+      12  LCD_WriteCNString
+            12 -> LCD_WriteCN
+       4  LCD_WriteChar
+             4 -> LCD_SetAddr
+             4 -> LCD_WriteByte
+      10  LCD_WriteCharX
+            10 -> LCD_SetAddr
+            10 -> LCD_WriteByte
+       6  LCD_WriteIcon
+             6 -> LCD_SetAddr
+             6 -> LCD_WriteByte
+       8  LCD_WriteIconX
+             8 -> LCD_SetAddr
+             8 -> LCD_WriteByte
+       8  LCD_WriteString
+             8 -> LCD_SetAddr
+             8 -> LCD_WriteChar
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     240  FontLib
+      28  FontLink
+      34  LCD_Clear
+     134  LCD_Init
+      24  LCD_SetAddr
+      62  LCD_WriteByte
+     636  LCD_WriteCN
+      64  LCD_WriteCNString
+      50  LCD_WriteChar
+      70  LCD_WriteCharX
+      46  LCD_WriteIcon
+      42  LCD_WriteIconX
+      42  LCD_WriteString
+       1  P2DIR
+       1  P2OUT
+     570  font6x8
+     112  icon
+      30  iconx
+
+ 
+ 1 204 bytes in segment CODE
+     2 bytes in segment DATA16_AN
+   952 bytes in segment DATA16_C
+    28 bytes in segment DATA16_Z
+ 
+ 1 204 bytes of CODE  memory
+   952 bytes of CONST memory
+    28 bytes of DATA  memory (+ 2 bytes shared)
+
+Errors: none
+Warnings: none

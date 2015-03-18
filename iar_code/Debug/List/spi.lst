@@ -1,0 +1,193 @@
+###############################################################################
+#                                                                             #
+#                                                       24/Sep/2013  11:24:19 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\spi.c                #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\spi.c -lC            #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_unroll   #
+#                     --no_inline --no_tbaa --debug -D__MSP430G2553__ -e      #
+#                     --double=32 --dlib_config "D:\IAR                       #
+#                     Systems\430\LIB\DLIB\dl430fn.h" -Om                     #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\spi.lst       #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\spi.r43        #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\spi.c
+      1          #include "spi.h"
+      2          #include <msp430g2553.h>
+
+   \                                 In  segment DATA16_AN, at 0x20
+   \   unsigned char const volatile P1IN
+   \                     P1IN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x21
+   \   unsigned char volatile P1OUT
+   \                     P1OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x22
+   \   unsigned char volatile P1DIR
+   \                     P1DIR:
+   \   000000                DS8 1
+      3          
+      4          
+      5          /****sd module define***************************/
+      6          #define		SD_DIN			BIT5
+      7          #define 	SD_SCLK			BIT4
+      8          #define		SD_DO			BIT3
+      9          #define		SD_CS			BIT6
+     10          
+     11          #define		SD_SCLK_LOW()	(P1OUT &= ~SD_SCLK)
+     12          #define		SD_SCLK_HIGH()	(P1OUT |= SD_SCLK)
+     13          #define		SD_DO_LOW()		(P1OUT &= ~SD_DO)
+     14          #define		SD_DO_HIGH()	(P1OUT |= SD_DO)
+     15          #define		SD_CS_LOW()		(P1OUT &= ~SD_CS)
+     16          #define		SD_CS_HIGH()	(P1OUT |= SD_CS)
+     17          #define		SD_DI_READ()	(P1IN & SD_DIN)	
+     18          
+
+   \                                 In  segment CODE, align 2
+     19          void spi_init()
+   \                     spi_init:
+     20          {
+     21          	P1DIR |= 	SD_CS+SD_DO+SD_SCLK;
+   \   000000   F2D058002200 BIS.B   #0x58, &0x22
+     22          	P1DIR &=	SD_DIN;
+   \   000006   F2F020002200 AND.B   #0x20, &0x22
+     23              P1OUT |=    SD_CS;
+   \   00000C   F2D040002100 BIS.B   #0x40, &0x21
+     24          }
+   \   000012   3041         RET
+   \   000014                REQUIRE P1DIR
+   \   000014                REQUIRE P1OUT
+     25          
+
+   \                                 In  segment CODE, align 2
+     26          void spi_send(uchar dat)
+   \                     spi_send:
+     27          {
+     28          	uchar i;
+     29          	
+     30          //	SD_CS_LOW();
+     31          	//SD_SCLK_LOW();
+     32          	for (i=0; i<8; i++)
+   \   000000   4E43         MOV.B   #0x0, R14
+   \   000002   0A3C         JMP     ??spi_send_2
+     33          	{
+     34          		SD_SCLK_LOW();
+     35          		if (0x80&dat)
+     36          			SD_DO_HIGH();
+     37          		else
+     38          			SD_DO_LOW();
+   \                     ??spi_send_0:
+   \   000004   F2C22100     BIC.B   #0x8, &0x21
+     39                  __delay_cycles(10);
+   \                     ??spi_send_1:
+   \   000008                ////////////// Start of 10 cycles delay.
+   \   000008   0F12         PUSH.W  R15
+   \   00000A   3F41         POP.W   R15
+   \   00000C   0F12         PUSH.W  R15
+   \   00000E   3F41         POP.W   R15
+   \   000010                ////////////// End of delay code.
+     40          		SD_SCLK_HIGH();	
+   \   000010   F2D010002100 BIS.B   #0x10, &0x21
+   \   000016   5E53         ADD.B   #0x1, R14
+   \                     ??spi_send_2:
+   \   000018   7E92         CMP.B   #0x8, R14
+   \   00001A   F2C010002100 BIC.B   #0x10, &0x21
+   \   000020   052C         JC      ??spi_send_3
+   \   000022   4C93         CMP.B   #0x0, R12
+   \   000024   EF37         JGE     ??spi_send_0
+   \   000026   F2D22100     BIS.B   #0x8, &0x21
+   \   00002A   EE3F         JMP     ??spi_send_1
+     41          	}
+     42          	SD_SCLK_LOW();
+     43          //	SD_CS_HIGH();
+     44          }
+   \                     ??spi_send_3:
+   \   00002C   3041         RET
+   \   00002E                REQUIRE P1OUT
+     45          
+
+   \                                 In  segment CODE, align 2
+     46          uchar spi_receive()
+   \                     spi_receive:
+     47          {
+     48          	uchar i,tmp=0;
+   \   000000   4C43         MOV.B   #0x0, R12
+     49          	
+     50          //	SD_CS_LOW();
+     51          	SD_SCLK_LOW();
+   \   000002   F2C010002100 BIC.B   #0x10, &0x21
+     52          	
+     53          	for (i=0; i<8; i++)
+   \   000008   4E43         MOV.B   #0x0, R14
+   \   00000A   0D3C         JMP     ??spi_receive_1
+     54          	{
+     55          		tmp <<= 1;
+   \                     ??spi_receive_0:
+   \   00000C   4C5C         RLA.B   R12
+     56          		SD_SCLK_HIGH();
+   \   00000E   F2D010002100 BIS.B   #0x10, &0x21
+     57          		if (SD_DI_READ())
+   \   000014   F2B020002000 BIT.B   #0x20, &0x20
+   \   00001A   0128         JNC     ??spi_receive_2
+     58          			tmp |= 0x01;
+   \   00001C   5CD3         BIS.B   #0x1, R12
+     59          		SD_SCLK_LOW();
+   \                     ??spi_receive_2:
+   \   00001E   F2C010002100 BIC.B   #0x10, &0x21
+     60          	}
+   \   000024   5E53         ADD.B   #0x1, R14
+   \                     ??spi_receive_1:
+   \   000026   7E92         CMP.B   #0x8, R14
+   \   000028   F12B         JNC     ??spi_receive_0
+     61          //	SD_CS_HIGH();
+     62          	
+     63          	return tmp;
+   \   00002A   3041         RET
+   \   00002C                REQUIRE P1OUT
+   \   00002C                REQUIRE P1IN
+     64          }
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       2  spi_init
+       2  spi_receive
+       2  spi_send
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       1  P1DIR
+       1  P1IN
+       1  P1OUT
+      20  spi_init
+      44  spi_receive
+      46  spi_send
+
+ 
+ 110 bytes in segment CODE
+   3 bytes in segment DATA16_AN
+ 
+ 110 bytes of CODE memory
+   0 bytes of DATA memory (+ 3 bytes shared)
+
+Errors: none
+Warnings: none

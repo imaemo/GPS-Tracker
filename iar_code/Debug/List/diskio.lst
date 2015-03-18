@@ -1,0 +1,1020 @@
+###############################################################################
+#                                                                             #
+#                                                       24/Sep/2013  11:24:17 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\diskio.c             #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\diskio.c -lC         #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_unroll   #
+#                     --no_inline --no_tbaa --debug -D__MSP430G2553__ -e      #
+#                     --double=32 --dlib_config "D:\IAR                       #
+#                     Systems\430\LIB\DLIB\dl430fn.h" -Om                     #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\diskio.lst    #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\diskio.r43     #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\diskio.c
+      1          /*-----------------------------------------------------------------------*/
+      2          /* Low level disk I/O module skeleton for Petit FatFs (C)ChaN, 2009      */
+      3          /*-----------------------------------------------------------------------*/
+      4          
+      5          #include "diskio.h"
+      6          #include "msp430g2553.h"
+
+   \                                 In  segment DATA16_AN, at 0x20
+   \   unsigned char const volatile P1IN
+   \                     P1IN:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x21
+   \   unsigned char volatile P1OUT
+   \                     P1OUT:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_AN, at 0x22
+   \   unsigned char volatile P1DIR
+   \                     P1DIR:
+   \   000000                DS8 1
+      7          #include "lcd.h"
+      8          
+      9          #define DLY_US(n)	__delay_cycles(n)
+     10          
+     11          #define		SD_DI			BIT3
+     12          #define 	SD_SCLK			BIT4
+     13          #define		SD_DO			BIT5
+     14          #define		SD_CS			BIT6
+     15          
+     16          #define	CS_H()		(P1OUT |= SD_CS)	/* Set MMC CS "high" */
+     17          #define CS_L()		(P1OUT &= ~SD_CS)	/* Set MMC CS "low" */
+     18          #define CK_H()		(P1OUT |= SD_SCLK)	/* Set MMC SCLK "high" */
+     19          #define	CK_L()		(P1OUT &= ~SD_SCLK)	/* Set MMC SCLK "low" */
+     20          #define DI_H()		(P1OUT |= SD_DI)	/* Set MMC DI "high" */
+     21          #define DI_L()		(P1OUT &= ~SD_DI)	/* Set MMC DI "low" */
+     22          #define DO			(P1IN & SD_DO)		/* Get MMC DO value (high:true, low:false) */
+     23          
+     24          /* Definitions for MMC/SDC command */
+     25          #define CMD0	(0x40+0)	/* GO_IDLE_STATE */
+     26          #define CMD1	(0x40+1)	/* SEND_OP_COND (MMC) */
+     27          #define	ACMD41	(0xC0+41)	/* SEND_OP_COND (SDC) */
+     28          #define CMD8	(0x40+8)	/* SEND_IF_COND */
+     29          #define CMD16	(0x40+16)	/* SET_BLOCKLEN */
+     30          #define CMD17	(0x40+17)	/* READ_SINGLE_BLOCK */
+     31          #define CMD24	(0x40+24)	/* WRITE_BLOCK */
+     32          #define CMD55	(0x40+55)	/* APP_CMD */
+     33          #define CMD58	(0x40+58)	/* READ_OCR */
+     34          
+     35          /* Card type flags (CardType) */
+     36          #define CT_MMC				0x01	/* MMC ver 3 */
+     37          #define CT_SD1				0x02	/* SD ver 1 */
+     38          #define CT_SD2				0x04	/* SD ver 2 */
+     39          #define CT_SDC				(CT_SD1|CT_SD2)	/* SD */
+     40          #define CT_BLOCK			0x08	/* Block addressing */
+     41          
+     42          
+     43          
+     44          static
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     45          BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
+   \                     CardType:
+   \   000000                DS8 1
+     46          /*--------------------------------------------------------------------------
+     47          
+     48             Module Private Functions
+     49          
+     50          ---------------------------------------------------------------------------*/
+     51          
+
+   \                                 In  segment CODE, align 2
+     52          void INIT_PORT()
+   \                     INIT_PORT:
+     53          {
+     54          	P1DIR |= 	SD_CS+SD_DI+SD_SCLK;
+   \   000000   F2D058002200 BIS.B   #0x58, &0x22
+     55          	P1DIR &=	~SD_DO;	
+   \   000006   F2C020002200 BIC.B   #0x20, &0x22
+     56          }
+   \   00000C   3041         RET
+   \   00000E                REQUIRE P1DIR
+     57          
+     58          /*-----------------------------------------------------------------------*/
+     59          /* Transmit a byte to the MMC (bitbanging)                               */
+     60          /*-----------------------------------------------------------------------*/
+     61          
+
+   \                                 In  segment CODE, align 2
+     62          static
+     63          void xmit_mmc (
+   \                     xmit_mmc:
+     64          	BYTE d			/* Data to be sent */
+     65          )
+     66          {
+     67          	if (d & 0x80) DI_H(); else DI_L();	/* bit7 */
+   \   000000   4C93         CMP.B   #0x0, R12
+   \   000002   0334         JGE     ??xmit_mmc_0
+   \   000004   F2D22100     BIS.B   #0x8, &0x21
+   \   000008   023C         JMP     ??xmit_mmc_1
+   \                     ??xmit_mmc_0:
+   \   00000A   F2C22100     BIC.B   #0x8, &0x21
+     68          	CK_H(); CK_L();
+   \                     ??xmit_mmc_1:
+   \   00000E   F2D010002100 BIS.B   #0x10, &0x21
+   \   000014   F2C010002100 BIC.B   #0x10, &0x21
+     69          	if (d & 0x40) DI_H(); else DI_L();	/* bit6 */
+   \   00001A   7CB04000     BIT.B   #0x40, R12
+   \   00001E   0328         JNC     ??xmit_mmc_2
+   \   000020   F2D22100     BIS.B   #0x8, &0x21
+   \   000024   023C         JMP     ??xmit_mmc_3
+   \                     ??xmit_mmc_2:
+   \   000026   F2C22100     BIC.B   #0x8, &0x21
+     70          	CK_H(); CK_L();
+   \                     ??xmit_mmc_3:
+   \   00002A   F2D010002100 BIS.B   #0x10, &0x21
+   \   000030   F2C010002100 BIC.B   #0x10, &0x21
+     71          	if (d & 0x20) DI_H(); else DI_L();	/* bit5 */
+   \   000036   7CB02000     BIT.B   #0x20, R12
+   \   00003A   0328         JNC     ??xmit_mmc_4
+   \   00003C   F2D22100     BIS.B   #0x8, &0x21
+   \   000040   023C         JMP     ??xmit_mmc_5
+   \                     ??xmit_mmc_4:
+   \   000042   F2C22100     BIC.B   #0x8, &0x21
+     72          	CK_H(); CK_L();
+   \                     ??xmit_mmc_5:
+   \   000046   F2D010002100 BIS.B   #0x10, &0x21
+   \   00004C   F2C010002100 BIC.B   #0x10, &0x21
+     73          	if (d & 0x10) DI_H(); else DI_L();	/* bit4 */
+   \   000052   7CB01000     BIT.B   #0x10, R12
+   \   000056   0328         JNC     ??xmit_mmc_6
+   \   000058   F2D22100     BIS.B   #0x8, &0x21
+   \   00005C   023C         JMP     ??xmit_mmc_7
+   \                     ??xmit_mmc_6:
+   \   00005E   F2C22100     BIC.B   #0x8, &0x21
+     74          	CK_H(); CK_L();
+   \                     ??xmit_mmc_7:
+   \   000062   F2D010002100 BIS.B   #0x10, &0x21
+   \   000068   F2C010002100 BIC.B   #0x10, &0x21
+     75          	if (d & 0x08) DI_H(); else DI_L();	/* bit3 */
+   \   00006E   7CB2         BIT.B   #0x8, R12
+   \   000070   0328         JNC     ??xmit_mmc_8
+   \   000072   F2D22100     BIS.B   #0x8, &0x21
+   \   000076   023C         JMP     ??xmit_mmc_9
+   \                     ??xmit_mmc_8:
+   \   000078   F2C22100     BIC.B   #0x8, &0x21
+     76          	CK_H(); CK_L();
+   \                     ??xmit_mmc_9:
+   \   00007C   F2D010002100 BIS.B   #0x10, &0x21
+   \   000082   F2C010002100 BIC.B   #0x10, &0x21
+     77          	if (d & 0x04) DI_H(); else DI_L();	/* bit2 */
+   \   000088   6CB2         BIT.B   #0x4, R12
+   \   00008A   0328         JNC     ??xmit_mmc_10
+   \   00008C   F2D22100     BIS.B   #0x8, &0x21
+   \   000090   023C         JMP     ??xmit_mmc_11
+   \                     ??xmit_mmc_10:
+   \   000092   F2C22100     BIC.B   #0x8, &0x21
+     78          	CK_H(); CK_L();
+   \                     ??xmit_mmc_11:
+   \   000096   F2D010002100 BIS.B   #0x10, &0x21
+   \   00009C   F2C010002100 BIC.B   #0x10, &0x21
+     79          	if (d & 0x02) DI_H(); else DI_L();	/* bit1 */
+   \   0000A2   6CB3         BIT.B   #0x2, R12
+   \   0000A4   0328         JNC     ??xmit_mmc_12
+   \   0000A6   F2D22100     BIS.B   #0x8, &0x21
+   \   0000AA   023C         JMP     ??xmit_mmc_13
+   \                     ??xmit_mmc_12:
+   \   0000AC   F2C22100     BIC.B   #0x8, &0x21
+     80          	CK_H(); CK_L();
+   \                     ??xmit_mmc_13:
+   \   0000B0   F2D010002100 BIS.B   #0x10, &0x21
+   \   0000B6   F2C010002100 BIC.B   #0x10, &0x21
+     81          	if (d & 0x01) DI_H(); else DI_L();	/* bit0 */
+   \   0000BC   5CB3         BIT.B   #0x1, R12
+   \   0000BE   0328         JNC     ??xmit_mmc_14
+   \   0000C0   F2D22100     BIS.B   #0x8, &0x21
+   \   0000C4   023C         JMP     ??xmit_mmc_15
+   \                     ??xmit_mmc_14:
+   \   0000C6   F2C22100     BIC.B   #0x8, &0x21
+     82          	CK_H(); CK_L();
+   \                     ??xmit_mmc_15:
+   \   0000CA   F2D010002100 BIS.B   #0x10, &0x21
+   \   0000D0   F2C010002100 BIC.B   #0x10, &0x21
+     83          }
+   \   0000D6   3041         RET
+   \   0000D8                REQUIRE P1OUT
+     84          
+
+   \                                 In  segment CODE, align 2
+     85          static
+     86          BYTE rcvr_mmc (void)
+   \                     rcvr_mmc:
+     87          {
+     88          	BYTE r;
+     89          
+     90          
+     91          	DI_H();	/* Send 0xFF */
+   \   000000   F2D22100     BIS.B   #0x8, &0x21
+     92          
+     93          	r = 0;   if (DO) r++;	/* bit7 */
+   \   000004   4C43         MOV.B   #0x0, R12
+   \   000006   F2B020002000 BIT.B   #0x20, &0x20
+   \   00000C   0128         JNC     ??rcvr_mmc_0
+   \   00000E   5C43         MOV.B   #0x1, R12
+     94          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_0:
+   \   000010   F2D010002100 BIS.B   #0x10, &0x21
+   \   000016   F2C010002100 BIC.B   #0x10, &0x21
+     95          	r <<= 1; if (DO) r++;	/* bit6 */
+   \   00001C   4C5C         RLA.B   R12
+   \   00001E   F2B020002000 BIT.B   #0x20, &0x20
+   \   000024   0128         JNC     ??rcvr_mmc_1
+   \   000026   5C53         ADD.B   #0x1, R12
+     96          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_1:
+   \   000028   F2D010002100 BIS.B   #0x10, &0x21
+   \   00002E   F2C010002100 BIC.B   #0x10, &0x21
+     97          	r <<= 1; if (DO) r++;	/* bit5 */
+   \   000034   4C5C         RLA.B   R12
+   \   000036   F2B020002000 BIT.B   #0x20, &0x20
+   \   00003C   0128         JNC     ??rcvr_mmc_2
+   \   00003E   5C53         ADD.B   #0x1, R12
+     98          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_2:
+   \   000040   F2D010002100 BIS.B   #0x10, &0x21
+   \   000046   F2C010002100 BIC.B   #0x10, &0x21
+     99          	r <<= 1; if (DO) r++;	/* bit4 */
+   \   00004C   4C5C         RLA.B   R12
+   \   00004E   F2B020002000 BIT.B   #0x20, &0x20
+   \   000054   0128         JNC     ??rcvr_mmc_3
+   \   000056   5C53         ADD.B   #0x1, R12
+    100          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_3:
+   \   000058   F2D010002100 BIS.B   #0x10, &0x21
+   \   00005E   F2C010002100 BIC.B   #0x10, &0x21
+    101          	r <<= 1; if (DO) r++;	/* bit3 */
+   \   000064   4C5C         RLA.B   R12
+   \   000066   F2B020002000 BIT.B   #0x20, &0x20
+   \   00006C   0128         JNC     ??rcvr_mmc_4
+   \   00006E   5C53         ADD.B   #0x1, R12
+    102          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_4:
+   \   000070   F2D010002100 BIS.B   #0x10, &0x21
+   \   000076   F2C010002100 BIC.B   #0x10, &0x21
+    103          	r <<= 1; if (DO) r++;	/* bit2 */
+   \   00007C   4C5C         RLA.B   R12
+   \   00007E   F2B020002000 BIT.B   #0x20, &0x20
+   \   000084   0128         JNC     ??rcvr_mmc_5
+   \   000086   5C53         ADD.B   #0x1, R12
+    104          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_5:
+   \   000088   F2D010002100 BIS.B   #0x10, &0x21
+   \   00008E   F2C010002100 BIC.B   #0x10, &0x21
+    105          	r <<= 1; if (DO) r++;	/* bit1 */
+   \   000094   4C5C         RLA.B   R12
+   \   000096   F2B020002000 BIT.B   #0x20, &0x20
+   \   00009C   0128         JNC     ??rcvr_mmc_6
+   \   00009E   5C53         ADD.B   #0x1, R12
+    106          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_6:
+   \   0000A0   F2D010002100 BIS.B   #0x10, &0x21
+   \   0000A6   F2C010002100 BIC.B   #0x10, &0x21
+    107          	r <<= 1; if (DO) r++;	/* bit0 */
+   \   0000AC   4C5C         RLA.B   R12
+   \   0000AE   F2B020002000 BIT.B   #0x20, &0x20
+   \   0000B4   0128         JNC     ??rcvr_mmc_7
+   \   0000B6   5C53         ADD.B   #0x1, R12
+    108          	CK_H(); CK_L();
+   \                     ??rcvr_mmc_7:
+   \   0000B8   F2D010002100 BIS.B   #0x10, &0x21
+   \   0000BE   F2C010002100 BIC.B   #0x10, &0x21
+    109          
+    110          	return r;
+   \   0000C4   3041         RET
+   \   0000C6                REQUIRE P1OUT
+   \   0000C6                REQUIRE P1IN
+    111          }
+    112          
+    113          
+    114          /*-----------------------------------------------------------------------*/
+    115          /* Skip bytes on the MMC (bitbanging)                                    */
+    116          /*-----------------------------------------------------------------------*/
+    117          
+
+   \                                 In  segment CODE, align 2
+    118          static
+    119          void skip_mmc (
+   \                     skip_mmc:
+    120          	WORD n		/* Number of bytes to skip */
+    121          )
+    122          {
+    123          	DI_H();	/* Send 0xFF */
+   \   000000   F2D22100     BIS.B   #0x8, &0x21
+    124          
+    125          	do {
+    126          		CK_H(); CK_L();
+   \                     ??skip_mmc_0:
+   \   000004   F2D010002100 BIS.B   #0x10, &0x21
+   \   00000A   F2C010002100 BIC.B   #0x10, &0x21
+    127          		CK_H(); CK_L();
+   \   000010   F2D010002100 BIS.B   #0x10, &0x21
+   \   000016   F2C010002100 BIC.B   #0x10, &0x21
+    128          		CK_H(); CK_L();
+   \   00001C   F2D010002100 BIS.B   #0x10, &0x21
+   \   000022   F2C010002100 BIC.B   #0x10, &0x21
+    129          		CK_H(); CK_L();
+   \   000028   F2D010002100 BIS.B   #0x10, &0x21
+   \   00002E   F2C010002100 BIC.B   #0x10, &0x21
+    130          		CK_H(); CK_L();
+   \   000034   F2D010002100 BIS.B   #0x10, &0x21
+   \   00003A   F2C010002100 BIC.B   #0x10, &0x21
+    131          		CK_H(); CK_L();
+   \   000040   F2D010002100 BIS.B   #0x10, &0x21
+   \   000046   F2C010002100 BIC.B   #0x10, &0x21
+    132          		CK_H(); CK_L();
+   \   00004C   F2D010002100 BIS.B   #0x10, &0x21
+   \   000052   F2C010002100 BIC.B   #0x10, &0x21
+    133          		CK_H(); CK_L();
+   \   000058   F2D010002100 BIS.B   #0x10, &0x21
+   \   00005E   F2C010002100 BIC.B   #0x10, &0x21
+    134          	} while (--n);
+   \   000064   3C53         ADD.W   #0xffff, R12
+   \   000066   CE23         JNE     ??skip_mmc_0
+    135          }
+   \   000068   3041         RET
+   \   00006A                REQUIRE P1OUT
+    136          
+    137          /*-----------------------------------------------------------------------*/
+    138          /* Deselect the card and release SPI bus                                 */
+    139          /*-----------------------------------------------------------------------*/
+    140          
+
+   \                                 In  segment CODE, align 2
+    141          static
+    142          void release_spi (void)
+   \                     release_spi:
+    143          {
+    144          	CS_H();
+   \   000000   F2D040002100 BIS.B   #0x40, &0x21
+    145          	rcvr_mmc();
+   \   000006   3040....     BR      #rcvr_mmc
+   \   00000A                REQUIRE P1OUT
+    146          }
+    147          
+    148          
+    149          /*-----------------------------------------------------------------------*/
+    150          /* Send a command packet to MMC                                          */
+    151          /*-----------------------------------------------------------------------*/
+    152          
+
+   \                                 In  segment CODE, align 2
+    153          static
+    154          BYTE send_cmd (
+   \                     send_cmd:
+    155          	BYTE cmd,		/* Command byte */
+    156          	DWORD arg		/* Argument */
+    157          )
+    158          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   484C         MOV.B   R12, R8
+   \   00000A   0A4E         MOV.W   R14, R10
+   \   00000C   0B4F         MOV.W   R15, R11
+    159          	BYTE n, res;
+    160          
+    161          
+    162              
+    163          	if (cmd & 0x80) {	/* ACMD<n> is the command sequense of CMD55-CMD<n> */
+   \   00000E   4C93         CMP.B   #0x0, R12
+   \   000010   0A34         JGE     ??send_cmd_1
+    164          		cmd &= 0x7F;
+   \   000012   78C08000     BIC.B   #0x80, R8
+    165          		res = send_cmd(CMD55, 0);
+   \   000016   0E43         MOV.W   #0x0, R14
+   \   000018   0F43         MOV.W   #0x0, R15
+   \   00001A   7C407700     MOV.B   #0x77, R12
+   \   00001E   B012....     CALL    #send_cmd
+    166          		if (res > 1) return res;
+   \   000022   6C93         CMP.B   #0x2, R12
+   \   000024   272C         JC      ??send_cmd_2
+    167          	}
+    168          
+    169          	/* Select the card */
+    170          //	CS_H(); rcvr_mmc();
+    171          //	CS_L(); rcvr_mmc();
+    172              CS_L();
+   \                     ??send_cmd_1:
+   \   000026   F2C040002100 BIC.B   #0x40, &0x21
+    173          	/* Send a command packet */
+    174          	xmit_mmc(cmd);					/* Start + Command index */
+   \   00002C   3940....     MOV.W   #xmit_mmc, R9
+   \   000030   4C48         MOV.B   R8, R12
+   \   000032   8912         CALL    R9
+    175          	xmit_mmc((BYTE)(arg >> 24));	/* Argument[31..24] */
+   \   000034   0F4B         MOV.W   R11, R15
+   \   000036   8F10         SWPB    R15
+   \   000038   4C4F         MOV.B   R15, R12
+   \   00003A   8912         CALL    R9
+    176          	xmit_mmc((BYTE)(arg >> 16));	/* Argument[23..16] */
+   \   00003C   4C4B         MOV.B   R11, R12
+   \   00003E   8912         CALL    R9
+    177          	xmit_mmc((BYTE)(arg >> 8));		/* Argument[15..8] */
+   \   000040   0C4A         MOV.W   R10, R12
+   \   000042   8C10         SWPB    R12
+   \   000044   8912         CALL    R9
+    178          	xmit_mmc((BYTE)arg);			/* Argument[7..0] */
+   \   000046   4C4A         MOV.B   R10, R12
+   \   000048   8912         CALL    R9
+    179          	n = 0x01;						/* Dummy CRC + Stop */
+   \   00004A   5E43         MOV.B   #0x1, R14
+    180          	if (cmd == CMD0) n = 0x95;		/* Valid CRC for CMD0(0) */
+   \   00004C   78904000     CMP.B   #0x40, R8
+   \   000050   0220         JNE     ??send_cmd_3
+   \   000052   7E409500     MOV.B   #0x95, R14
+    181          	if (cmd == CMD8) n = 0x87;		/* Valid CRC for CMD8(0x1AA) */
+   \                     ??send_cmd_3:
+   \   000056   78904800     CMP.B   #0x48, R8
+   \   00005A   0220         JNE     ??send_cmd_4
+   \   00005C   7E408700     MOV.B   #0x87, R14
+    182          	xmit_mmc(n);
+   \                     ??send_cmd_4:
+   \   000060   4C4E         MOV.B   R14, R12
+   \   000062   8912         CALL    R9
+    183          
+    184          	/* Receive a command response */
+    185          	n = 10;								/* Wait for a valid response in timeout of 10 attempts */
+   \   000064   7E400A00     MOV.B   #0xa, R14
+    186          	do {
+    187          		res = rcvr_mmc();
+   \                     ??send_cmd_0:
+   \   000068   B012....     CALL    #rcvr_mmc
+    188          	} while ((res & 0x80) && --n);
+   \   00006C   4C93         CMP.B   #0x0, R12
+   \   00006E   0234         JGE     ??send_cmd_2
+   \   000070   7E53         ADD.B   #0xff, R14
+   \   000072   FA23         JNE     ??send_cmd_0
+    189          
+    190          	return res;			/* Return with the response value */
+   \                     ??send_cmd_2:
+   \   000074   3040....     BR      #?Epilogue4
+   \   000078                REQUIRE P1OUT
+    191          }
+    192          
+    193          /*--------------------------------------------------------------------------
+    194          
+    195             Public Functions
+    196          
+    197          ---------------------------------------------------------------------------*/
+    198          
+    199          
+    200          /*-----------------------------------------------------------------------*/
+    201          /* Initialize Disk Drive                                                 */
+    202          /*-----------------------------------------------------------------------*/
+    203          
+
+   \                                 In  segment CODE, align 2
+    204          DSTATUS disk_initialize (void)
+   \                     disk_initialize:
+    205          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   2182         SUB.W   #0x4, SP
+    206          	BYTE n, cmd, ty, buf[4];
+                 	        ^
+Warning[Pe550]: variable "cmd" was set but never used
+    207          	UINT tmr;
+    208              uchar r0=0;
+    209          
+    210          	INIT_PORT();
+   \   000008   B012....     CALL    #INIT_PORT
+    211          
+    212          	CS_H();
+   \   00000C   F2D040002100 BIS.B   #0x40, &0x21
+    213          	skip_mmc(10);			/* Dummy clocks */
+   \   000012   3C400A00     MOV.W   #0xa, R12
+   \   000016   B012....     CALL    #skip_mmc
+    214              CS_L();
+   \   00001A   F2C040002100 BIC.B   #0x40, &0x21
+    215          	ty = 0;
+   \   000020   4A43         MOV.B   #0x0, R10
+    216              r0 = send_cmd(CMD0, 0);
+    217          //    LCD_WriteString(0,1,"R_cmd0:"); 
+    218          //    LCD_WriteChar(48,1, r0/10+0x30);
+    219          //    LCD_WriteChar(54,1, r0%10+0x30); 
+    220          	if (r0 == 1) {			/* Enter Idle state */
+   \   000022   3B40....     MOV.W   #send_cmd, R11
+   \   000026   0E43         MOV.W   #0x0, R14
+   \   000028   0F43         MOV.W   #0x0, R15
+   \   00002A   7C404000     MOV.B   #0x40, R12
+   \   00002E   8B12         CALL    R11
+   \   000030   5C93         CMP.B   #0x1, R12
+   \   000032   7020         JNE     ??disk_initialize_5
+    221          		if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDv2 */
+   \   000034   3E40AA01     MOV.W   #0x1aa, R14
+   \   000038   0F43         MOV.W   #0x0, R15
+   \   00003A   7C404800     MOV.B   #0x48, R12
+   \   00003E   8B12         CALL    R11
+   \   000040   5C93         CMP.B   #0x1, R12
+   \   000042   4220         JNE     ??disk_initialize_6
+    222          			for (n = 0; n < 4; n++) buf[n] = rcvr_mmc();	/* Get trailing return value of R7 resp */
+   \   000044   4E43         MOV.B   #0x0, R14
+   \   000046   073C         JMP     ??disk_initialize_7
+   \                     ??disk_initialize_0:
+   \   000048   B012....     CALL    #rcvr_mmc
+   \   00004C   4F4E         MOV.B   R14, R15
+   \   00004E   0F51         ADD.W   SP, R15
+   \   000050   CF4C0000     MOV.B   R12, 0(R15)
+   \   000054   5E53         ADD.B   #0x1, R14
+   \                     ??disk_initialize_7:
+   \   000056   6E92         CMP.B   #0x4, R14
+   \   000058   F72B         JNC     ??disk_initialize_0
+    223          			if (buf[2] == 0x01 && buf[3] == 0xAA) {			/* The card can work at vdd range of 2.7-3.6V */
+   \   00005A   D1930200     CMP.B   #0x1, 0x2(SP)
+   \   00005E   5A20         JNE     ??disk_initialize_5
+   \   000060   F190AA000300 CMP.B   #0xaa, 0x3(SP)
+   \   000066   5620         JNE     ??disk_initialize_5
+    224          				for (tmr = 1000; tmr; tmr--) {				/* Wait for leaving idle state (ACMD41 with HCS bit) */
+   \   000068   3840E803     MOV.W   #0x3e8, R8
+   \   00006C   063C         JMP     ??disk_initialize_8
+    225          					if (send_cmd(ACMD41, 1UL << 30) == 0) break;
+    226          					DLY_US(1000);
+   \                     ??disk_initialize_1:
+   \   00006E                ////////////// Start of 1000 cycles delay.
+   \   00006E   003C         JMP     ??disk_initialize_19
+   \                     ??disk_initialize_19:
+   \   000070   3F404B01     MOV.W   #0x14b, R15
+   \                     ??disk_initialize_17:
+   \   000074   3F53         ADD.W   #0xffff, R15
+   \   000076   FE2F         JC      ??disk_initialize_17
+   \   000078                ////////////// End of delay code.
+   \   000078   3853         ADD.W   #0xffff, R8
+   \                     ??disk_initialize_8:
+   \   00007A   0893         CMP.W   #0x0, R8
+   \   00007C   0824         JEQ     ??disk_initialize_9
+   \   00007E   0E43         MOV.W   #0x0, R14
+   \   000080   3F400040     MOV.W   #0x4000, R15
+   \   000084   7C40E900     MOV.B   #0xe9, R12
+   \   000088   8B12         CALL    R11
+   \   00008A   4C93         CMP.B   #0x0, R12
+   \   00008C   F023         JNE     ??disk_initialize_1
+    227          				}
+    228          				if (tmr && send_cmd(CMD58, 0) == 0) {		/* Check CCS bit in the OCR */
+   \                     ??disk_initialize_9:
+   \   00008E   0893         CMP.W   #0x0, R8
+   \   000090   4124         JEQ     ??disk_initialize_5
+   \   000092   0E43         MOV.W   #0x0, R14
+   \   000094   0F43         MOV.W   #0x0, R15
+   \   000096   7C407A00     MOV.B   #0x7a, R12
+   \   00009A   8B12         CALL    R11
+   \   00009C   4C93         CMP.B   #0x0, R12
+   \   00009E   3A20         JNE     ??disk_initialize_5
+    229          					for (n = 0; n < 4; n++) buf[n] = rcvr_mmc();
+   \   0000A0   4E43         MOV.B   #0x0, R14
+   \   0000A2   073C         JMP     ??disk_initialize_10
+   \                     ??disk_initialize_2:
+   \   0000A4   B012....     CALL    #rcvr_mmc
+   \   0000A8   4F4E         MOV.B   R14, R15
+   \   0000AA   0F51         ADD.W   SP, R15
+   \   0000AC   CF4C0000     MOV.B   R12, 0(R15)
+   \   0000B0   5E53         ADD.B   #0x1, R14
+   \                     ??disk_initialize_10:
+   \   0000B2   6E92         CMP.B   #0x4, R14
+   \   0000B4   F72B         JNC     ??disk_initialize_2
+    230          					ty = (buf[0] & 0x40) ? CT_SD2 | CT_BLOCK : CT_SD2;	/* SDv2 (HC or SC) */
+   \   0000B6   F1B040000000 BIT.B   #0x40, 0(SP)
+   \   0000BC   022C         JC      ??disk_initialize_11
+   \   0000BE   6A42         MOV.B   #0x4, R10
+   \   0000C0   293C         JMP     ??disk_initialize_5
+   \                     ??disk_initialize_11:
+   \   0000C2   7A400C00     MOV.B   #0xc, R10
+   \   0000C6   263C         JMP     ??disk_initialize_5
+    231          				}
+    232          			}
+    233          		} else {							/* SDv1 or MMCv3 */
+    234          			if (send_cmd(ACMD41, 0) <= 1) 	{
+   \                     ??disk_initialize_6:
+   \   0000C8   0E43         MOV.W   #0x0, R14
+   \   0000CA   0F43         MOV.W   #0x0, R15
+   \   0000CC   7C40E900     MOV.B   #0xe9, R12
+   \   0000D0   8B12         CALL    R11
+   \   0000D2   6C93         CMP.B   #0x2, R12
+   \   0000D4   4A73         SUBC.B  #0x0, R10
+   \   0000D6   7AE3         XOR.B   #0xff, R10
+   \   0000D8   6A53         ADD.B   #0x2, R10
+    235          				ty = CT_SD1; cmd = ACMD41;	/* SDv1 */
+    236          			} else {
+    237          				ty = CT_MMC; cmd = CMD1;	/* MMCv3 */
+    238          			}
+    239          			for (tmr = 1000; tmr; tmr--) {			/* Wait for leaving idle state */
+   \   0000DA   3840E803     MOV.W   #0x3e8, R8
+   \   0000DE   063C         JMP     ??disk_initialize_12
+    240          				if (send_cmd(ACMD41, 0) == 0) break;
+    241          				DLY_US(1000);
+   \                     ??disk_initialize_3:
+   \   0000E0                ////////////// Start of 1000 cycles delay.
+   \   0000E0   003C         JMP     ??disk_initialize_20
+   \                     ??disk_initialize_20:
+   \   0000E2   3F404B01     MOV.W   #0x14b, R15
+   \                     ??disk_initialize_18:
+   \   0000E6   3F53         ADD.W   #0xffff, R15
+   \   0000E8   FE2F         JC      ??disk_initialize_18
+   \   0000EA                ////////////// End of delay code.
+   \   0000EA   3853         ADD.W   #0xffff, R8
+   \                     ??disk_initialize_12:
+   \   0000EC   0893         CMP.W   #0x0, R8
+   \   0000EE   0724         JEQ     ??disk_initialize_13
+   \   0000F0   0E43         MOV.W   #0x0, R14
+   \   0000F2   0F43         MOV.W   #0x0, R15
+   \   0000F4   7C40E900     MOV.B   #0xe9, R12
+   \   0000F8   8B12         CALL    R11
+   \   0000FA   4C93         CMP.B   #0x0, R12
+   \   0000FC   F123         JNE     ??disk_initialize_3
+    242          			}
+    243          			if (!tmr || send_cmd(CMD16, 512) != 0)			/* Set R/W block length to 512 */
+   \                     ??disk_initialize_13:
+   \   0000FE   0893         CMP.W   #0x0, R8
+   \   000100   0824         JEQ     ??disk_initialize_14
+   \   000102   3E400002     MOV.W   #0x200, R14
+   \   000106   0F43         MOV.W   #0x0, R15
+   \   000108   7C405000     MOV.B   #0x50, R12
+   \   00010C   8B12         CALL    R11
+   \   00010E   4C93         CMP.B   #0x0, R12
+   \   000110   0124         JEQ     ??disk_initialize_5
+    244          				ty = 0;
+   \                     ??disk_initialize_14:
+   \   000112   4A43         MOV.B   #0x0, R10
+    245          		}
+    246          	}
+    247          	CardType = ty;
+   \                     ??disk_initialize_5:
+   \   000114   C24A....     MOV.B   R10, &CardType
+    248          	release_spi();
+   \   000118   B012....     CALL    #release_spi
+    249              
+    250              /** check card type ***/
+    251          //    LCD_WriteString(0,2,"Card:"); 
+    252          //    LCD_WriteChar(30,2, CardType/10+0x30);
+    253          //    LCD_WriteChar(36,2, CardType%10+0x30);   
+    254              
+    255          	return ty ? 0 : STA_NOINIT;
+   \   00011C   4A93         CMP.B   #0x0, R10
+   \   00011E   0220         JNE     ??disk_initialize_15
+   \   000120   5C43         MOV.B   #0x1, R12
+   \   000122   013C         JMP     ??disk_initialize_16
+   \                     ??disk_initialize_15:
+   \   000124   4C43         MOV.B   #0x0, R12
+   \                     ??disk_initialize_16:
+   \   000126   2152         ADD.W   #0x4, SP
+   \   000128   3040....     BR      #?Epilogue3
+   \   00012C                REQUIRE P1OUT
+    256          }
+    257          
+    258          
+    259          
+    260          /*-----------------------------------------------------------------------*/
+    261          /* Read Partial Sector                                                   */
+    262          /*-----------------------------------------------------------------------*/
+    263          
+
+   \                                 In  segment CODE, align 2
+    264          DRESULT disk_readp (
+   \                     disk_readp:
+    265          	BYTE *buff,		/* Pointer to the read buffer (NULL:Read bytes are forwarded to the stream) */
+    266          	DWORD lba,		/* Sector number (LBA) */
+    267          	WORD ofs,		/* Byte offset to read from (0..511) */
+    268          	WORD cnt		/* Number of bytes to read (ofs + cnt mus be <= 512) */
+    269          )
+    270          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0A4C         MOV.W   R12, R10
+   \   000008   0B4D         MOV.W   R13, R11
+    271          	DRESULT res;
+    272          	BYTE d;
+    273          	WORD bc, tmr;
+    274          
+    275          
+    276          	if (!(CardType & CT_BLOCK)) lba *= 512;		/* Convert to byte address if needed */
+   \   00000A   F2B2....     BIT.B   #0x8, &CardType
+   \   00000E   062C         JC      ??disk_readp_3
+   \   000010   0C4E         MOV.W   R14, R12
+   \   000012   0D4F         MOV.W   R15, R13
+   \   000014   B012....     CALL    #?ShiftLeft32_9
+   \   000018   0E4C         MOV.W   R12, R14
+   \   00001A   0F4D         MOV.W   R13, R15
+    277          
+    278          	res = RES_ERROR;
+   \                     ??disk_readp_3:
+   \   00001C   5843         MOV.B   #0x1, R8
+    279          	if (send_cmd(CMD17, lba) == 0) {		/* READ_SINGLE_BLOCK */
+   \   00001E   7C405100     MOV.B   #0x51, R12
+   \   000022   B012....     CALL    #send_cmd
+   \   000026   4C93         CMP.B   #0x0, R12
+   \   000028   2E20         JNE     ??disk_readp_4
+    280          
+    281          		tmr = 1000;
+   \   00002A   3F40E803     MOV.W   #0x3e8, R15
+    282          		do {							/* Wait for data packet in timeout of 100ms */
+    283          			DLY_US(100);
+   \                     ??disk_readp_0:
+   \   00002E                ////////////// Start of 100 cycles delay.
+   \   00002E   003C         JMP     ??disk_readp_9
+   \                     ??disk_readp_9:
+   \   000030   3E401F00     MOV.W   #0x1f, R14
+   \                     ??disk_readp_8:
+   \   000034   3E53         ADD.W   #0xffff, R14
+   \   000036   FE2F         JC      ??disk_readp_8
+   \   000038                ////////////// End of delay code.
+    284          			d = rcvr_mmc();
+   \   000038   B012....     CALL    #rcvr_mmc
+    285          		} while (d == 0xFF && --tmr);
+   \   00003C   7C93         CMP.B   #0xff, R12
+   \   00003E   0320         JNE     ??disk_readp_5
+   \   000040   3F53         ADD.W   #0xffff, R15
+   \   000042   0F93         CMP.W   #0x0, R15
+   \   000044   F423         JNE     ??disk_readp_0
+    286          
+    287          		if (d == 0xFE) {				/* A data packet arrived */
+   \                     ??disk_readp_5:
+   \   000046   7C90FE00     CMP.B   #0xfe, R12
+   \   00004A   1D20         JNE     ??disk_readp_4
+   \   00004C   1F410800     MOV.W   0x8(SP), R15
+    288          			bc = 514 - ofs - cnt;
+   \   000050   3E400202     MOV.W   #0x202, R14
+   \   000054   0E8B         SUB.W   R11, R14
+   \   000056   0E8F         SUB.W   R15, R14
+    289          
+    290          			/* Skip leading bytes */
+    291          			if (ofs) skip_mmc(ofs);
+   \   000058   0B93         CMP.W   #0x0, R11
+   \   00005A   0324         JEQ     ??disk_readp_6
+   \   00005C   0C4B         MOV.W   R11, R12
+   \   00005E   B012....     CALL    #skip_mmc
+    292          
+    293          			/* Receive a part of the sector */
+    294          			if (buff) {	/* Store data to the memory */
+   \                     ??disk_readp_6:
+   \   000062   0A93         CMP.W   #0x0, R10
+   \   000064   0824         JEQ     ??disk_readp_2
+    295          				do
+    296          					*buff++ = rcvr_mmc();
+   \                     ??disk_readp_1:
+   \   000066   B012....     CALL    #rcvr_mmc
+   \   00006A   CA4C0000     MOV.B   R12, 0(R10)
+   \   00006E   1A53         ADD.W   #0x1, R10
+    297          				while (--cnt);
+   \   000070   3F53         ADD.W   #0xffff, R15
+   \   000072   F923         JNE     ??disk_readp_1
+   \   000074   043C         JMP     ??disk_readp_7
+    298          			} else {	/* Forward data to the outgoing stream */
+    299          				do {
+    300          					d = rcvr_mmc();
+   \                     ??disk_readp_2:
+   \   000076   B012....     CALL    #rcvr_mmc
+    301          //					FORWARD(d);
+    302          				} while (--cnt);
+   \   00007A   3F53         ADD.W   #0xffff, R15
+   \   00007C   FC23         JNE     ??disk_readp_2
+    303          			}
+    304          
+    305          			/* Skip trailing bytes and CRC */
+    306          			skip_mmc(bc);
+   \                     ??disk_readp_7:
+   \   00007E   0C4E         MOV.W   R14, R12
+   \   000080   B012....     CALL    #skip_mmc
+    307          
+    308          			res = RES_OK;
+   \   000084   4843         MOV.B   #0x0, R8
+    309          		}
+    310          	}
+    311          
+    312          	release_spi();
+   \                     ??disk_readp_4:
+   \   000086   B012....     CALL    #release_spi
+    313          
+    314          	return res;
+   \   00008A   4C48         MOV.B   R8, R12
+   \   00008C   3040....     BR      #?Epilogue3
+    315          }
+    316          
+    317          
+    318          
+    319          /*-----------------------------------------------------------------------*/
+    320          /* Write Partial Sector                                                  */
+    321          /*-----------------------------------------------------------------------*/
+    322          
+    323          #if _USE_WRITE
+    324          
+
+   \                                 In  segment CODE, align 2
+    325          DRESULT disk_writep (
+   \                     disk_writep:
+    326          	const BYTE *buff,	/* Pointer to the bytes to be written (NULL:Initiate/Finalize sector write) */
+    327          	DWORD sa			/* Number of bytes to send, Sector number (LBA) or zero */
+    328          )
+    329          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0D4C         MOV.W   R12, R13
+    330          	DRESULT res;
+    331          	WORD bc, tmr;
+    332          	static WORD wc;
+    333          
+    334          
+    335          	res = RES_ERROR;
+   \   000004   5A43         MOV.B   #0x1, R10
+    336          
+    337          	if (buff) {		/* Send data bytes */
+   \   000006   0C93         CMP.W   #0x0, R12
+   \   000008   0E24         JEQ     ??disk_writep_3
+    338          		bc = (WORD)sa;
+   \   00000A   063C         JMP     ??disk_writep_4
+    339          		while (bc && wc) {		/* Send data bytes to the card */
+    340          			xmit_mmc(*buff++);
+   \                     ??disk_writep_0:
+   \   00000C   7C4D         MOV.B   @R13+, R12
+   \   00000E   B012....     CALL    #xmit_mmc
+    341          			wc--; bc--;
+   \   000012   B253....     ADD.W   #0xffff, &??wc
+   \   000016   3E53         ADD.W   #0xffff, R14
+    342          		}
+   \                     ??disk_writep_4:
+   \   000018   0E93         CMP.W   #0x0, R14
+   \   00001A   0324         JEQ     ??disk_writep_5
+   \   00001C   8293....     CMP.W   #0x0, &??wc
+   \   000020   F523         JNE     ??disk_writep_0
+    343          		res = RES_OK;
+   \                     ??disk_writep_5:
+   \   000022   4A43         MOV.B   #0x0, R10
+   \   000024   453C         JMP     ??disk_writep_6
+    344          	} else {
+    345          		if (sa) {	/* Initiate sector write process */
+   \                     ??disk_writep_3:
+   \   000026   0D4E         MOV.W   R14, R13
+   \   000028   0DDF         BIS.W   R15, R13
+   \   00002A   0D93         CMP.W   #0x0, R13
+   \   00002C   1B24         JEQ     ??disk_writep_7
+    346          			if (!(CardType & CT_BLOCK)) sa *= 512;	/* Convert to byte address if needed */
+   \   00002E   F2B2....     BIT.B   #0x8, &CardType
+   \   000032   062C         JC      ??disk_writep_8
+   \   000034   0C4E         MOV.W   R14, R12
+   \   000036   0D4F         MOV.W   R15, R13
+   \   000038   B012....     CALL    #?ShiftLeft32_9
+   \   00003C   0E4C         MOV.W   R12, R14
+   \   00003E   0F4D         MOV.W   R13, R15
+    347          			if (send_cmd(CMD24, sa) == 0) {			/* WRITE_SINGLE_BLOCK */
+   \                     ??disk_writep_8:
+   \   000040   7C405800     MOV.B   #0x58, R12
+   \   000044   B012....     CALL    #send_cmd
+   \   000048   4C93         CMP.B   #0x0, R12
+   \   00004A   3220         JNE     ??disk_writep_6
+    348          				xmit_mmc(0xFF); xmit_mmc(0xFE);		/* Data block header */
+   \   00004C   7C43         MOV.B   #0xff, R12
+   \   00004E   B012....     CALL    #xmit_mmc
+   \   000052   7C40FE00     MOV.B   #0xfe, R12
+   \   000056   B012....     CALL    #xmit_mmc
+    349          				wc = 512;							/* Set byte counter */
+   \   00005A   B2400002.... MOV.W   #0x200, &??wc
+    350          				res = RES_OK;
+   \   000060   4A43         MOV.B   #0x0, R10
+   \   000062   263C         JMP     ??disk_writep_6
+    351          			}
+    352          		} else {	/* Finalize sector write process */
+    353          			bc = wc + 2;
+   \                     ??disk_writep_7:
+   \   000064   1E42....     MOV.W   &??wc, R14
+   \   000068   2E53         ADD.W   #0x2, R14
+   \   00006A   033C         JMP     ??disk_writep_9
+    354          			while (bc--) xmit_mmc(0);	/* Fill left bytes and CRC with zeros */
+   \                     ??disk_writep_1:
+   \   00006C   4C43         MOV.B   #0x0, R12
+   \   00006E   B012....     CALL    #xmit_mmc
+   \                     ??disk_writep_9:
+   \   000072   0F4E         MOV.W   R14, R15
+   \   000074   3E53         ADD.W   #0xffff, R14
+   \   000076   0F93         CMP.W   #0x0, R15
+   \   000078   F923         JNE     ??disk_writep_1
+    355          			if ((rcvr_mmc() & 0x1F) == 0x05) {	/* Receive data resp and wait for end of write process in timeout of 300ms */
+   \   00007A   B012....     CALL    #rcvr_mmc
+   \   00007E   7CF01F00     AND.B   #0x1f, R12
+   \   000082   7C900500     CMP.B   #0x5, R12
+   \   000086   1220         JNE     ??disk_writep_10
+    356          				for (tmr = 10000; rcvr_mmc() != 0xFF && tmr; tmr--)	/* Wait for ready (max 1000ms) */
+   \   000088   3F401027     MOV.W   #0x2710, R15
+   \   00008C   063C         JMP     ??disk_writep_11
+    357          					DLY_US(100);
+   \                     ??disk_writep_2:
+   \   00008E                ////////////// Start of 100 cycles delay.
+   \   00008E   003C         JMP     ??disk_writep_14
+   \                     ??disk_writep_14:
+   \   000090   3E401F00     MOV.W   #0x1f, R14
+   \                     ??disk_writep_13:
+   \   000094   3E53         ADD.W   #0xffff, R14
+   \   000096   FE2F         JC      ??disk_writep_13
+   \   000098                ////////////// End of delay code.
+   \   000098   3F53         ADD.W   #0xffff, R15
+   \                     ??disk_writep_11:
+   \   00009A   B012....     CALL    #rcvr_mmc
+   \   00009E   7C93         CMP.B   #0xff, R12
+   \   0000A0   0224         JEQ     ??disk_writep_12
+   \   0000A2   0F93         CMP.W   #0x0, R15
+   \   0000A4   F423         JNE     ??disk_writep_2
+    358          				if (tmr) res = RES_OK;
+   \                     ??disk_writep_12:
+   \   0000A6   0F93         CMP.W   #0x0, R15
+   \   0000A8   0124         JEQ     ??disk_writep_10
+   \   0000AA   4A43         MOV.B   #0x0, R10
+    359          			}
+    360          			release_spi();
+   \                     ??disk_writep_10:
+   \   0000AC   B012....     CALL    #release_spi
+    361          		}
+    362          	}
+    363          
+    364          	return res;
+   \                     ??disk_writep_6:
+   \   0000B0   4C4A         MOV.B   R10, R12
+   \   0000B2   3A41         POP.W   R10
+   \   0000B4   3041         RET
+    365          }
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+   \                     ??wc:
+   \   000000                DS8 2
+    366          #endif
+    367          
+    368          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+       2  INIT_PORT
+      12  disk_initialize
+            12 -> INIT_PORT
+            12 -> rcvr_mmc
+            12 -> release_spi
+            12 -> send_cmd
+            12 -> skip_mmc
+       8  disk_readp
+             8 -> rcvr_mmc
+             8 -> release_spi
+             8 -> send_cmd
+             8 -> skip_mmc
+       4  disk_writep
+             4 -> rcvr_mmc
+             4 -> release_spi
+             4 -> send_cmd
+             4 -> xmit_mmc
+       2  rcvr_mmc
+       2  release_spi
+             2 -> rcvr_mmc
+      10  send_cmd
+            10 -> rcvr_mmc
+            10 -> send_cmd
+            10 -> xmit_mmc
+       2  skip_mmc
+       2  xmit_mmc
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       1  CardType
+      14  INIT_PORT
+       1  P1DIR
+       1  P1IN
+       1  P1OUT
+     300  disk_initialize
+     144  disk_readp
+     182  disk_writep
+     198  rcvr_mmc
+      10  release_spi
+     120  send_cmd
+     106  skip_mmc
+       2  wc
+     216  xmit_mmc
+
+ 
+ 1 290 bytes in segment CODE
+     3 bytes in segment DATA16_AN
+     3 bytes in segment DATA16_Z
+ 
+ 1 290 bytes of CODE memory
+     3 bytes of DATA memory (+ 3 bytes shared)
+
+Errors: none
+Warnings: 1

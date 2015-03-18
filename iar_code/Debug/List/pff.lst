@@ -1,0 +1,2436 @@
+###############################################################################
+#                                                                             #
+#                                                       24/Sep/2013  11:24:19 #
+# IAR C/C++ Compiler V5.50.1.20465/W32, Evaluation edition for MSP430         #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    __rt_version  =  3                                                       #
+#    __double_size =  32                                                      #
+#    __reg_r4      =  free                                                    #
+#    __reg_r5      =  free                                                    #
+#    __pic         =  no                                                      #
+#    __core        =  430                                                     #
+#    Source file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\pff.c                #
+#    Command line  =  E:\WorkSpace\IAR_MSP430\GPS_V1\src\pff.c -lC            #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\ -o           #
+#                     E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\ --no_unroll   #
+#                     --no_inline --no_tbaa --debug -D__MSP430G2553__ -e      #
+#                     --double=32 --dlib_config "D:\IAR                       #
+#                     Systems\430\LIB\DLIB\dl430fn.h" -Om                     #
+#    List file     =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\List\pff.lst       #
+#    Object file   =  E:\WorkSpace\IAR_MSP430\GPS_V1\Debug\Obj\pff.r43        #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\WorkSpace\IAR_MSP430\GPS_V1\src\pff.c
+      1          /*----------------------------------------------------------------------------/
+      2          /  Petit FatFs - FAT file system module  R0.02a                (C)ChaN, 2010
+      3          /-----------------------------------------------------------------------------/
+      4          / Petit FatFs module is an open source software to implement FAT file system to
+      5          / small embedded systems. This is a free software and is opened for education,
+      6          / research and commercial developments under license policy of following trems.
+      7          /
+      8          /  Copyright (C) 2010, ChaN, all right reserved.
+      9          /
+     10          / * The Petit FatFs module is a free software and there is NO WARRANTY.
+     11          / * No restriction on use. You can use, modify and redistribute it for
+     12          /   personal, non-profit or commercial use UNDER YOUR RESPONSIBILITY.
+     13          / * Redistributions of source code must retain the above copyright notice.
+     14          /
+     15          /-----------------------------------------------------------------------------/
+     16          / Jun 15,'09  R0.01a  First release. (Branched from FatFs R0.07b.)
+     17          /
+     18          / Dec 14,'09  R0.02   Added multiple code page support.
+     19          /                     Added write funciton.
+     20          /                     Changed stream read mode interface.
+     21          / Dec 07,'10  R0.02a  Added some configuration options.
+     22          /                     Fixed fails to open objects with DBCS character.
+     23          /----------------------------------------------------------------------------*/
+     24          
+     25          #include "pff.h"		/* Petit FatFs configurations and declarations */
+     26          #include "diskio.h"		/* Declarations of low level disk I/O functions */
+     27          
+     28          
+     29          
+     30          /*--------------------------------------------------------------------------
+     31          
+     32             Module Private Definitions
+     33          
+     34          ---------------------------------------------------------------------------*/
+     35          
+     36          
+     37          #if _FS_FAT32
+     38          #define LD_CLUST(dir)	(((DWORD)LD_WORD(dir+DIR_FstClusHI)<<16) | LD_WORD(dir+DIR_FstClusLO))
+     39          #else
+     40          #define LD_CLUST(dir)	LD_WORD(dir+DIR_FstClusLO)
+     41          #endif
+     42          
+     43          
+     44          /*--------------------------------------------------------*/
+     45          /* DBCS code ranges and SBCS extend char conversion table */
+     46          
+     47          #if _CODE_PAGE == 932	/* Japanese Shift-JIS */
+     48          #define _DF1S	0x81	/* DBC 1st byte range 1 start */
+     49          #define _DF1E	0x9F	/* DBC 1st byte range 1 end */
+     50          #define _DF2S	0xE0	/* DBC 1st byte range 2 start */
+     51          #define _DF2E	0xFC	/* DBC 1st byte range 2 end */
+     52          #define _DS1S	0x40	/* DBC 2nd byte range 1 start */
+     53          #define _DS1E	0x7E	/* DBC 2nd byte range 1 end */
+     54          #define _DS2S	0x80	/* DBC 2nd byte range 2 start */
+     55          #define _DS2E	0xFC	/* DBC 2nd byte range 2 end */
+     56          
+     57          #elif _CODE_PAGE == 936	/* Simplified Chinese GBK */
+     58          #define _DF1S	0x81
+     59          #define _DF1E	0xFE
+     60          #define _DS1S	0x40
+     61          #define _DS1E	0x7E
+     62          #define _DS2S	0x80
+     63          #define _DS2E	0xFE
+     64          
+     65          #elif _CODE_PAGE == 949	/* Korean */
+     66          #define _DF1S	0x81
+     67          #define _DF1E	0xFE
+     68          #define _DS1S	0x41
+     69          #define _DS1E	0x5A
+     70          #define _DS2S	0x61
+     71          #define _DS2E	0x7A
+     72          #define _DS3S	0x81
+     73          #define _DS3E	0xFE
+     74          
+     75          #elif _CODE_PAGE == 950	/* Traditional Chinese Big5 */
+     76          #define _DF1S	0x81
+     77          #define _DF1E	0xFE
+     78          #define _DS1S	0x40
+     79          #define _DS1E	0x7E
+     80          #define _DS2S	0xA1
+     81          #define _DS2E	0xFE
+     82          
+     83          #elif _CODE_PAGE == 437	/* U.S. (OEM) */
+     84          #define _DF1S	0
+     85          #define _EXCVT {0x80,0x9A,0x90,0x41,0x8E,0x41,0x8F,0x80,0x45,0x45,0x45,0x49,0x49,0x49,0x8E,0x8F,0x90,0x92,0x92,0x4F,0x99,0x4F,0x55,0x55,0x59,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+     86          				0x41,0x49,0x4F,0x55,0xA5,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0x21,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+     87          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+     88          				0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+     89          
+     90          #elif _CODE_PAGE == 720	/* Arabic (OEM) */
+     91          #define _DF1S	0
+     92          #define _EXCVT {0x80,0x81,0x45,0x41,0x84,0x41,0x86,0x43,0x45,0x45,0x45,0x49,0x49,0x8D,0x8E,0x8F,0x90,0x92,0x92,0x93,0x94,0x95,0x49,0x49,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+     93          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+     94          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+     95          				0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+     96          
+     97          #elif _CODE_PAGE == 737	/* Greek (OEM) */
+     98          #define _DF1S	0
+     99          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x92,0x92,0x93,0x94,0x95,0x96,0x97,0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87, \
+    100          				0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0xAA,0x92,0x93,0x94,0x95,0x96,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    101          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    102          				0x97,0xEA,0xEB,0xEC,0xE4,0xED,0xEE,0xE7,0xE8,0xF1,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    103          
+    104          #elif _CODE_PAGE == 775	/* Baltic (OEM) */
+    105          #define _DF1S	0
+    106          #define _EXCVT {0x80,0x9A,0x91,0xA0,0x8E,0x95,0x8F,0x80,0xAD,0xED,0x8A,0x8A,0xA1,0x8D,0x8E,0x8F,0x90,0x92,0x92,0xE2,0x99,0x95,0x96,0x97,0x97,0x99,0x9A,0x9D,0x9C,0x9D,0x9E,0x9F, \
+    107          				0xA0,0xA1,0xE0,0xA3,0xA3,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    108          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xB5,0xB6,0xB7,0xB8,0xBD,0xBE,0xC6,0xC7,0xA5,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    109          				0xE0,0xE1,0xE2,0xE3,0xE5,0xE5,0xE6,0xE3,0xE8,0xE8,0xEA,0xEA,0xEE,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    110          
+    111          #elif _CODE_PAGE == 850	/* Multilingual Latin 1 (OEM) */
+    112          #define _DF1S	0
+    113          #define _EXCVT {0x80,0x9A,0x90,0xB6,0x8E,0xB7,0x8F,0x80,0xD2,0xD3,0xD4,0xD8,0xD7,0xDE,0x8E,0x8F,0x90,0x92,0x92,0xE2,0x99,0xE3,0xEA,0xEB,0x59,0x99,0x9A,0x9D,0x9C,0x9D,0x9E,0x9F, \
+    114          				0xB5,0xD6,0xE0,0xE9,0xA5,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0x21,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    115          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC7,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    116          				0xE0,0xE1,0xE2,0xE3,0xE5,0xE5,0xE6,0xE7,0xE7,0xE9,0xEA,0xEB,0xED,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    117          
+    118          #elif _CODE_PAGE == 852	/* Latin 2 (OEM) */
+    119          #define _DF1S	0
+    120          #define _EXCVT {0x80,0x9A,0x90,0xB6,0x8E,0xDE,0x8F,0x80,0x9D,0xD3,0x8A,0x8A,0xD7,0x8D,0x8E,0x8F,0x90,0x91,0x91,0xE2,0x99,0x95,0x95,0x97,0x97,0x99,0x9A,0x9B,0x9B,0x9D,0x9E,0x9F, \
+    121          				0xB5,0xD6,0xE0,0xE9,0xA4,0xA4,0xA6,0xA6,0xA8,0xA8,0xAA,0x8D,0xAC,0xB8,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBD,0xBF, \
+    122          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC6,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD1,0xD1,0xD2,0xD3,0xD2,0xD5,0xD6,0xD7,0xB7,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    123          				0xE0,0xE1,0xE2,0xE3,0xE3,0xD5,0xE6,0xE6,0xE8,0xE9,0xE8,0xEB,0xED,0xED,0xDD,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xEB,0xFC,0xFC,0xFE,0xFF}
+    124          
+    125          #elif _CODE_PAGE == 855	/* Cyrillic (OEM) */
+    126          #define _DF1S	0
+    127          #define _EXCVT {0x81,0x81,0x83,0x83,0x85,0x85,0x87,0x87,0x89,0x89,0x8B,0x8B,0x8D,0x8D,0x8F,0x8F,0x91,0x91,0x93,0x93,0x95,0x95,0x97,0x97,0x99,0x99,0x9B,0x9B,0x9D,0x9D,0x9F,0x9F, \
+    128          				0xA1,0xA1,0xA3,0xA3,0xA5,0xA5,0xA7,0xA7,0xA9,0xA9,0xAB,0xAB,0xAD,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB6,0xB6,0xB8,0xB8,0xB9,0xBA,0xBB,0xBC,0xBE,0xBE,0xBF, \
+    129          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC7,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD1,0xD1,0xD3,0xD3,0xD5,0xD5,0xD7,0xD7,0xDD,0xD9,0xDA,0xDB,0xDC,0xDD,0xE0,0xDF, \
+    130          				0xE0,0xE2,0xE2,0xE4,0xE4,0xE6,0xE6,0xE8,0xE8,0xEA,0xEA,0xEC,0xEC,0xEE,0xEE,0xEF,0xF0,0xF2,0xF2,0xF4,0xF4,0xF6,0xF6,0xF8,0xF8,0xFA,0xFA,0xFC,0xFC,0xFD,0xFE,0xFF}
+    131          
+    132          #elif _CODE_PAGE == 857	/* Turkish (OEM) */
+    133          #define _DF1S	0
+    134          #define _EXCVT {0x80,0x9A,0x90,0xB6,0x8E,0xB7,0x8F,0x80,0xD2,0xD3,0xD4,0xD8,0xD7,0x98,0x8E,0x8F,0x90,0x92,0x92,0xE2,0x99,0xE3,0xEA,0xEB,0x98,0x99,0x9A,0x9D,0x9C,0x9D,0x9E,0x9E, \
+    135          				0xB5,0xD6,0xE0,0xE9,0xA5,0xA5,0xA6,0xA6,0xA8,0xA9,0xAA,0xAB,0xAC,0x21,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    136          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC7,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    137          				0xE0,0xE1,0xE2,0xE3,0xE5,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xDE,0x59,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    138          
+    139          #elif _CODE_PAGE == 858	/* Multilingual Latin 1 + Euro (OEM) */
+    140          #define _DF1S	0
+    141          #define _EXCVT {0x80,0x9A,0x90,0xB6,0x8E,0xB7,0x8F,0x80,0xD2,0xD3,0xD4,0xD8,0xD7,0xDE,0x8E,0x8F,0x90,0x92,0x92,0xE2,0x99,0xE3,0xEA,0xEB,0x59,0x99,0x9A,0x9D,0x9C,0x9D,0x9E,0x9F, \
+    142          				0xB5,0xD6,0xE0,0xE9,0xA5,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0x21,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    143          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC7,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD1,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    144          				0xE0,0xE1,0xE2,0xE3,0xE5,0xE5,0xE6,0xE7,0xE7,0xE9,0xEA,0xEB,0xED,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    145          
+    146          #elif _CODE_PAGE == 862	/* Hebrew (OEM) */
+    147          #define _DF1S	0
+    148          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    149          				0x41,0x49,0x4F,0x55,0xA5,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0x21,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    150          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    151          				0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    152          
+    153          #elif _CODE_PAGE == 866	/* Russian (OEM) */
+    154          #define _DF1S	0
+    155          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    156          				0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    157          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    158          				0x90,0x91,0x92,0x93,0x9d,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F,0xF0,0xF0,0xF2,0xF2,0xF4,0xF4,0xF6,0xF6,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    159          
+    160          #elif _CODE_PAGE == 874	/* Thai (OEM, Windows) */
+    161          #define _DF1S	0
+    162          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    163          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    164          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    165          				0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    166          
+    167          #elif _CODE_PAGE == 1250 /* Central Europe (Windows) */
+    168          #define _DF1S	0
+    169          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x8A,0x9B,0x8C,0x8D,0x8E,0x8F, \
+    170          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xA3,0xB4,0xB5,0xB6,0xB7,0xB8,0xA5,0xAA,0xBB,0xBC,0xBD,0xBC,0xAF, \
+    171          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    172          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xFF}
+    173          
+    174          #elif _CODE_PAGE == 1251 /* Cyrillic (Windows) */
+    175          #define _DF1S	0
+    176          #define _EXCVT {0x80,0x81,0x82,0x82,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x80,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x8A,0x9B,0x8C,0x8D,0x8E,0x8F, \
+    177          				0xA0,0xA2,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB2,0xA5,0xB5,0xB6,0xB7,0xA8,0xB9,0xAA,0xBB,0xA3,0xBD,0xBD,0xAF, \
+    178          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    179          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF}
+    180          
+    181          #elif _CODE_PAGE == 1252 /* Latin 1 (Windows) */
+    182          #define _DF1S	0
+    183          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0xAd,0x9B,0x8C,0x9D,0xAE,0x9F, \
+    184          				0xA0,0x21,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    185          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    186          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0x9F}
+    187          
+    188          #elif _CODE_PAGE == 1253 /* Greek (Windows) */
+    189          #define _DF1S	0
+    190          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    191          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    192          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xA2,0xB8,0xB9,0xBA, \
+    193          				0xE0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xF2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xFB,0xBC,0xFD,0xBF,0xFF}
+    194          
+    195          #elif _CODE_PAGE == 1254 /* Turkish (Windows) */
+    196          #define _DF1S	0
+    197          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x8A,0x9B,0x8C,0x9D,0x9E,0x9F, \
+    198          				0xA0,0x21,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    199          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    200          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0x9F}
+    201          
+    202          #elif _CODE_PAGE == 1255 /* Hebrew (Windows) */
+    203          #define _DF1S	0
+    204          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    205          				0xA0,0x21,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    206          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    207          				0xE0,0xE1,0xE2,0xE3,0xE4,0xE5,0xE6,0xE7,0xE8,0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEF,0xF0,0xF1,0xF2,0xF3,0xF4,0xF5,0xF6,0xF7,0xF8,0xF9,0xFA,0xFB,0xFC,0xFD,0xFE,0xFF}
+    208          
+    209          #elif _CODE_PAGE == 1256 /* Arabic (Windows) */
+    210          #define _DF1S	0
+    211          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x8C,0x9D,0x9E,0x9F, \
+    212          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    213          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    214          				0x41,0xE1,0x41,0xE3,0xE4,0xE5,0xE6,0x43,0x45,0x45,0x45,0x45,0xEC,0xED,0x49,0x49,0xF0,0xF1,0xF2,0xF3,0x4F,0xF5,0xF6,0xF7,0xF8,0x55,0xFA,0x55,0x55,0xFD,0xFE,0xFF}
+    215          
+    216          #elif _CODE_PAGE == 1257 /* Baltic (Windows) */
+    217          #define _DF1S	0
+    218          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F, \
+    219          				0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xA8,0xB9,0xAA,0xBB,0xBC,0xBD,0xBE,0xAF, \
+    220          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    221          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xFF}
+    222          
+    223          #elif _CODE_PAGE == 1258 /* Vietnam (OEM, Windows) */
+    224          #define _DF1S	0
+    225          #define _EXCVT {0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0xAC,0x9D,0x9E,0x9F, \
+    226          				0xA0,0x21,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF, \
+    227          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF, \
+    228          				0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xEC,0xCD,0xCE,0xCF,0xD0,0xD1,0xF2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xFE,0x9F}
+    229          
+    230          #elif _CODE_PAGE == 1	/* ASCII (for only non-LFN cfg) */
+    231          #define _DF1S	0
+    232          
+    233          #else
+    234          #error Unknown code page
+    235          
+    236          #endif
+    237          
+    238          
+    239          
+    240          /* Character code support macros */
+    241          
+    242          #define IsUpper(c)	(((c)>='A')&&((c)<='Z'))
+    243          #define IsLower(c)	(((c)>='a')&&((c)<='z'))
+    244          
+    245          #if _DF1S		/* DBCS configuration */
+    246          
+    247          #ifdef _DF2S	/* Two 1st byte areas */
+    248          #define IsDBCS1(c)	(((BYTE)(c) >= _DF1S && (BYTE)(c) <= _DF1E) || ((BYTE)(c) >= _DF2S && (BYTE)(c) <= _DF2E))
+    249          #else			/* One 1st byte area */
+    250          #define IsDBCS1(c)	((BYTE)(c) >= _DF1S && (BYTE)(c) <= _DF1E)
+    251          #endif
+    252          
+    253          #ifdef _DS3S	/* Three 2nd byte areas */
+    254          #define IsDBCS2(c)	(((BYTE)(c) >= _DS1S && (BYTE)(c) <= _DS1E) || ((BYTE)(c) >= _DS2S && (BYTE)(c) <= _DS2E) || ((BYTE)(c) >= _DS3S && (BYTE)(c) <= _DS3E))
+    255          #else			/* Two 2nd byte areas */
+    256          #define IsDBCS2(c)	(((BYTE)(c) >= _DS1S && (BYTE)(c) <= _DS1E) || ((BYTE)(c) >= _DS2S && (BYTE)(c) <= _DS2E))
+    257          #endif
+    258          
+    259          #else			/* SBCS configuration */
+    260          
+    261          #define IsDBCS1(c)	0
+    262          #define IsDBCS2(c)	0
+    263          
+    264          #endif /* _DF1S */
+    265          
+    266          
+    267          /* FatFs refers the members in the FAT structures with byte offset instead
+    268          / of structure member because there are incompatibility of the packing option
+    269          / between various compilers. */
+    270          
+    271          #define BS_jmpBoot			0
+    272          #define BS_OEMName			3
+    273          #define BPB_BytsPerSec		11
+    274          #define BPB_SecPerClus		13
+    275          #define BPB_RsvdSecCnt		14
+    276          #define BPB_NumFATs			16
+    277          #define BPB_RootEntCnt		17
+    278          #define BPB_TotSec16		19
+    279          #define BPB_Media			21
+    280          #define BPB_FATSz16			22
+    281          #define BPB_SecPerTrk		24
+    282          #define BPB_NumHeads		26
+    283          #define BPB_HiddSec			28
+    284          #define BPB_TotSec32		32
+    285          #define BS_55AA				510
+    286          
+    287          #define BS_DrvNum			36
+    288          #define BS_BootSig			38
+    289          #define BS_VolID			39
+    290          #define BS_VolLab			43
+    291          #define BS_FilSysType		54
+    292          
+    293          #define BPB_FATSz32			36
+    294          #define BPB_ExtFlags		40
+    295          #define BPB_FSVer			42
+    296          #define BPB_RootClus		44
+    297          #define BPB_FSInfo			48
+    298          #define BPB_BkBootSec		50
+    299          #define BS_DrvNum32			64
+    300          #define BS_BootSig32		66
+    301          #define BS_VolID32			67
+    302          #define BS_VolLab32			71
+    303          #define BS_FilSysType32		82
+    304          
+    305          #define MBR_Table			446
+    306          
+    307          #define	DIR_Name			0
+    308          #define	DIR_Attr			11
+    309          #define	DIR_NTres			12
+    310          #define	DIR_CrtTime			14
+    311          #define	DIR_CrtDate			16
+    312          #define	DIR_FstClusHI		20
+    313          #define	DIR_WrtTime			22
+    314          #define	DIR_WrtDate			24
+    315          #define	DIR_FstClusLO		26
+    316          #define	DIR_FileSize		28
+    317          
+    318          
+    319          
+    320          /*--------------------------------------------------------------------------
+    321          
+    322             Private Functions
+    323          
+    324          ---------------------------------------------------------------------------*/
+    325          
+    326          
+    327          static
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+    328          FATFS *FatFs;	/* Pointer to the file system object (logical drive) */
+   \                     FatFs:
+   \   000000                DS8 2
+    329          
+    330          
+    331          /* Fill memory */
+
+   \                                 In  segment CODE, align 2
+    332          static
+    333          void mem_set (void* dst, int val, int cnt) {
+   \                     mem_set:
+    334          	char *d = (char*)dst;
+   \   000000   033C         JMP     ??mem_set_1
+    335          	while (cnt--) *d++ = (char)val;
+   \                     ??mem_set_0:
+   \   000002   CC4D0000     MOV.B   R13, 0(R12)
+   \   000006   1C53         ADD.W   #0x1, R12
+   \                     ??mem_set_1:
+   \   000008   0F4E         MOV.W   R14, R15
+   \   00000A   3E53         ADD.W   #0xffff, R14
+   \   00000C   0F93         CMP.W   #0x0, R15
+   \   00000E   F923         JNE     ??mem_set_0
+    336          }
+   \   000010   3041         RET
+    337          
+    338          /* Compare memory to memory */
+
+   \                                 In  segment CODE, align 2
+    339          static
+    340          int mem_cmp (const void* dst, const void* src, int cnt) {
+   \                     mem_cmp:
+   \   000000   0A12         PUSH.W  R10
+    341          	const char *d = (const char *)dst, *s = (const char *)src;
+    342          	int r = 0;
+   \   000002   0A43         MOV.W   #0x0, R10
+    343          	while (cnt-- && (r = *d++ - *s++) == 0) ;
+   \                     ??mem_cmp_0:
+   \   000004   0F4E         MOV.W   R14, R15
+   \   000006   3E53         ADD.W   #0xffff, R14
+   \   000008   0F93         CMP.W   #0x0, R15
+   \   00000A   0424         JEQ     ??mem_cmp_1
+   \   00000C   7A4C         MOV.B   @R12+, R10
+   \   00000E   7F4D         MOV.B   @R13+, R15
+   \   000010   0A8F         SUB.W   R15, R10
+   \   000012   F827         JEQ     ??mem_cmp_0
+    344          	return r;
+   \                     ??mem_cmp_1:
+   \   000014   0C4A         MOV.W   R10, R12
+   \   000016   3A41         POP.W   R10
+   \   000018   3041         RET
+    345          }
+    346          
+    347          
+    348          
+    349          /*-----------------------------------------------------------------------*/
+    350          /* FAT access - Read value of a FAT entry                                */
+    351          /*-----------------------------------------------------------------------*/
+    352          
+
+   \                                 In  segment CODE, align 2
+    353          static
+    354          CLUST get_fat (	/* 1:IO error, Else:Cluster status */
+   \                     get_fat:
+    355          	CLUST clst	/* Cluster# to get the link information */
+    356          )
+    357          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   2182         SUB.W   #0x4, SP
+   \   000006   0E4C         MOV.W   R12, R14
+   \   000008   0F4D         MOV.W   R13, R15
+    358          	WORD wc, bc, ofs;
+                 	     ^
+Warning[Pe177]: variable "wc" was declared but never referenced
+
+  	WORD wc, bc, ofs;
+  	         ^
+"E:\WorkSpace\IAR_MSP430\GPS_V1\src\pff.c",358  Warning[Pe177]: variable "bc"
+          was declared but never referenced
+
+  	WORD wc, bc, ofs;
+  	             ^
+"E:\WorkSpace\IAR_MSP430\GPS_V1\src\pff.c",358  Warning[Pe177]: variable "ofs"
+          was declared but never referenced
+    359          	BYTE buf[4];
+    360          	FATFS *fs = FatFs;
+   \   00000A   1B42....     MOV.W   &FatFs, R11
+    361          
+    362          
+    363          	if (clst < 2 || clst >= fs->n_fatent)	/* Range check */
+   \   00000E   0D93         CMP.W   #0x0, R13
+   \   000010   0220         JNE     ??get_fat_0
+   \   000012   2C93         CMP.W   #0x2, R12
+   \   000014   4D28         JNC     ??get_fat_1
+   \                     ??get_fat_0:
+   \   000016   1D9B0800     CMP.W   0x8(R11), R13
+   \   00001A   0428         JNC     ??get_fat_2
+   \   00001C   4920         JNE     ??get_fat_1
+   \   00001E   1C9B0600     CMP.W   0x6(R11), R12
+   \   000022   462C         JC      ??get_fat_1
+    364          		return 1;
+    365          
+    366          	switch (fs->fs_type) {
+   \                     ??get_fat_2:
+   \   000024   6D4B         MOV.B   @R11, R13
+   \   000026   6D83         SUB.B   #0x2, R13
+   \   000028   0324         JEQ     ??get_fat_3
+   \   00002A   5D83         SUB.B   #0x1, R13
+   \   00002C   1B24         JEQ     ??get_fat_4
+   \   00002E   403C         JMP     ??get_fat_1
+    367          #if _FS_FAT12
+    368          	case FS_FAT12 :
+    369          		bc = (WORD)clst; bc += bc / 2;
+    370          		ofs = bc % 512; bc /= 512;
+    371          		if (ofs != 511) {
+    372          			if (disk_readp(buf, fs->fatbase + bc, ofs, 2)) break;
+    373          		} else {
+    374          			if (disk_readp(buf, fs->fatbase + bc, 511, 1)) break;
+    375          			if (disk_readp(buf+1, fs->fatbase + bc + 1, 0, 1)) break;
+    376          		}
+    377          		wc = LD_WORD(buf);
+    378          		return (clst & 1) ? (wc >> 4) : (wc & 0xFFF);
+    379          #endif
+    380          	case FS_FAT16 :
+    381          		if (disk_readp(buf, fs->fatbase + clst / 256, (WORD)(((WORD)clst % 256) * 2), 2)) break;
+   \                     ??get_fat_3:
+   \   000030   2312         PUSH.W  #0x2
+   \   000032   4D4C         MOV.B   R12, R13
+   \   000034   0D5D         RLA.W   R13
+   \   000036   8E10         SWPB    R14
+   \   000038   8F10         SWPB    R15
+   \   00003A   4EEF         XOR.B   R15, R14
+   \   00003C   0EEF         XOR.W   R15, R14
+   \   00003E   7FF3         AND.B   #0xff, R15
+   \   000040   1E5B0A00     ADD.W   0xa(R11), R14
+   \   000044   1F6B0C00     ADDC.W  0xc(R11), R15
+   \   000048   0C41         MOV.W   SP, R12
+   \   00004A   2C53         ADD.W   #0x2, R12
+   \   00004C   B012....     CALL    #disk_readp
+   \   000050   2153         ADD.W   #0x2, SP
+   \   000052   4C93         CMP.B   #0x0, R12
+   \   000054   2D20         JNE     ??get_fat_1
+    382          		return LD_WORD(buf);
+   \   000056   6F41         MOV.B   @SP, R15
+   \   000058   5C410100     MOV.B   0x1(SP), R12
+   \   00005C   8C10         SWPB    R12
+   \   00005E   0CDF         BIS.W   R15, R12
+   \   000060   0D43         MOV.W   #0x0, R13
+   \   000062   283C         JMP     ??get_fat_5
+    383          #if _FS_FAT32
+    384          	case FS_FAT32 :
+    385          		if (disk_readp(buf, fs->fatbase + clst / 128, (WORD)(((WORD)clst % 128) * 4), 4)) break;
+   \                     ??get_fat_4:
+   \   000064   30120400     PUSH.W  #0x4
+   \   000068   0A4C         MOV.W   R12, R10
+   \   00006A   3AF07F00     AND.W   #0x7f, R10
+   \   00006E   0A5A         RLA.W   R10
+   \   000070   0A5A         RLA.W   R10
+   \   000072   0D4F         MOV.W   R15, R13
+   \   000074   B012....     CALL    #?ShiftRight32u_7
+   \   000078   0E4C         MOV.W   R12, R14
+   \   00007A   0F4D         MOV.W   R13, R15
+   \   00007C   1E5B0A00     ADD.W   0xa(R11), R14
+   \   000080   1F6B0C00     ADDC.W  0xc(R11), R15
+   \   000084   0D4A         MOV.W   R10, R13
+   \   000086   0C41         MOV.W   SP, R12
+   \   000088   2C53         ADD.W   #0x2, R12
+   \   00008A   B012....     CALL    #disk_readp
+   \   00008E   2153         ADD.W   #0x2, SP
+   \   000090   4C93         CMP.B   #0x0, R12
+   \   000092   0E20         JNE     ??get_fat_1
+    386          		return LD_DWORD(buf) & 0x0FFFFFFF;
+   \   000094   6B41         MOV.B   @SP, R11
+   \   000096   5C410100     MOV.B   0x1(SP), R12
+   \   00009A   8C10         SWPB    R12
+   \   00009C   5F410200     MOV.B   0x2(SP), R15
+   \   0000A0   5D410300     MOV.B   0x3(SP), R13
+   \   0000A4   8D10         SWPB    R13
+   \   0000A6   0DDF         BIS.W   R15, R13
+   \   0000A8   0CDB         BIS.W   R11, R12
+   \   0000AA   3DF0FF0F     AND.W   #0xfff, R13
+   \   0000AE   023C         JMP     ??get_fat_5
+    387          #endif
+    388          	}
+    389          
+    390          	return 1;	/* An error occured at the disk I/O layer */
+   \                     ??get_fat_1:
+   \   0000B0   1C43         MOV.W   #0x1, R12
+   \   0000B2   0D43         MOV.W   #0x0, R13
+   \                     ??get_fat_5:
+   \   0000B4   2152         ADD.W   #0x4, SP
+   \   0000B6   3B41         POP.W   R11
+   \   0000B8   3A41         POP.W   R10
+   \   0000BA   3041         RET
+    391          }
+    392          
+    393          
+    394          
+    395          
+    396          /*-----------------------------------------------------------------------*/
+    397          /* Get sector# from cluster#                                             */
+    398          /*-----------------------------------------------------------------------*/
+    399          
+
+   \                                 In  segment CODE, align 2
+    400          static
+    401          DWORD clust2sect (	/* !=0: Sector number, 0: Failed - invalid cluster# */
+   \                     clust2sect:
+    402          	CLUST clst		/* Cluster# to be converted */
+    403          )
+    404          {
+   \   000000   0A12         PUSH.W  R10
+    405          	FATFS *fs = FatFs;
+   \   000002   1A42....     MOV.W   &FatFs, R10
+    406          
+    407          
+    408          	clst -= 2;
+   \   000006   3C50FEFF     ADD.W   #0xfffe, R12
+   \   00000A   3D63         ADDC.W  #0xffff, R13
+    409          	if (clst >= (fs->n_fatent - 2)) return 0;		/* Invalid cluster# */
+   \   00000C   1E4A0600     MOV.W   0x6(R10), R14
+   \   000010   1F4A0800     MOV.W   0x8(R10), R15
+   \   000014   3E50FEFF     ADD.W   #0xfffe, R14
+   \   000018   3F63         ADDC.W  #0xffff, R15
+   \   00001A   0D9F         CMP.W   R15, R13
+   \   00001C   0628         JNC     ??clust2sect_0
+   \   00001E   0220         JNE     ??clust2sect_1
+   \   000020   0C9E         CMP.W   R14, R12
+   \   000022   0328         JNC     ??clust2sect_0
+   \                     ??clust2sect_1:
+   \   000024   0C43         MOV.W   #0x0, R12
+   \   000026   0D43         MOV.W   #0x0, R13
+   \   000028   093C         JMP     ??clust2sect_2
+    410          	return (DWORD)clst * fs->csize + fs->database;
+   \                     ??clust2sect_0:
+   \   00002A   5E4A0200     MOV.B   0x2(R10), R14
+   \   00002E   0F43         MOV.W   #0x0, R15
+   \   000030   B012....     CALL    #?Mul32
+   \   000034   1C5A1200     ADD.W   0x12(R10), R12
+   \   000038   1D6A1400     ADDC.W  0x14(R10), R13
+   \                     ??clust2sect_2:
+   \   00003C   3A41         POP.W   R10
+   \   00003E   3041         RET
+    411          }
+    412          
+    413          
+    414          
+    415          
+    416          /*-----------------------------------------------------------------------*/
+    417          /* Directory handling - Rewind directory index                           */
+    418          /*-----------------------------------------------------------------------*/
+    419          
+
+   \                                 In  segment CODE, align 2
+    420          static
+    421          FRESULT dir_rewind (
+   \                     dir_rewind:
+    422          	DIR *dj			/* Pointer to directory object */
+    423          )
+    424          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0A4C         MOV.W   R12, R10
+    425          	CLUST clst;
+    426          	FATFS *fs = FatFs;
+   \   000004   1F42....     MOV.W   &FatFs, R15
+    427          
+    428          
+    429          	dj->index = 0;
+   \   000008   8C430000     MOV.W   #0x0, 0(R12)
+    430          	clst = dj->sclust;
+   \   00000C   1C4A0400     MOV.W   0x4(R10), R12
+   \   000010   1D4A0600     MOV.W   0x6(R10), R13
+    431          	if (clst == 1 || clst >= fs->n_fatent)	/* Check start cluster range */
+   \   000014   1C93         CMP.W   #0x1, R12
+   \   000016   0220         JNE     ??dir_rewind_1
+   \   000018   0D93         CMP.W   #0x0, R13
+   \   00001A   0724         JEQ     ??dir_rewind_0
+   \                     ??dir_rewind_1:
+   \   00001C   1D9F0800     CMP.W   0x8(R15), R13
+   \   000020   0628         JNC     ??dir_rewind_2
+   \   000022   0320         JNE     ??dir_rewind_0
+   \   000024   1C9F0600     CMP.W   0x6(R15), R12
+   \   000028   0228         JNC     ??dir_rewind_2
+    432          		return FR_DISK_ERR;
+   \                     ??dir_rewind_0:
+   \   00002A   5C43         MOV.B   #0x1, R12
+   \   00002C   203C         JMP     ??dir_rewind_3
+    433          	if (_FS_FAT32 && !clst && fs->fs_type == FS_FAT32)	/* Replace cluster# 0 with root cluster# if in FAT32 */
+   \                     ??dir_rewind_2:
+   \   00002E   0E4C         MOV.W   R12, R14
+   \   000030   0EDD         BIS.W   R13, R14
+   \   000032   0E93         CMP.W   #0x0, R14
+   \   000034   0820         JNE     ??dir_rewind_4
+   \   000036   FF9003000000 CMP.B   #0x3, 0(R15)
+   \   00003C   0420         JNE     ??dir_rewind_4
+    434          		clst = (CLUST)fs->dirbase;
+   \   00003E   1C4F0E00     MOV.W   0xe(R15), R12
+   \   000042   1D4F1000     MOV.W   0x10(R15), R13
+    435          	dj->clust = clst;						/* Current cluster */
+   \                     ??dir_rewind_4:
+   \   000046   8A4C0800     MOV.W   R12, 0x8(R10)
+   \   00004A   8A4D0A00     MOV.W   R13, 0xa(R10)
+    436          	dj->sect = clst ? clust2sect(clst) : fs->dirbase;	/* Current sector */
+   \   00004E   0E4C         MOV.W   R12, R14
+   \   000050   0EDD         BIS.W   R13, R14
+   \   000052   0E93         CMP.W   #0x0, R14
+   \   000054   0324         JEQ     ??dir_rewind_5
+   \   000056   B012....     CALL    #clust2sect
+   \   00005A   043C         JMP     ??dir_rewind_6
+   \                     ??dir_rewind_5:
+   \   00005C   1C4F0E00     MOV.W   0xe(R15), R12
+   \   000060   1D4F1000     MOV.W   0x10(R15), R13
+   \                     ??dir_rewind_6:
+   \   000064   8A4C0C00     MOV.W   R12, 0xc(R10)
+   \   000068   8A4D0E00     MOV.W   R13, 0xe(R10)
+    437          
+    438          	return FR_OK;	/* Seek succeeded */
+   \   00006C   4C43         MOV.B   #0x0, R12
+   \                     ??dir_rewind_3:
+   \   00006E   3A41         POP.W   R10
+   \   000070   3041         RET
+    439          }
+    440          
+    441          
+    442          
+    443          
+    444          /*-----------------------------------------------------------------------*/
+    445          /* Directory handling - Move directory index next                        */
+    446          /*-----------------------------------------------------------------------*/
+    447          
+
+   \                                 In  segment CODE, align 2
+    448          static
+    449          FRESULT dir_next (	/* FR_OK:Succeeded, FR_NO_FILE:End of table */
+   \                     dir_next:
+    450          	DIR *dj			/* Pointer to directory object */
+    451          )
+    452          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0A4C         MOV.W   R12, R10
+    453          	CLUST clst;
+    454          	WORD i;
+    455          	FATFS *fs = FatFs;
+   \   000008   1842....     MOV.W   &FatFs, R8
+    456          
+    457          
+    458          	i = dj->index + 1;
+   \   00000C   2B4C         MOV.W   @R12, R11
+   \   00000E   1B53         ADD.W   #0x1, R11
+    459          	if (!i || !dj->sect)	/* Report EOT when index has reached 65535 */
+   \   000010   3324         JEQ     ??dir_next_0
+   \   000012   1F4C0C00     MOV.W   0xc(R12), R15
+   \   000016   1FDC0E00     BIS.W   0xe(R12), R15
+   \   00001A   0F93         CMP.W   #0x0, R15
+   \   00001C   2D24         JEQ     ??dir_next_0
+    460          		return FR_NO_FILE;
+    461          
+    462          	if (!(i % 16)) {		/* Sector changed? */
+   \   00001E   7BB00F00     BIT.B   #0xf, R11
+   \   000022   3720         JNE     ??dir_next_1
+    463          		dj->sect++;			/* Next sector */
+   \   000024   9C530C00     ADD.W   #0x1, 0xc(R12)
+   \   000028   8C630E00     ADDC.W  #0x0, 0xe(R12)
+    464          
+    465          		if (dj->clust == 0) {	/* Static table */
+   \   00002C   1C4A0800     MOV.W   0x8(R10), R12
+   \   000030   1D4A0A00     MOV.W   0xa(R10), R13
+   \   000034   0F4C         MOV.W   R12, R15
+   \   000036   0FDD         BIS.W   R13, R15
+   \   000038   0F93         CMP.W   #0x0, R15
+   \   00003A   0420         JNE     ??dir_next_2
+    466          			if (i >= fs->n_rootdir)	/* Report EOT when end of table */
+   \   00003C   1B980400     CMP.W   0x4(R8), R11
+   \   000040   2828         JNC     ??dir_next_1
+   \   000042   1A3C         JMP     ??dir_next_0
+    467          				return FR_NO_FILE;
+    468          		}
+    469          		else {					/* Dynamic table */
+    470          			if (((i / 16) & (fs->csize-1)) == 0) {	/* Cluster changed? */
+   \                     ??dir_next_2:
+   \   000044   0E4B         MOV.W   R11, R14
+   \   000046   12C3         CLRC
+   \   000048   0E10         RRC.W   R14
+   \   00004A   0E11         RRA.W   R14
+   \   00004C   0E11         RRA.W   R14
+   \   00004E   0E11         RRA.W   R14
+   \   000050   5F480200     MOV.B   0x2(R8), R15
+   \   000054   3F53         ADD.W   #0xffff, R15
+   \   000056   0EBF         BIT.W   R15, R14
+   \   000058   1C20         JNE     ??dir_next_1
+    471          				clst = get_fat(dj->clust);		/* Get next cluster */
+   \   00005A   B012....     CALL    #get_fat
+    472          				if (clst <= 1) return FR_DISK_ERR;
+   \   00005E   0D93         CMP.W   #0x0, R13
+   \   000060   0420         JNE     ??dir_next_3
+   \   000062   2C93         CMP.W   #0x2, R12
+   \   000064   022C         JC      ??dir_next_3
+   \   000066   5C43         MOV.B   #0x1, R12
+   \   000068   173C         JMP     ??dir_next_4
+    473          				if (clst >= fs->n_fatent)		/* When it reached end of dynamic table */
+   \                     ??dir_next_3:
+   \   00006A   1D980800     CMP.W   0x8(R8), R13
+   \   00006E   0728         JNC     ??dir_next_5
+   \   000070   0320         JNE     ??dir_next_0
+   \   000072   1C980600     CMP.W   0x6(R8), R12
+   \   000076   0328         JNC     ??dir_next_5
+    474          					return FR_NO_FILE;			/* Report EOT */
+   \                     ??dir_next_0:
+   \   000078   7C400300     MOV.B   #0x3, R12
+   \   00007C   0D3C         JMP     ??dir_next_4
+    475          				dj->clust = clst;				/* Initialize data for new cluster */
+   \                     ??dir_next_5:
+   \   00007E   8A4C0800     MOV.W   R12, 0x8(R10)
+   \   000082   8A4D0A00     MOV.W   R13, 0xa(R10)
+    476          				dj->sect = clust2sect(clst);
+   \   000086   B012....     CALL    #clust2sect
+   \   00008A   8A4C0C00     MOV.W   R12, 0xc(R10)
+   \   00008E   8A4D0E00     MOV.W   R13, 0xe(R10)
+    477          			}
+    478          		}
+    479          	}
+    480          
+    481          	dj->index = i;
+   \                     ??dir_next_1:
+   \   000092   8A4B0000     MOV.W   R11, 0(R10)
+    482          
+    483          	return FR_OK;
+   \   000096   4C43         MOV.B   #0x0, R12
+   \                     ??dir_next_4:
+   \   000098   3040....     BR      #?Epilogue3
+    484          }
+    485          
+    486          
+    487          
+    488          
+    489          /*-----------------------------------------------------------------------*/
+    490          /* Directory handling - Find an object in the directory                  */
+    491          /*-----------------------------------------------------------------------*/
+    492          
+
+   \                                 In  segment CODE, align 2
+    493          static
+    494          FRESULT dir_find (
+   \                     dir_find:
+    495          	DIR *dj,		/* Pointer to the directory object linked to the file name */
+    496          	BYTE *dir		/* 32-byte working buffer */
+    497          )
+    498          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0B4C         MOV.W   R12, R11
+   \   000008   084D         MOV.W   R13, R8
+    499          	FRESULT res;
+    500          	BYTE c;
+    501          
+    502          
+    503          	res = dir_rewind(dj);			/* Rewind directory object */
+   \   00000A   B012....     CALL    #dir_rewind
+   \   00000E   4A4C         MOV.B   R12, R10
+    504          	if (res != FR_OK) return res;
+   \   000010   4C93         CMP.B   #0x0, R12
+   \   000012   3120         JNE     ??dir_find_1
+    505          
+    506          	do {
+    507          		res = disk_readp(dir, dj->sect, (WORD)((dj->index % 16) * 32), 32)	/* Read an entry */
+    508          			? FR_DISK_ERR : FR_OK;
+                 			              ^
+Warning[Pa089]: enumerated type mixed with another enumerated type
+   \                     ??dir_find_0:
+   \   000014   30122000     PUSH.W  #0x20
+   \   000018   2D4B         MOV.W   @R11, R13
+   \   00001A   3DF00F00     AND.W   #0xf, R13
+   \   00001E   0D5D         RLA.W   R13
+   \   000020   0D5D         RLA.W   R13
+   \   000022   0D5D         RLA.W   R13
+   \   000024   0D5D         RLA.W   R13
+   \   000026   0D5D         RLA.W   R13
+   \   000028   1E4B0C00     MOV.W   0xc(R11), R14
+   \   00002C   1F4B0E00     MOV.W   0xe(R11), R15
+   \   000030   0C48         MOV.W   R8, R12
+   \   000032   B012....     CALL    #disk_readp
+   \   000036   2153         ADD.W   #0x2, SP
+   \   000038   4C93         CMP.B   #0x0, R12
+   \   00003A   0220         JNE     ??dir_find_2
+   \   00003C   4A43         MOV.B   #0x0, R10
+   \   00003E   013C         JMP     ??dir_find_3
+   \                     ??dir_find_2:
+   \   000040   5A43         MOV.B   #0x1, R10
+    509          		if (res != FR_OK) break;
+   \                     ??dir_find_3:
+   \   000042   4A93         CMP.B   #0x0, R10
+   \   000044   1820         JNE     ??dir_find_1
+    510          		c = dir[DIR_Name];	/* First character */
+    511          		if (c == 0) { res = FR_NO_FILE; break; }	/* Reached to end of table */
+   \   000046   C8930000     CMP.B   #0x0, 0(R8)
+   \   00004A   0320         JNE     ??dir_find_4
+   \   00004C   7A400300     MOV.B   #0x3, R10
+   \   000050   123C         JMP     ??dir_find_1
+    512          		if (!(dir[DIR_Attr] & AM_VOL) && !mem_cmp(dir, dj->fn, 11)) /* Is it a valid entry? */
+   \                     ??dir_find_4:
+   \   000052   F8B20B00     BIT.B   #0x8, 0xb(R8)
+   \   000056   092C         JC      ??dir_find_5
+   \   000058   3E400B00     MOV.W   #0xb, R14
+   \   00005C   1D4B0200     MOV.W   0x2(R11), R13
+   \   000060   0C48         MOV.W   R8, R12
+   \   000062   B012....     CALL    #mem_cmp
+   \   000066   0C93         CMP.W   #0x0, R12
+   \   000068   0624         JEQ     ??dir_find_1
+    513          			break;
+    514          		res = dir_next(dj);					/* Next entry */
+   \                     ??dir_find_5:
+   \   00006A   0C4B         MOV.W   R11, R12
+   \   00006C   B012....     CALL    #dir_next
+   \   000070   4A4C         MOV.B   R12, R10
+    515          	} while (res == FR_OK);
+   \   000072   4C93         CMP.B   #0x0, R12
+   \   000074   CF27         JEQ     ??dir_find_0
+    516          
+    517          	return res;
+   \                     ??dir_find_1:
+   \   000076   4C4A         MOV.B   R10, R12
+   \   000078   3040....     BR      #?Epilogue3
+    518          }
+    519          
+    520          
+    521          
+    522          
+    523          /*-----------------------------------------------------------------------*/
+    524          /* Read an object from the directory                                     */
+    525          /*-----------------------------------------------------------------------*/
+    526          #if _USE_DIR
+    527          static
+    528          FRESULT dir_read (
+    529          	DIR *dj,		/* Pointer to the directory object to store read object name */
+    530          	BYTE *dir		/* 32-byte working buffer */
+    531          )
+    532          {
+    533          	FRESULT res;
+    534          	BYTE a, c;
+    535          
+    536          
+    537          	res = FR_NO_FILE;
+    538          	while (dj->sect) {
+    539          		res = disk_readp(dir, dj->sect, (WORD)((dj->index % 16) * 32), 32)	/* Read an entry */
+    540          			? FR_DISK_ERR : FR_OK;
+    541          		if (res != FR_OK) break;
+    542          		c = dir[DIR_Name];
+    543          		if (c == 0) { res = FR_NO_FILE; break; }	/* Reached to end of table */
+    544          		a = dir[DIR_Attr] & AM_MASK;
+    545          		if (c != 0xE5 && c != '.' && !(a & AM_VOL))	/* Is it a valid entry? */
+    546          			break;
+    547          		res = dir_next(dj);			/* Next entry */
+    548          		if (res != FR_OK) break;
+    549          	}
+    550          
+    551          	if (res != FR_OK) dj->sect = 0;
+    552          
+    553          	return res;
+    554          }
+    555          #endif
+    556          
+    557          
+    558          
+    559          /*-----------------------------------------------------------------------*/
+    560          /* Pick a segment and create the object name in directory form           */
+    561          /*-----------------------------------------------------------------------*/
+    562          
+    563          #ifdef _EXCVT
+    564          	static const BYTE cvt[] = _EXCVT;
+    565          #endif
+    566          
+
+   \                                 In  segment CODE, align 2
+    567          static
+    568          FRESULT create_name (
+   \                     create_name:
+    569          	DIR *dj,			/* Pointer to the directory object */
+    570          	const char **path	/* Pointer to pointer to the segment in the path string */
+    571          )
+    572          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0A4D         MOV.W   R13, R10
+    573          	BYTE c, d, ni, si, i, *sfn;
+    574          	const char *p;
+    575          
+    576          	/* Create file name in directory form */
+    577          	sfn = dj->fn;
+   \   00000A   1B4C0200     MOV.W   0x2(R12), R11
+    578          	mem_set(sfn, ' ', 11);
+   \   00000E   3E400B00     MOV.W   #0xb, R14
+   \   000012   3D402000     MOV.W   #0x20, R13
+   \   000016   0C4B         MOV.W   R11, R12
+   \   000018   B012....     CALL    #mem_set
+    579          	si = i = 0; ni = 8;
+   \   00001C   4E43         MOV.B   #0x0, R14
+   \   00001E   4D43         MOV.B   #0x0, R13
+   \   000020   7842         MOV.B   #0x8, R8
+    580          	p = *path;
+   \   000022   2C4A         MOV.W   @R10, R12
+   \   000024   083C         JMP     ??create_name_1
+    581          	for (;;) {
+    582          		c = p[si++];
+    583          		if (c <= ' ' || c == '/') break;	/* Break on end of segment */
+    584          		if (c == '.' || i >= ni) {
+    585          			if (ni != 8 || c != '.') break;
+   \                     ??create_name_0:
+   \   000026   7892         CMP.B   #0x8, R8
+   \   000028   2320         JNE     ??create_name_2
+   \   00002A   79902E00     CMP.B   #0x2e, R9
+   \   00002E   2020         JNE     ??create_name_2
+    586          			i = 8; ni = 11;
+   \   000030   7E42         MOV.B   #0x8, R14
+   \   000032   78400B00     MOV.B   #0xb, R8
+    587          			continue;
+    588          		}
+   \                     ??create_name_1:
+   \   000036   0F4C         MOV.W   R12, R15
+   \   000038   0F5D         ADD.W   R13, R15
+   \   00003A   694F         MOV.B   @R15, R9
+   \   00003C   5D53         ADD.B   #0x1, R13
+   \   00003E   79902100     CMP.B   #0x21, R9
+   \   000042   1628         JNC     ??create_name_2
+   \   000044   79902F00     CMP.B   #0x2f, R9
+   \   000048   1324         JEQ     ??create_name_2
+   \   00004A   79902E00     CMP.B   #0x2e, R9
+   \   00004E   EB27         JEQ     ??create_name_0
+   \   000050   4E98         CMP.B   R8, R14
+   \   000052   E92F         JC      ??create_name_0
+    589          #ifdef _EXCVT
+    590          		if (c >= 0x80)					/* To upper extended char (SBCS) */
+    591          			c = cvt[c - 0x80];
+    592          #endif
+    593          		if (IsDBCS1(c) && i < ni - 1) {	/* DBC 1st byte? */
+    594          			d = p[si++];				/* Get 2nd byte */
+    595          			sfn[i++] = c;
+    596          			sfn[i++] = d;
+    597          		} else {						/* Single byte code */
+    598          			if (IsLower(c)) c -= 0x20;	/* toupper */
+   \   000054   4F49         MOV.B   R9, R15
+   \   000056   7F509F00     ADD.B   #0x9f, R15
+   \   00005A   7F901A00     CMP.B   #0x1a, R15
+   \   00005E   022C         JC      ??create_name_3
+   \   000060   7950E000     ADD.B   #0xe0, R9
+    599          			sfn[i++] = c;
+   \                     ??create_name_3:
+   \   000064   0F4B         MOV.W   R11, R15
+   \   000066   0F5E         ADD.W   R14, R15
+   \   000068   CF490000     MOV.B   R9, 0(R15)
+   \   00006C   5E53         ADD.B   #0x1, R14
+   \   00006E   E33F         JMP     ??create_name_1
+    600          		}
+    601          	}
+    602          	*path = &p[si];						/* Rerurn pointer to the next segment */
+   \                     ??create_name_2:
+   \   000070   0C5D         ADD.W   R13, R12
+   \   000072   8A4C0000     MOV.W   R12, 0(R10)
+    603          
+    604          	sfn[11] = (c <= ' ') ? 1 : 0;		/* Set last segment flag if end of path */
+   \   000076   79902100     CMP.B   #0x21, R9
+   \   00007A   4E7E         SUBC.B  R14, R14
+   \   00007C   5EF3         AND.B   #0x1, R14
+   \   00007E   CB4E0B00     MOV.B   R14, 0xb(R11)
+    605          
+    606          	return FR_OK;
+   \   000082   4C43         MOV.B   #0x0, R12
+   \   000084   3040....     BR      #?Epilogue4
+    607          }
+    608          
+    609          
+    610          
+    611          
+    612          /*-----------------------------------------------------------------------*/
+    613          /* Get file information from directory entry                             */
+    614          /*-----------------------------------------------------------------------*/
+    615          #if _USE_DIR
+    616          static
+    617          void get_fileinfo (		/* No return code */
+    618          	DIR *dj,			/* Pointer to the directory object */
+    619          	BYTE *dir,			/* 32-byte working buffer */
+    620          	FILINFO *fno	 	/* Pointer to store the file information */
+    621          )
+    622          {
+    623          	BYTE i, c;
+    624          	char *p;
+    625          
+    626          
+    627          	p = fno->fname;
+    628          	if (dj->sect) {
+    629          		for (i = 0; i < 8; i++) {	/* Copy file name body */
+    630          			c = dir[i];
+    631          			if (c == ' ') break;
+    632          			if (c == 0x05) c = 0xE5;
+    633          			*p++ = c;
+    634          		}
+    635          		if (dir[8] != ' ') {		/* Copy file name extension */
+    636          			*p++ = '.';
+    637          			for (i = 8; i < 11; i++) {
+    638          				c = dir[i];
+    639          				if (c == ' ') break;
+    640          				*p++ = c;
+    641          			}
+    642          		}
+    643          		fno->fattrib = dir[DIR_Attr];				/* Attribute */
+    644          		fno->fsize = LD_DWORD(dir+DIR_FileSize);	/* Size */
+    645          		fno->fdate = LD_WORD(dir+DIR_WrtDate);		/* Date */
+    646          		fno->ftime = LD_WORD(dir+DIR_WrtTime);		/* Time */
+    647          	}
+    648          	*p = 0;
+    649          }
+    650          #endif /* _USE_DIR */
+    651          
+    652          
+    653          
+    654          /*-----------------------------------------------------------------------*/
+    655          /* Follow a file path                                                    */
+    656          /*-----------------------------------------------------------------------*/
+    657          
+
+   \                                 In  segment CODE, align 2
+    658          static
+    659          FRESULT follow_path (	/* FR_OK(0): successful, !=0: error code */
+   \                     follow_path:
+    660          	DIR *dj,			/* Directory object to return last directory and found object */
+    661          	BYTE *dir,			/* 32-byte working buffer */
+    662          	const char *path	/* Full-path string to find a file or directory */
+    663          )
+    664          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0E12         PUSH.W  R14
+   \   000006   0A4C         MOV.W   R12, R10
+   \   000008   0B4D         MOV.W   R13, R11
+   \   00000A   033C         JMP     ??follow_path_2
+    665          	FRESULT res;
+    666          
+    667          
+    668          	while (*path == ' ') path++;		/* Skip leading spaces */
+   \                     ??follow_path_0:
+   \   00000C   1F53         ADD.W   #0x1, R15
+   \   00000E   814F0000     MOV.W   R15, 0(SP)
+   \                     ??follow_path_2:
+   \   000012   2F41         MOV.W   @SP, R15
+   \   000014   6E4F         MOV.B   @R15, R14
+   \   000016   7E902000     CMP.B   #0x20, R14
+   \   00001A   F827         JEQ     ??follow_path_0
+    669          	if (*path == '/') path++;			/* Strip heading separator */
+   \   00001C   7E902F00     CMP.B   #0x2f, R14
+   \   000020   0320         JNE     ??follow_path_3
+   \   000022   1F53         ADD.W   #0x1, R15
+   \   000024   814F0000     MOV.W   R15, 0(SP)
+    670          	dj->sclust = 0;						/* Set start directory (always root dir) */
+   \                     ??follow_path_3:
+   \   000028   8C430400     MOV.W   #0x0, 0x4(R12)
+   \   00002C   8C430600     MOV.W   #0x0, 0x6(R12)
+    671          
+    672          	if ((BYTE)*path <= ' ') {			/* Null path means the root directory */
+   \   000030   2F41         MOV.W   @SP, R15
+   \   000032   FF9021000000 CMP.B   #0x21, 0(R15)
+   \   000038   152C         JC      ??follow_path_4
+    673          		res = dir_rewind(dj);
+   \   00003A   B012....     CALL    #dir_rewind
+    674          		dir[0] = 0;
+   \   00003E   CB430000     MOV.B   #0x0, 0(R11)
+   \   000042   303C         JMP     ??follow_path_5
+    675          
+    676          	} else {							/* Follow path */
+    677          		for (;;) {
+    678          			res = create_name(dj, &path);	/* Get a segment */
+    679          			if (res != FR_OK) break;
+    680          			res = dir_find(dj, dir);		/* Find it */
+    681          			if (res != FR_OK) {				/* Could not find the object */
+    682          				if (res == FR_NO_FILE && !*(dj->fn+11))
+    683          					res = FR_NO_PATH;
+    684          				break;
+    685          			}
+    686          			if (*(dj->fn+11)) break;		/* Last segment match. Function completed. */
+    687          			if (!(dir[DIR_Attr] & AM_DIR)) { /* Cannot follow because it is a file */
+    688          				res = FR_NO_PATH; break;
+    689          			}
+    690          			dj->sclust = LD_CLUST(dir);
+   \                     ??follow_path_1:
+   \   000044   5F4B1A00     MOV.B   0x1a(R11), R15
+   \   000048   5E4B1B00     MOV.B   0x1b(R11), R14
+   \   00004C   8E10         SWPB    R14
+   \   00004E   0EDF         BIS.W   R15, R14
+   \   000050   5D4B1400     MOV.B   0x14(R11), R13
+   \   000054   5F4B1500     MOV.B   0x15(R11), R15
+   \   000058   8F10         SWPB    R15
+   \   00005A   0FDD         BIS.W   R13, R15
+   \   00005C   8A4E0400     MOV.W   R14, 0x4(R10)
+   \   000060   8A4F0600     MOV.W   R15, 0x6(R10)
+   \                     ??follow_path_4:
+   \   000064   0D41         MOV.W   SP, R13
+   \   000066   0D53         ADD.W   #0x0, R13
+   \   000068   0C4A         MOV.W   R10, R12
+   \   00006A   B012....     CALL    #create_name
+   \   00006E   4C93         CMP.B   #0x0, R12
+   \   000070   1920         JNE     ??follow_path_5
+   \   000072   0D4B         MOV.W   R11, R13
+   \   000074   0C4A         MOV.W   R10, R12
+   \   000076   B012....     CALL    #dir_find
+   \   00007A   4C93         CMP.B   #0x0, R12
+   \   00007C   0924         JEQ     ??follow_path_6
+   \   00007E   7C900300     CMP.B   #0x3, R12
+   \   000082   1020         JNE     ??follow_path_5
+   \   000084   1F4A0200     MOV.W   0x2(R10), R15
+   \   000088   CF930B00     CMP.B   #0x0, 0xb(R15)
+   \   00008C   0B20         JNE     ??follow_path_5
+   \   00008E   093C         JMP     ??follow_path_7
+   \                     ??follow_path_6:
+   \   000090   1F4A0200     MOV.W   0x2(R10), R15
+   \   000094   CF930B00     CMP.B   #0x0, 0xb(R15)
+   \   000098   0520         JNE     ??follow_path_5
+   \   00009A   FBB010000B00 BIT.B   #0x10, 0xb(R11)
+   \   0000A0   D12F         JC      ??follow_path_1
+   \                     ??follow_path_7:
+   \   0000A2   6C42         MOV.B   #0x4, R12
+    691          		}
+    692          	}
+    693          
+    694          	return res;
+   \                     ??follow_path_5:
+   \   0000A4   2153         ADD.W   #0x2, SP
+   \   0000A6   3B41         POP.W   R11
+   \   0000A8   3A41         POP.W   R10
+   \   0000AA   3041         RET
+    695          }
+    696          
+    697          
+    698          
+    699          
+    700          /*-----------------------------------------------------------------------*/
+    701          /* Check a sector if it is an FAT boot record                            */
+    702          /*-----------------------------------------------------------------------*/
+    703          
+
+   \                                 In  segment CODE, align 2
+    704          static
+    705          BYTE check_fs (	/* 0:The FAT boot record, 1:Valid boot record but not an FAT, 2:Not a boot record, 3:Error */
+   \                     check_fs:
+    706          	BYTE *buf,	/* Working buffer */
+    707          	DWORD sect	/* Sector# (lba) to check if it is an FAT boot record or not */
+    708          )
+    709          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   084C         MOV.W   R12, R8
+   \   000008   0A4E         MOV.W   R14, R10
+   \   00000A   0B4F         MOV.W   R15, R11
+    710          	if (disk_readp(buf, sect, 510, 2))		/* Read the boot sector */
+   \   00000C   2312         PUSH.W  #0x2
+   \   00000E   3D40FE01     MOV.W   #0x1fe, R13
+   \   000012   B012....     CALL    #disk_readp
+   \   000016   2153         ADD.W   #0x2, SP
+   \   000018   4C93         CMP.B   #0x0, R12
+   \   00001A   0324         JEQ     ??check_fs_0
+    711          		return 3;
+   \   00001C   7C400300     MOV.B   #0x3, R12
+   \   000020   333C         JMP     ??check_fs_1
+    712          	if (LD_WORD(buf) != 0xAA55)				/* Check record signature */
+   \                     ??check_fs_0:
+   \   000022   6E48         MOV.B   @R8, R14
+   \   000024   5F480100     MOV.B   0x1(R8), R15
+   \   000028   8F10         SWPB    R15
+   \   00002A   0FDE         BIS.W   R14, R15
+   \   00002C   3F9055AA     CMP.W   #0xaa55, R15
+   \   000030   0224         JEQ     ??check_fs_2
+    713          		return 2;
+   \   000032   6C43         MOV.B   #0x2, R12
+   \   000034   293C         JMP     ??check_fs_1
+    714          
+    715          	if (!disk_readp(buf, sect, BS_FilSysType, 2) && LD_WORD(buf) == 0x4146)	/* Check FAT12/16 */
+   \                     ??check_fs_2:
+   \   000036   2312         PUSH.W  #0x2
+   \   000038   3D403600     MOV.W   #0x36, R13
+   \   00003C   0E4A         MOV.W   R10, R14
+   \   00003E   0F4B         MOV.W   R11, R15
+   \   000040   0C48         MOV.W   R8, R12
+   \   000042   B012....     CALL    #disk_readp
+   \   000046   2153         ADD.W   #0x2, SP
+   \   000048   4C93         CMP.B   #0x0, R12
+   \   00004A   0820         JNE     ??check_fs_3
+   \   00004C   6E48         MOV.B   @R8, R14
+   \   00004E   5F480100     MOV.B   0x1(R8), R15
+   \   000052   8F10         SWPB    R15
+   \   000054   0FDE         BIS.W   R14, R15
+   \   000056   3F904641     CMP.W   #0x4146, R15
+   \   00005A   1324         JEQ     ??check_fs_4
+    716          		return 0;
+    717          	if (_FS_FAT32 && !disk_readp(buf, sect, BS_FilSysType32, 2) && LD_WORD(buf) == 0x4146)	/* Check FAT32 */
+   \                     ??check_fs_3:
+   \   00005C   2312         PUSH.W  #0x2
+   \   00005E   3D405200     MOV.W   #0x52, R13
+   \   000062   0E4A         MOV.W   R10, R14
+   \   000064   0F4B         MOV.W   R11, R15
+   \   000066   0C48         MOV.W   R8, R12
+   \   000068   B012....     CALL    #disk_readp
+   \   00006C   2153         ADD.W   #0x2, SP
+   \   00006E   4C93         CMP.B   #0x0, R12
+   \   000070   0A20         JNE     ??check_fs_5
+   \   000072   6B48         MOV.B   @R8, R11
+   \   000074   5F480100     MOV.B   0x1(R8), R15
+   \   000078   8F10         SWPB    R15
+   \   00007A   0FDB         BIS.W   R11, R15
+   \   00007C   3F904641     CMP.W   #0x4146, R15
+   \   000080   0220         JNE     ??check_fs_5
+    718          		return 0;
+   \                     ??check_fs_4:
+   \   000082   4C43         MOV.B   #0x0, R12
+   \   000084   013C         JMP     ??check_fs_1
+    719          	return 1;
+   \                     ??check_fs_5:
+   \   000086   5C43         MOV.B   #0x1, R12
+   \                     ??check_fs_1:
+   \   000088   3040....     BR      #?Epilogue3
+    720          }
+    721          
+    722          
+    723          
+    724          
+    725          /*--------------------------------------------------------------------------
+    726          
+    727             Public Functions
+    728          
+    729          --------------------------------------------------------------------------*/
+    730          
+    731          
+    732          
+    733          /*-----------------------------------------------------------------------*/
+    734          /* Mount/Unmount a Locical Drive                                         */
+    735          /*-----------------------------------------------------------------------*/
+    736          
+
+   \                                 In  segment CODE, align 2
+    737          FRESULT pf_mount (
+   \                     pf_mount:
+    738          	FATFS *fs		/* Pointer to new file system object (NULL: Unmount) */
+    739          )
+    740          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0612         PUSH.W  R6
+   \   00000A   0712         PUSH.W  R7
+   \   00000C   31802400     SUB.W   #0x24, SP
+   \   000010   084C         MOV.W   R12, R8
+    741          	BYTE fmt, buf[36];
+    742          	DWORD bsect, fsize, tsect, mclst;
+    743          
+    744          
+    745          	FatFs = 0;
+   \   000012   8243....     MOV.W   #0x0, &FatFs
+    746          	if (!fs) return FR_OK;				/* Unregister fs object */
+   \   000016   0C93         CMP.W   #0x0, R12
+   \   000018   0220         JNE     ??pf_mount_1
+   \   00001A   4C43         MOV.B   #0x0, R12
+   \   00001C   F33C         JMP     ??pf_mount_2
+    747          
+    748          	if (disk_initialize() & STA_NOINIT)	/* Check if the drive is ready or not */
+   \                     ??pf_mount_1:
+   \   00001E   B012....     CALL    #disk_initialize
+   \   000022   5CB3         BIT.B   #0x1, R12
+   \   000024   0228         JNC     ??pf_mount_3
+    749          		return FR_NOT_READY;
+   \   000026   6C43         MOV.B   #0x2, R12
+   \   000028   ED3C         JMP     ??pf_mount_2
+    750          
+    751          	/* Search FAT partition on the drive */
+    752          	bsect = 0;
+   \                     ??pf_mount_3:
+   \   00002A   0A43         MOV.W   #0x0, R10
+   \   00002C   0B43         MOV.W   #0x0, R11
+    753          	fmt = check_fs(buf, bsect);			/* Check sector 0 as an SFD format */
+   \   00002E   0741         MOV.W   SP, R7
+   \   000030   0753         ADD.W   #0x0, R7
+   \   000032   0E43         MOV.W   #0x0, R14
+   \   000034   0F43         MOV.W   #0x0, R15
+   \   000036   0C47         MOV.W   R7, R12
+   \   000038   B012....     CALL    #check_fs
+   \   00003C   494C         MOV.B   R12, R9
+    754          	if (fmt == 1) {						/* Not an FAT boot record, it may be FDISK format */
+   \   00003E   5C93         CMP.B   #0x1, R12
+   \   000040   2420         JNE     ??pf_mount_4
+    755          		/* Check a partition listed in top of the partition table */
+    756          		if (disk_readp(buf, bsect, MBR_Table, 16)) {	/* 1st partition entry */
+   \   000042   30121000     PUSH.W  #0x10
+   \   000046   3D40BE01     MOV.W   #0x1be, R13
+   \   00004A   0E43         MOV.W   #0x0, R14
+   \   00004C   0F43         MOV.W   #0x0, R15
+   \   00004E   0C47         MOV.W   R7, R12
+   \   000050   B012....     CALL    #disk_readp
+   \   000054   2153         ADD.W   #0x2, SP
+   \   000056   4C93         CMP.B   #0x0, R12
+   \   000058   0324         JEQ     ??pf_mount_5
+    757          			fmt = 3;
+   \   00005A   79400300     MOV.B   #0x3, R9
+   \   00005E   153C         JMP     ??pf_mount_4
+    758          		} else {
+    759          			if (buf[4]) {					/* Is the partition existing? */
+   \                     ??pf_mount_5:
+   \   000060   C1930400     CMP.B   #0x0, 0x4(SP)
+   \   000064   1224         JEQ     ??pf_mount_4
+    760          				bsect = LD_DWORD(&buf[8]);	/* Partition offset in LBA */
+   \   000066   5D410800     MOV.B   0x8(SP), R13
+   \   00006A   5A410900     MOV.B   0x9(SP), R10
+   \   00006E   8A10         SWPB    R10
+   \   000070   5F410A00     MOV.B   0xa(SP), R15
+   \   000074   5B410B00     MOV.B   0xb(SP), R11
+   \   000078   8B10         SWPB    R11
+   \   00007A   0BDF         BIS.W   R15, R11
+   \   00007C   0ADD         BIS.W   R13, R10
+    761          				fmt = check_fs(buf, bsect);	/* Check the partition */
+   \   00007E   0E4A         MOV.W   R10, R14
+   \   000080   0F4B         MOV.W   R11, R15
+   \   000082   0C47         MOV.W   R7, R12
+   \   000084   B012....     CALL    #check_fs
+   \   000088   494C         MOV.B   R12, R9
+    762          			}
+    763          		}
+    764          	}
+    765          	if (fmt == 3) return FR_DISK_ERR;
+   \                     ??pf_mount_4:
+   \   00008A   79900300     CMP.B   #0x3, R9
+   \   00008E   0E24         JEQ     ??pf_mount_6
+    766          	if (fmt) return FR_NO_FILESYSTEM;	/* No valid FAT patition is found */
+   \   000090   4993         CMP.B   #0x0, R9
+   \   000092   7820         JNE     ??pf_mount_0
+    767          
+    768          	/* Initialize the file system object */
+    769          	if (disk_readp(buf, bsect, 13, sizeof(buf))) return FR_DISK_ERR;
+   \   000094   30122400     PUSH.W  #0x24
+   \   000098   3D400D00     MOV.W   #0xd, R13
+   \   00009C   0E4A         MOV.W   R10, R14
+   \   00009E   0F4B         MOV.W   R11, R15
+   \   0000A0   0C47         MOV.W   R7, R12
+   \   0000A2   B012....     CALL    #disk_readp
+   \   0000A6   2153         ADD.W   #0x2, SP
+   \   0000A8   4C93         CMP.B   #0x0, R12
+   \   0000AA   0224         JEQ     ??pf_mount_7
+   \                     ??pf_mount_6:
+   \   0000AC   5C43         MOV.B   #0x1, R12
+   \   0000AE   AA3C         JMP     ??pf_mount_2
+    770          
+    771          	fsize = LD_WORD(buf+BPB_FATSz16-13);				/* Number of sectors per FAT */
+   \                     ??pf_mount_7:
+   \   0000B0   5F410900     MOV.B   0x9(SP), R15
+   \   0000B4   56410A00     MOV.B   0xa(SP), R6
+   \   0000B8   8610         SWPB    R6
+   \   0000BA   06DF         BIS.W   R15, R6
+   \   0000BC   0743         MOV.W   #0x0, R7
+    772          	if (!fsize) fsize = LD_DWORD(buf+BPB_FATSz32-13);
+   \   0000BE   0693         CMP.W   #0x0, R6
+   \   0000C0   0C20         JNE     ??pf_mount_8
+   \   0000C2   5D411700     MOV.B   0x17(SP), R13
+   \   0000C6   56411800     MOV.B   0x18(SP), R6
+   \   0000CA   8610         SWPB    R6
+   \   0000CC   5F411900     MOV.B   0x19(SP), R15
+   \   0000D0   57411A00     MOV.B   0x1a(SP), R7
+   \   0000D4   8710         SWPB    R7
+   \   0000D6   07DF         BIS.W   R15, R7
+   \   0000D8   06DD         BIS.W   R13, R6
+    773          
+    774          	fsize *= buf[BPB_NumFATs-13];						/* Number of sectors in FAT area */
+   \                     ??pf_mount_8:
+   \   0000DA   0C46         MOV.W   R6, R12
+   \   0000DC   0D47         MOV.W   R7, R13
+   \   0000DE   5E410300     MOV.B   0x3(SP), R14
+   \   0000E2   0F43         MOV.W   #0x0, R15
+   \   0000E4   B012....     CALL    #?Mul32
+   \   0000E8   064C         MOV.W   R12, R6
+   \   0000EA   074D         MOV.W   R13, R7
+    775          	fs->fatbase = bsect + LD_WORD(buf+BPB_RsvdSecCnt-13); /* FAT start sector (lba) */
+   \   0000EC   5F410100     MOV.B   0x1(SP), R15
+   \   0000F0   5E410200     MOV.B   0x2(SP), R14
+   \   0000F4   8E10         SWPB    R14
+   \   0000F6   0EDF         BIS.W   R15, R14
+   \   0000F8   0A5E         ADD.W   R14, R10
+   \   0000FA   0B63         ADDC.W  #0x0, R11
+   \   0000FC   884A0A00     MOV.W   R10, 0xa(R8)
+   \   000100   884B0C00     MOV.W   R11, 0xc(R8)
+    776          	fs->csize = buf[BPB_SecPerClus-13];					/* Number of sectors per cluster */
+   \   000104   E8410200     MOV.B   @SP, 0x2(R8)
+    777          	fs->n_rootdir = LD_WORD(buf+BPB_RootEntCnt-13);		/* Nmuber of root directory entries */
+   \   000108   5F410400     MOV.B   0x4(SP), R15
+   \   00010C   5E410500     MOV.B   0x5(SP), R14
+   \   000110   8E10         SWPB    R14
+   \   000112   0EDF         BIS.W   R15, R14
+   \   000114   884E0400     MOV.W   R14, 0x4(R8)
+    778          	tsect = LD_WORD(buf+BPB_TotSec16-13);				/* Number of sectors on the file system */
+   \   000118   5F410600     MOV.B   0x6(SP), R15
+   \   00011C   5C410700     MOV.B   0x7(SP), R12
+   \   000120   8C10         SWPB    R12
+   \   000122   0CDF         BIS.W   R15, R12
+   \   000124   0D43         MOV.W   #0x0, R13
+    779          	if (!tsect) tsect = LD_DWORD(buf+BPB_TotSec32-13);
+   \   000126   0C93         CMP.W   #0x0, R12
+   \   000128   0C20         JNE     ??pf_mount_9
+   \   00012A   59411300     MOV.B   0x13(SP), R9
+   \   00012E   5C411400     MOV.B   0x14(SP), R12
+   \   000132   8C10         SWPB    R12
+   \   000134   5B411500     MOV.B   0x15(SP), R11
+   \   000138   5D411600     MOV.B   0x16(SP), R13
+   \   00013C   8D10         SWPB    R13
+   \   00013E   0DDB         BIS.W   R11, R13
+   \   000140   0CD9         BIS.W   R9, R12
+    780          	mclst = (tsect						/* Last cluster# + 1 */
+    781          		- LD_WORD(buf+BPB_RsvdSecCnt-13) - fsize - fs->n_rootdir / 16
+    782          		) / fs->csize + 2;
+   \                     ??pf_mount_9:
+   \   000142   5F410100     MOV.B   0x1(SP), R15
+   \   000146   5A410200     MOV.B   0x2(SP), R10
+   \   00014A   8A10         SWPB    R10
+   \   00014C   0ADF         BIS.W   R15, R10
+   \   00014E   0C8A         SUB.W   R10, R12
+   \   000150   0D73         SUBC.W  #0x0, R13
+   \   000152   0C86         SUB.W   R6, R12
+   \   000154   0D77         SUBC.W  R7, R13
+   \   000156   12C3         CLRC
+   \   000158   0E10         RRC.W   R14
+   \   00015A   0E11         RRA.W   R14
+   \   00015C   0E11         RRA.W   R14
+   \   00015E   0E11         RRA.W   R14
+   \   000160   0F43         MOV.W   #0x0, R15
+   \   000162   0C8E         SUB.W   R14, R12
+   \   000164   0D73         SUBC.W  #0x0, R13
+   \   000166   5E480200     MOV.B   0x2(R8), R14
+   \   00016A   B012....     CALL    #?DivMod32u
+   \   00016E   2C53         ADD.W   #0x2, R12
+   \   000170   0D63         ADDC.W  #0x0, R13
+    783          	fs->n_fatent = (CLUST)mclst;
+   \   000172   884C0600     MOV.W   R12, 0x6(R8)
+   \   000176   884D0800     MOV.W   R13, 0x8(R8)
+    784          
+    785          	fmt = FS_FAT16;							/* Determine the FAT sub type */
+   \   00017A   6943         MOV.B   #0x2, R9
+    786          	if (mclst < 0xFF7) 						/* Number of clusters < 0xFF5 */
+   \   00017C   0620         JNE     ??pf_mount_10
+   \   00017E   3C90F70F     CMP.W   #0xff7, R12
+   \   000182   032C         JC      ??pf_mount_10
+    787          #if _FS_FAT12
+    788          		fmt = FS_FAT12;
+    789          #else
+    790          		return FR_NO_FILESYSTEM;
+   \                     ??pf_mount_0:
+   \   000184   7C400700     MOV.B   #0x7, R12
+   \   000188   3D3C         JMP     ??pf_mount_2
+    791          #endif
+    792          	if (mclst >= 0xFFF7)					/* Number of clusters >= 0xFFF5 */
+   \                     ??pf_mount_10:
+   \   00018A   0D93         CMP.W   #0x0, R13
+   \   00018C   0320         JNE     ??pf_mount_11
+   \   00018E   3C90F7FF     CMP.W   #0xfff7, R12
+   \   000192   0228         JNC     ??pf_mount_12
+    793          #if _FS_FAT32
+    794          		fmt = FS_FAT32;
+   \                     ??pf_mount_11:
+   \   000194   79400300     MOV.B   #0x3, R9
+    795          #else
+    796          		return FR_NO_FILESYSTEM;
+    797          #endif
+    798          
+    799          	fs->fs_type = fmt;		/* FAT sub-type */
+   \                     ??pf_mount_12:
+   \   000198   C8490000     MOV.B   R9, 0(R8)
+    800          	if (_FS_FAT32 && fmt == FS_FAT32)
+   \   00019C   79900300     CMP.B   #0x3, R9
+   \   0001A0   1120         JNE     ??pf_mount_13
+    801          		fs->dirbase = LD_DWORD(buf+(BPB_RootClus-13));	/* Root directory start cluster */
+   \   0001A2   5D411F00     MOV.B   0x1f(SP), R13
+   \   0001A6   5E412000     MOV.B   0x20(SP), R14
+   \   0001AA   8E10         SWPB    R14
+   \   0001AC   5B412100     MOV.B   0x21(SP), R11
+   \   0001B0   5F412200     MOV.B   0x22(SP), R15
+   \   0001B4   8F10         SWPB    R15
+   \   0001B6   0FDB         BIS.W   R11, R15
+   \   0001B8   0EDD         BIS.W   R13, R14
+   \   0001BA   884E0E00     MOV.W   R14, 0xe(R8)
+   \   0001BE   884F1000     MOV.W   R15, 0x10(R8)
+   \   0001C2   0A3C         JMP     ??pf_mount_14
+    802          	else
+    803          		fs->dirbase = fs->fatbase + fsize;				/* Root directory start sector (lba) */
+   \                     ??pf_mount_13:
+   \   0001C4   0E46         MOV.W   R6, R14
+   \   0001C6   0F47         MOV.W   R7, R15
+   \   0001C8   1E580A00     ADD.W   0xa(R8), R14
+   \   0001CC   1F680C00     ADDC.W  0xc(R8), R15
+   \   0001D0   884E0E00     MOV.W   R14, 0xe(R8)
+   \   0001D4   884F1000     MOV.W   R15, 0x10(R8)
+    804          	fs->database = fs->fatbase + fsize + fs->n_rootdir / 16;	/* Data start sector (lba) */
+   \                     ??pf_mount_14:
+   \   0001D8   16580A00     ADD.W   0xa(R8), R6
+   \   0001DC   17680C00     ADDC.W  0xc(R8), R7
+   \   0001E0   1E480400     MOV.W   0x4(R8), R14
+   \   0001E4   12C3         CLRC
+   \   0001E6   0E10         RRC.W   R14
+   \   0001E8   0E11         RRA.W   R14
+   \   0001EA   0E11         RRA.W   R14
+   \   0001EC   0E11         RRA.W   R14
+   \   0001EE   065E         ADD.W   R14, R6
+   \   0001F0   0763         ADDC.W  #0x0, R7
+   \   0001F2   88461200     MOV.W   R6, 0x12(R8)
+   \   0001F6   88471400     MOV.W   R7, 0x14(R8)
+    805          
+    806          	fs->flag = 0;
+   \   0001FA   C8430100     MOV.B   #0x0, 0x1(R8)
+    807          	FatFs = fs;
+   \   0001FE   8248....     MOV.W   R8, &FatFs
+    808          
+    809          	return FR_OK;
+   \   000202   4C43         MOV.B   #0x0, R12
+   \                     ??pf_mount_2:
+   \   000204   31502400     ADD.W   #0x24, SP
+   \   000208   3040....     BR      #?Epilogue6
+    810          }
+    811          
+    812          
+    813          
+    814          
+    815          /*-----------------------------------------------------------------------*/
+    816          /* Open or Create a File                                                 */
+    817          /*-----------------------------------------------------------------------*/
+    818          
+
+   \                                 In  segment CODE, align 2
+    819          FRESULT pf_open (
+   \                     pf_open:
+    820          	const char *path	/* Pointer to the file name */
+    821          )
+    822          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   31803C00     SUB.W   #0x3c, SP
+    823          	FRESULT res;
+    824          	DIR dj;
+    825          	BYTE sp[12], dir[32];
+    826          	FATFS *fs = FatFs;
+   \   00000A   1A42....     MOV.W   &FatFs, R10
+    827          
+    828          
+    829          	if (!fs)						/* Check file system */
+   \   00000E   0A93         CMP.W   #0x0, R10
+   \   000010   0320         JNE     ??pf_open_2
+    830          		return FR_NOT_ENABLED;
+   \   000012   7C400600     MOV.B   #0x6, R12
+   \   000016   423C         JMP     ??pf_open_1
+    831          
+    832          	fs->flag = 0;
+   \                     ??pf_open_2:
+   \   000018   CA430100     MOV.B   #0x0, 0x1(R10)
+    833          	dj.fn = sp;
+   \   00001C   0F41         MOV.W   SP, R15
+   \   00001E   3F502000     ADD.W   #0x20, R15
+   \   000022   814F2E00     MOV.W   R15, 0x2e(SP)
+    834          	res = follow_path(&dj, dir, path);	/* Follow the file path */
+   \   000026   0E4C         MOV.W   R12, R14
+   \   000028   0D41         MOV.W   SP, R13
+   \   00002A   0D53         ADD.W   #0x0, R13
+   \   00002C   0C41         MOV.W   SP, R12
+   \   00002E   3C502C00     ADD.W   #0x2c, R12
+   \   000032   B012....     CALL    #follow_path
+    835          	if (res != FR_OK) return res;		/* Follow failed */
+   \   000036   4C93         CMP.B   #0x0, R12
+   \   000038   3120         JNE     ??pf_open_1
+    836          	if (!dir[0] || (dir[DIR_Attr] & AM_DIR))	/* It is a directory */
+   \   00003A   C1930000     CMP.B   #0x0, 0(SP)
+   \   00003E   0424         JEQ     ??pf_open_3
+   \   000040   F1B010000B00 BIT.B   #0x10, 0xb(SP)
+   \   000046   0328         JNC     ??pf_open_4
+    837          		return FR_NO_FILE;
+   \                     ??pf_open_3:
+   \   000048   7C400300     MOV.B   #0x3, R12
+   \   00004C   273C         JMP     ??pf_open_1
+    838          
+    839          	fs->org_clust = LD_CLUST(dir);			/* File start cluster */
+   \                     ??pf_open_4:
+   \   00004E   5F411A00     MOV.B   0x1a(SP), R15
+   \   000052   5E411B00     MOV.B   0x1b(SP), R14
+   \   000056   8E10         SWPB    R14
+   \   000058   0EDF         BIS.W   R15, R14
+   \   00005A   5D411400     MOV.B   0x14(SP), R13
+   \   00005E   5F411500     MOV.B   0x15(SP), R15
+   \   000062   8F10         SWPB    R15
+   \   000064   0FDD         BIS.W   R13, R15
+   \   000066   8A4E1E00     MOV.W   R14, 0x1e(R10)
+   \   00006A   8A4F2000     MOV.W   R15, 0x20(R10)
+    840          	fs->fsize = LD_DWORD(dir+DIR_FileSize);	/* File size */
+   \   00006E   58411C00     MOV.B   0x1c(SP), R8
+   \   000072   5E411D00     MOV.B   0x1d(SP), R14
+   \   000076   8E10         SWPB    R14
+   \   000078   5D411E00     MOV.B   0x1e(SP), R13
+   \   00007C   4C43         MOV.B   #0x0, R12
+   \   00007E   5F411F00     MOV.B   0x1f(SP), R15
+   \   000082   8F10         SWPB    R15
+   \   000084   0FDD         BIS.W   R13, R15
+   \   000086   0ED8         BIS.W   R8, R14
+   \   000088   8A4E1A00     MOV.W   R14, 0x1a(R10)
+   \   00008C   8A4F1C00     MOV.W   R15, 0x1c(R10)
+    841          	fs->fptr = 0;						/* File pointer */
+   \   000090   8A431600     MOV.W   #0x0, 0x16(R10)
+   \   000094   8A431800     MOV.W   #0x0, 0x18(R10)
+    842          	fs->flag = FA_OPENED;
+   \   000098   DA430100     MOV.B   #0x1, 0x1(R10)
+    843          
+    844          	return FR_OK;
+   \                     ??pf_open_1:
+   \   00009C   31503C00     ADD.W   #0x3c, SP
+   \   0000A0   3040....     BR      #?Epilogue3
+    845          }
+    846          
+    847          
+    848          
+    849          
+    850          /*-----------------------------------------------------------------------*/
+    851          /* Read File                                                             */
+    852          /*-----------------------------------------------------------------------*/
+    853          #if _USE_READ
+    854          
+
+   \                                 In  segment CODE, align 2
+    855          FRESULT pf_read (
+   \                     pf_read:
+    856          	void* buff,		/* Pointer to the read buffer (NULL:Forward data to the stream)*/
+    857          	WORD btr,		/* Number of bytes to read */
+    858          	WORD* br		/* Pointer to number of bytes read */
+    859          )
+    860          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0612         PUSH.W  R6
+   \   00000A   0712         PUSH.W  R7
+   \   00000C   074C         MOV.W   R12, R7
+   \   00000E   0A4D         MOV.W   R13, R10
+   \   000010   064E         MOV.W   R14, R6
+    861          	DRESULT dr;
+    862          	CLUST clst;
+    863          	DWORD sect, remain;
+    864          	WORD rcnt;
+    865          	BYTE cs, *rbuff = buff;
+   \   000012   084C         MOV.W   R12, R8
+    866          	FATFS *fs = FatFs;
+   \   000014   1B42....     MOV.W   &FatFs, R11
+    867          
+    868          
+    869          	*br = 0;
+   \   000018   8E430000     MOV.W   #0x0, 0(R14)
+    870          	if (!fs) return FR_NOT_ENABLED;		/* Check file system */
+   \   00001C   0B93         CMP.W   #0x0, R11
+   \   00001E   0320         JNE     ??pf_read_2
+   \   000020   7C400600     MOV.B   #0x6, R12
+   \   000024   743C         JMP     ??pf_read_3
+    871          	if (!(fs->flag & FA_OPENED))		/* Check if opened */
+   \                     ??pf_read_2:
+   \   000026   DBB30100     BIT.B   #0x1, 0x1(R11)
+   \   00002A   032C         JC      ??pf_read_4
+    872          		return FR_NOT_OPENED;
+   \   00002C   7C400500     MOV.B   #0x5, R12
+   \   000030   6E3C         JMP     ??pf_read_3
+   \                     ??pf_read_4:
+   \   000032   1C4B1A00     MOV.W   0x1a(R11), R12
+   \   000036   1D4B1C00     MOV.W   0x1c(R11), R13
+   \   00003A   1C8B1600     SUB.W   0x16(R11), R12
+   \   00003E   1D7B1800     SUBC.W  0x18(R11), R13
+    873          
+    874          	remain = fs->fsize - fs->fptr;
+    875          	if (btr > remain) btr = (WORD)remain;			/* Truncate btr by remaining bytes */
+   \   000042   1720         JNE     ??pf_read_5
+   \   000044   0C9A         CMP.W   R10, R12
+   \   000046   152C         JC      ??pf_read_5
+   \   000048   0A4C         MOV.W   R12, R10
+   \   00004A   133C         JMP     ??pf_read_5
+    876          
+    877          	while (btr)	{									/* Repeat until all data transferred */
+    878          		if ((fs->fptr % 512) == 0) {				/* On the sector boundary? */
+    879          			cs = (BYTE)(fs->fptr / 512 & (fs->csize - 1));	/* Sector offset in the cluster */
+    880          			if (!cs) {								/* On the cluster boundary? */
+    881          				clst = (fs->fptr == 0) ?			/* On the top of the file? */
+    882          					fs->org_clust : get_fat(fs->curr_clust);
+    883          				if (clst <= 1) goto fr_abort;
+    884          				fs->curr_clust = clst;				/* Update current cluster */
+    885          			}
+    886          			sect = clust2sect(fs->curr_clust);		/* Get current sector */
+    887          			if (!sect) goto fr_abort;
+    888          			fs->dsect = sect + cs;
+    889          		}
+    890          		rcnt = (WORD)(512 - (fs->fptr % 512));		/* Get partial sector data from sector buffer */
+    891          		if (rcnt > btr) rcnt = btr;
+    892          		dr = disk_readp(!buff ? 0 : rbuff, fs->dsect, (WORD)(fs->fptr % 512), rcnt);
+   \                     ??pf_read_0:
+   \   00004C   0C48         MOV.W   R8, R12
+    893          		if (dr) goto fr_abort;
+   \                     ??pf_read_1:
+   \   00004E   0912         PUSH.W  R9
+   \   000050   1E4B2600     MOV.W   0x26(R11), R14
+   \   000054   1F4B2800     MOV.W   0x28(R11), R15
+   \   000058   B012....     CALL    #disk_readp
+   \   00005C   2153         ADD.W   #0x2, SP
+   \   00005E   4C93         CMP.B   #0x0, R12
+   \   000060   5320         JNE     ??pf_read_6
+    894          		fs->fptr += rcnt; rbuff += rcnt;			/* Update pointers and counters */
+   \   000062   8B591600     ADD.W   R9, 0x16(R11)
+   \   000066   8B631800     ADDC.W  #0x0, 0x18(R11)
+   \   00006A   0859         ADD.W   R9, R8
+    895          		btr -= rcnt; *br += rcnt;
+   \   00006C   0A89         SUB.W   R9, R10
+   \   00006E   86590000     ADD.W   R9, 0(R6)
+   \                     ??pf_read_5:
+   \   000072   0A93         CMP.W   #0x0, R10
+   \   000074   4724         JEQ     ??pf_read_7
+   \   000076   1E4B1600     MOV.W   0x16(R11), R14
+   \   00007A   1F4B1800     MOV.W   0x18(R11), R15
+   \   00007E   3EB0FF01     BIT.W   #0x1ff, R14
+   \   000082   3220         JNE     ??pf_read_8
+   \   000084   0C4E         MOV.W   R14, R12
+   \   000086   0D4F         MOV.W   R15, R13
+   \   000088   B012....     CALL    #?ShiftRight32u_9
+   \   00008C   494C         MOV.B   R12, R9
+   \   00008E   5D4B0200     MOV.B   0x2(R11), R13
+   \   000092   7D53         ADD.B   #0xff, R13
+   \   000094   49FD         AND.B   R13, R9
+   \   000096   1720         JNE     ??pf_read_9
+   \   000098   0D4E         MOV.W   R14, R13
+   \   00009A   0DDF         BIS.W   R15, R13
+   \   00009C   0D93         CMP.W   #0x0, R13
+   \   00009E   0520         JNE     ??pf_read_10
+   \   0000A0   1C4B1E00     MOV.W   0x1e(R11), R12
+   \   0000A4   1D4B2000     MOV.W   0x20(R11), R13
+   \   0000A8   063C         JMP     ??pf_read_11
+   \                     ??pf_read_10:
+   \   0000AA   1C4B2200     MOV.W   0x22(R11), R12
+   \   0000AE   1D4B2400     MOV.W   0x24(R11), R13
+   \   0000B2   B012....     CALL    #get_fat
+   \                     ??pf_read_11:
+   \   0000B6   0D93         CMP.W   #0x0, R13
+   \   0000B8   0220         JNE     ??pf_read_12
+   \   0000BA   2C93         CMP.W   #0x2, R12
+   \   0000BC   2528         JNC     ??pf_read_6
+   \                     ??pf_read_12:
+   \   0000BE   8B4C2200     MOV.W   R12, 0x22(R11)
+   \   0000C2   8B4D2400     MOV.W   R13, 0x24(R11)
+   \                     ??pf_read_9:
+   \   0000C6   1C4B2200     MOV.W   0x22(R11), R12
+   \   0000CA   1D4B2400     MOV.W   0x24(R11), R13
+   \   0000CE   B012....     CALL    #clust2sect
+   \   0000D2   0F4C         MOV.W   R12, R15
+   \   0000D4   0FDD         BIS.W   R13, R15
+   \   0000D6   0F93         CMP.W   #0x0, R15
+   \   0000D8   1724         JEQ     ??pf_read_6
+   \   0000DA   4E49         MOV.B   R9, R14
+   \   0000DC   0C5E         ADD.W   R14, R12
+   \   0000DE   0D63         ADDC.W  #0x0, R13
+   \   0000E0   8B4C2600     MOV.W   R12, 0x26(R11)
+   \   0000E4   8B4D2800     MOV.W   R13, 0x28(R11)
+   \                     ??pf_read_8:
+   \   0000E8   1D4B1600     MOV.W   0x16(R11), R13
+   \   0000EC   3DF0FF01     AND.W   #0x1ff, R13
+   \   0000F0   39400002     MOV.W   #0x200, R9
+   \   0000F4   098D         SUB.W   R13, R9
+   \   0000F6   0A99         CMP.W   R9, R10
+   \   0000F8   012C         JC      ??pf_read_13
+   \   0000FA   094A         MOV.W   R10, R9
+   \                     ??pf_read_13:
+   \   0000FC   0793         CMP.W   #0x0, R7
+   \   0000FE   A623         JNE     ??pf_read_0
+   \   000100   0C43         MOV.W   #0x0, R12
+   \   000102   A53F         JMP     ??pf_read_1
+    896          	}
+    897          
+    898          	return FR_OK;
+   \                     ??pf_read_7:
+   \   000104   4C43         MOV.B   #0x0, R12
+   \   000106   033C         JMP     ??pf_read_3
+    899          
+    900          fr_abort:
+    901          	fs->flag = 0;
+   \                     ??pf_read_6:
+   \   000108   CB430100     MOV.B   #0x0, 0x1(R11)
+    902          	return FR_DISK_ERR;
+   \   00010C   5C43         MOV.B   #0x1, R12
+   \                     ??pf_read_3:
+   \   00010E   3040....     BR      #?Epilogue6
+    903          }
+    904          #endif
+    905          
+    906          
+    907          
+    908          /*-----------------------------------------------------------------------*/
+    909          /* Write File                                                            */
+    910          /*-----------------------------------------------------------------------*/
+    911          #if _USE_WRITE
+    912          
+
+   \                                 In  segment CODE, align 2
+    913          FRESULT pf_write (
+   \                     pf_write:
+    914          	const void* buff,	/* Pointer to the data to be written */
+    915          	WORD btw,			/* Number of bytes to write (0:Finalize the current write operation) */
+    916          	WORD* bw			/* Pointer to number of bytes written */
+    917          )
+    918          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0912         PUSH.W  R9
+   \   000008   0612         PUSH.W  R6
+   \   00000A   0712         PUSH.W  R7
+   \   00000C   0A4D         MOV.W   R13, R10
+   \   00000E   074E         MOV.W   R14, R7
+    919          	CLUST clst;
+    920          	DWORD sect, remain;
+    921          	const BYTE *p = buff;
+   \   000010   064C         MOV.W   R12, R6
+    922          	BYTE cs;
+    923          	WORD wcnt;
+    924          	FATFS *fs = FatFs;
+   \   000012   1B42....     MOV.W   &FatFs, R11
+    925          
+    926          
+    927          	*bw = 0;
+   \   000016   8E430000     MOV.W   #0x0, 0(R14)
+    928          	if (!fs) return FR_NOT_ENABLED;		/* Check file system */
+   \   00001A   0B93         CMP.W   #0x0, R11
+   \   00001C   0320         JNE     ??pf_write_4
+   \   00001E   7C400600     MOV.B   #0x6, R12
+   \   000022   9C3C         JMP     ??pf_write_5
+    929          	if (!(fs->flag & FA_OPENED))		/* Check if opened */
+   \                     ??pf_write_4:
+   \   000024   DBB30100     BIT.B   #0x1, 0x1(R11)
+   \   000028   032C         JC      ??pf_write_6
+    930          		return FR_NOT_OPENED;
+   \   00002A   7C400500     MOV.B   #0x5, R12
+   \   00002E   963C         JMP     ??pf_write_5
+    931          
+    932          	if (!btw) {		/* Finalize request */
+   \                     ??pf_write_6:
+   \   000030   0D93         CMP.W   #0x0, R13
+   \   000032   1020         JNE     ??pf_write_7
+    933          		if ((fs->flag & FA__WIP) && disk_writep(0, 0)) goto fw_abort;
+   \   000034   FBB040000100 BIT.B   #0x40, 0x1(R11)
+   \   00003A   0728         JNC     ??pf_write_8
+   \   00003C   0E43         MOV.W   #0x0, R14
+   \   00003E   0F43         MOV.W   #0x0, R15
+   \   000040   0C43         MOV.W   #0x0, R12
+   \   000042   B012....     CALL    #disk_writep
+   \   000046   4C93         CMP.B   #0x0, R12
+   \   000048   8620         JNE     ??pf_write_9
+    934          		fs->flag &= ~FA__WIP;
+   \                     ??pf_write_8:
+   \   00004A   FBC040000100 BIC.B   #0x40, 0x1(R11)
+    935          		return FR_OK;
+   \   000050   4C43         MOV.B   #0x0, R12
+   \   000052   843C         JMP     ??pf_write_5
+    936          	} else {		/* Write data request */
+    937          		if (!(fs->flag & FA__WIP))		/* Round-down fptr to the sector boundary */
+   \                     ??pf_write_7:
+   \   000054   FBB040000100 BIT.B   #0x40, 0x1(R11)
+   \   00005A   032C         JC      ??pf_write_10
+    938          			fs->fptr &= 0xFFFFFE00;
+   \   00005C   BBF000FE1600 AND.W   #0xfe00, 0x16(R11)
+    939          	}
+    940          	remain = fs->fsize - fs->fptr;
+   \                     ??pf_write_10:
+   \   000062   094B         MOV.W   R11, R9
+   \   000064   39501600     ADD.W   #0x16, R9
+   \   000068   1C4B1A00     MOV.W   0x1a(R11), R12
+   \   00006C   1D4B1C00     MOV.W   0x1c(R11), R13
+   \   000070   2C89         SUB.W   @R9, R12
+   \   000072   1D790200     SUBC.W  0x2(R9), R13
+    941          	if (btw > remain) btw = (WORD)remain;			/* Truncate btw by remaining bytes */
+   \   000076   5220         JNE     ??pf_write_11
+   \   000078   0C9A         CMP.W   R10, R12
+   \   00007A   502C         JC      ??pf_write_11
+   \   00007C   0A4C         MOV.W   R12, R10
+   \   00007E   4E3C         JMP     ??pf_write_11
+    942          
+    943          	while (btw)	{									/* Repeat until all data transferred */
+    944          		if (((WORD)fs->fptr % 512) == 0) {			/* On the sector boundary? */
+    945          			cs = (BYTE)(fs->fptr / 512 & (fs->csize - 1));	/* Sector offset in the cluster */
+    946          			if (!cs) {								/* On the cluster boundary? */
+    947          				clst = (fs->fptr == 0) ?			/* On the top of the file? */
+    948          					fs->org_clust : get_fat(fs->curr_clust);
+   \                     ??pf_write_2:
+   \   000080   1C4B2200     MOV.W   0x22(R11), R12
+   \   000084   1D4B2400     MOV.W   0x24(R11), R13
+   \   000088   B012....     CALL    #get_fat
+    949          				if (clst <= 1) goto fw_abort;
+   \                     ??pf_write_3:
+   \   00008C   0D93         CMP.W   #0x0, R13
+   \   00008E   0220         JNE     ??pf_write_12
+   \   000090   2C93         CMP.W   #0x2, R12
+   \   000092   6128         JNC     ??pf_write_9
+    950          				fs->curr_clust = clst;				/* Update current cluster */
+   \                     ??pf_write_12:
+   \   000094   8B4C2200     MOV.W   R12, 0x22(R11)
+   \   000098   8B4D2400     MOV.W   R13, 0x24(R11)
+    951          			}
+    952          			sect = clust2sect(fs->curr_clust);		/* Get current sector */
+   \                     ??pf_write_1:
+   \   00009C   1C4B2200     MOV.W   0x22(R11), R12
+   \   0000A0   1D4B2400     MOV.W   0x24(R11), R13
+   \   0000A4   B012....     CALL    #clust2sect
+    953          			if (!sect) goto fw_abort;
+   \   0000A8   0F4C         MOV.W   R12, R15
+   \   0000AA   0FDD         BIS.W   R13, R15
+   \   0000AC   0F93         CMP.W   #0x0, R15
+   \   0000AE   5324         JEQ     ??pf_write_9
+    954          			fs->dsect = sect + cs;
+   \   0000B0   0E4C         MOV.W   R12, R14
+   \   0000B2   0F4D         MOV.W   R13, R15
+   \   0000B4   0E58         ADD.W   R8, R14
+   \   0000B6   0F63         ADDC.W  #0x0, R15
+   \   0000B8   8B4E2600     MOV.W   R14, 0x26(R11)
+   \   0000BC   8B4F2800     MOV.W   R15, 0x28(R11)
+    955          			if (disk_writep(0, fs->dsect)) goto fw_abort;	/* Initiate a sector write operation */
+   \   0000C0   0C43         MOV.W   #0x0, R12
+   \   0000C2   B012....     CALL    #disk_writep
+   \   0000C6   4C93         CMP.B   #0x0, R12
+   \   0000C8   4620         JNE     ??pf_write_9
+    956          			fs->flag |= FA__WIP;
+   \   0000CA   FBD040000100 BIS.B   #0x40, 0x1(R11)
+    957          		}
+    958          		wcnt = 512 - ((WORD)fs->fptr % 512);		/* Number of bytes to write to the sector */
+   \                     ??pf_write_0:
+   \   0000D0   38400002     MOV.W   #0x200, R8
+   \   0000D4   2F49         MOV.W   @R9, R15
+   \   0000D6   3FF0FF01     AND.W   #0x1ff, R15
+   \   0000DA   088F         SUB.W   R15, R8
+    959          		if (wcnt > btw) wcnt = btw;
+   \   0000DC   0A98         CMP.W   R8, R10
+   \   0000DE   012C         JC      ??pf_write_13
+   \   0000E0   084A         MOV.W   R10, R8
+    960          		if (disk_writep(p, wcnt)) goto fw_abort;	/* Send data to the sector */
+   \                     ??pf_write_13:
+   \   0000E2   0E48         MOV.W   R8, R14
+   \   0000E4   0F43         MOV.W   #0x0, R15
+   \   0000E6   0C46         MOV.W   R6, R12
+   \   0000E8   B012....     CALL    #disk_writep
+   \   0000EC   4C93         CMP.B   #0x0, R12
+   \   0000EE   3320         JNE     ??pf_write_9
+    961          		fs->fptr += wcnt; p += wcnt;				/* Update pointers and counters */
+   \   0000F0   0F43         MOV.W   #0x0, R15
+   \   0000F2   8B581600     ADD.W   R8, 0x16(R11)
+   \   0000F6   8B631800     ADDC.W  #0x0, 0x18(R11)
+   \   0000FA   0658         ADD.W   R8, R6
+    962          		btw -= wcnt; *bw += wcnt;
+   \   0000FC   0A88         SUB.W   R8, R10
+   \   0000FE   87580000     ADD.W   R8, 0(R7)
+    963          		if (((WORD)fs->fptr % 512) == 0) {
+   \   000102   B9B0FF010000 BIT.W   #0x1ff, 0(R9)
+   \   000108   0920         JNE     ??pf_write_11
+    964          			if (disk_writep(0, 0)) goto fw_abort;	/* Finalize the currtent secter write operation */
+   \   00010A   0E43         MOV.W   #0x0, R14
+   \   00010C   0C43         MOV.W   #0x0, R12
+   \   00010E   B012....     CALL    #disk_writep
+   \   000112   4C93         CMP.B   #0x0, R12
+   \   000114   2020         JNE     ??pf_write_9
+    965          			fs->flag &= ~FA__WIP;
+   \   000116   FBC040000100 BIC.B   #0x40, 0x1(R11)
+    966          		}
+   \                     ??pf_write_11:
+   \   00011C   0A93         CMP.W   #0x0, R10
+   \   00011E   1924         JEQ     ??pf_write_14
+   \   000120   2E49         MOV.W   @R9, R14
+   \   000122   1F490200     MOV.W   0x2(R9), R15
+   \   000126   3EB0FF01     BIT.W   #0x1ff, R14
+   \   00012A   D223         JNE     ??pf_write_0
+   \   00012C   0C4E         MOV.W   R14, R12
+   \   00012E   0D4F         MOV.W   R15, R13
+   \   000130   B012....     CALL    #?ShiftRight32u_9
+   \   000134   484C         MOV.B   R12, R8
+   \   000136   5D4B0200     MOV.B   0x2(R11), R13
+   \   00013A   7D53         ADD.B   #0xff, R13
+   \   00013C   48FD         AND.B   R13, R8
+   \   00013E   AE23         JNE     ??pf_write_1
+   \   000140   0D4E         MOV.W   R14, R13
+   \   000142   0DDF         BIS.W   R15, R13
+   \   000144   0D93         CMP.W   #0x0, R13
+   \   000146   9C23         JNE     ??pf_write_2
+   \   000148   1C4B1E00     MOV.W   0x1e(R11), R12
+   \   00014C   1D4B2000     MOV.W   0x20(R11), R13
+   \   000150   9D3F         JMP     ??pf_write_3
+    967          	}
+    968          
+    969          	return FR_OK;
+   \                     ??pf_write_14:
+   \   000152   4C43         MOV.B   #0x0, R12
+   \   000154   033C         JMP     ??pf_write_5
+    970          
+    971          fw_abort:
+    972          	fs->flag = 0;
+   \                     ??pf_write_9:
+   \   000156   CB430100     MOV.B   #0x0, 0x1(R11)
+    973          	return FR_DISK_ERR;
+   \   00015A   5C43         MOV.B   #0x1, R12
+   \                     ??pf_write_5:
+   \   00015C   3040....     BR      #?Epilogue6
+    974          }
+    975          #endif
+    976          
+    977          
+    978          
+    979          /*-----------------------------------------------------------------------*/
+    980          /* Seek File R/W Pointer                                                 */
+    981          /*-----------------------------------------------------------------------*/
+    982          #if _USE_LSEEK
+    983          
+
+   \                                 In  segment CODE, align 2
+    984          FRESULT pf_lseek (
+   \                     pf_lseek:
+    985          	DWORD ofs		/* File pointer from top of file */
+    986          )
+    987          {
+   \   000000   0A12         PUSH.W  R10
+   \   000002   0B12         PUSH.W  R11
+   \   000004   0812         PUSH.W  R8
+   \   000006   0612         PUSH.W  R6
+   \   000008   0712         PUSH.W  R7
+   \   00000A   0412         PUSH.W  R4
+   \   00000C   0512         PUSH.W  R5
+   \   00000E   0A4C         MOV.W   R12, R10
+   \   000010   0B4D         MOV.W   R13, R11
+    988          	CLUST clst;
+    989          	DWORD bcs, sect, ifptr;
+    990          	FATFS *fs = FatFs;
+   \   000012   1842....     MOV.W   &FatFs, R8
+    991          
+    992          
+    993          	if (!fs) return FR_NOT_ENABLED;		/* Check file system */
+   \   000016   0893         CMP.W   #0x0, R8
+   \   000018   0320         JNE     ??pf_lseek_1
+   \   00001A   7C400600     MOV.B   #0x6, R12
+   \   00001E   9D3C         JMP     ??pf_lseek_2
+    994          	if (!(fs->flag & FA_OPENED))		/* Check if opened */
+   \                     ??pf_lseek_1:
+   \   000020   D8B30100     BIT.B   #0x1, 0x1(R8)
+   \   000024   032C         JC      ??pf_lseek_3
+    995          			return FR_NOT_OPENED;
+   \   000026   7C400500     MOV.B   #0x5, R12
+   \   00002A   973C         JMP     ??pf_lseek_2
+    996          
+    997          	if (ofs > fs->fsize) ofs = fs->fsize;	/* Clip offset with the file size */
+   \                     ??pf_lseek_3:
+   \   00002C   1E481A00     MOV.W   0x1a(R8), R14
+   \   000030   1F481C00     MOV.W   0x1c(R8), R15
+   \   000034   0F9D         CMP.W   R13, R15
+   \   000036   0328         JNC     ??pf_lseek_4
+   \   000038   0420         JNE     ??pf_lseek_5
+   \   00003A   0E9C         CMP.W   R12, R14
+   \   00003C   022C         JC      ??pf_lseek_5
+   \                     ??pf_lseek_4:
+   \   00003E   0A4E         MOV.W   R14, R10
+   \   000040   0B4F         MOV.W   R15, R11
+    998          	ifptr = fs->fptr;
+   \                     ??pf_lseek_5:
+   \   000042   14481600     MOV.W   0x16(R8), R4
+   \   000046   15481800     MOV.W   0x18(R8), R5
+    999          	fs->fptr = 0;
+   \   00004A   88431600     MOV.W   #0x0, 0x16(R8)
+   \   00004E   88431800     MOV.W   #0x0, 0x18(R8)
+   1000          	if (ofs > 0) {
+   \   000052   0F4A         MOV.W   R10, R15
+   \   000054   0FDB         BIS.W   R11, R15
+   \   000056   0F93         CMP.W   #0x0, R15
+   \   000058   7B24         JEQ     ??pf_lseek_6
+   1001          		bcs = (DWORD)fs->csize * 512;	/* Cluster size (byte) */
+   \   00005A   5C480200     MOV.B   0x2(R8), R12
+   \   00005E   0D43         MOV.W   #0x0, R13
+   \   000060   B012....     CALL    #?ShiftLeft32_9
+   \   000064   064C         MOV.W   R12, R6
+   \   000066   074D         MOV.W   R13, R7
+   1002          		if (ifptr > 0 &&
+   1003          			(ofs - 1) / bcs >= (ifptr - 1) / bcs) {	/* When seek to same or following cluster, */
+   \   000068   0F44         MOV.W   R4, R15
+   \   00006A   0FD5         BIS.W   R5, R15
+   \   00006C   0F93         CMP.W   #0x0, R15
+   \   00006E   2A24         JEQ     ??pf_lseek_7
+   \   000070   3453         ADD.W   #0xffff, R4
+   \   000072   3563         ADDC.W  #0xffff, R5
+   \   000074   0C4A         MOV.W   R10, R12
+   \   000076   0D4B         MOV.W   R11, R13
+   \   000078   3C53         ADD.W   #0xffff, R12
+   \   00007A   3D63         ADDC.W  #0xffff, R13
+   \   00007C   0E46         MOV.W   R6, R14
+   \   00007E   0F47         MOV.W   R7, R15
+   \   000080   B012....     CALL    #?DivMod32u
+   \   000084   0D12         PUSH.W  R13
+   \   000086   0C12         PUSH.W  R12
+   \   000088   0C44         MOV.W   R4, R12
+   \   00008A   0D45         MOV.W   R5, R13
+   \   00008C   0E46         MOV.W   R6, R14
+   \   00008E   0F47         MOV.W   R7, R15
+   \   000090   B012....     CALL    #?DivMod32u
+   \   000094   3E41         POP.W   R14
+   \   000096   3F41         POP.W   R15
+   \   000098   0F9D         CMP.W   R13, R15
+   \   00009A   1428         JNC     ??pf_lseek_7
+   \   00009C   0220         JNE     ??pf_lseek_8
+   \   00009E   0E9C         CMP.W   R12, R14
+   \   0000A0   1128         JNC     ??pf_lseek_7
+   1004          			fs->fptr = (ifptr - 1) & ~(bcs - 1);	/* start from the current cluster */
+   \                     ??pf_lseek_8:
+   \   0000A2   0E46         MOV.W   R6, R14
+   \   0000A4   0F47         MOV.W   R7, R15
+   \   0000A6   3E53         ADD.W   #0xffff, R14
+   \   0000A8   3F63         ADDC.W  #0xffff, R15
+   \   0000AA   04CE         BIC.W   R14, R4
+   \   0000AC   05CF         BIC.W   R15, R5
+   \   0000AE   88441600     MOV.W   R4, 0x16(R8)
+   \   0000B2   88451800     MOV.W   R5, 0x18(R8)
+   1005          			ofs -= fs->fptr;
+   \   0000B6   0A84         SUB.W   R4, R10
+   \   0000B8   0B75         SUBC.W  R5, R11
+   1006          			clst = fs->curr_clust;
+   \   0000BA   1C482200     MOV.W   0x22(R8), R12
+   \   0000BE   1D482400     MOV.W   0x24(R8), R13
+   \   0000C2   203C         JMP     ??pf_lseek_9
+   1007          		} else {							/* When seek to back cluster, */
+   1008          			clst = fs->org_clust;			/* start from the first cluster */
+   \                     ??pf_lseek_7:
+   \   0000C4   1C481E00     MOV.W   0x1e(R8), R12
+   \   0000C8   1D482000     MOV.W   0x20(R8), R13
+   1009          			fs->curr_clust = clst;
+   \   0000CC   884C2200     MOV.W   R12, 0x22(R8)
+   \   0000D0   884D2400     MOV.W   R13, 0x24(R8)
+   \   0000D4   173C         JMP     ??pf_lseek_9
+   1010          		}
+   1011          		while (ofs > bcs) {				/* Cluster following loop */
+   1012          			clst = get_fat(clst);		/* Follow cluster chain */
+   \                     ??pf_lseek_0:
+   \   0000D6   B012....     CALL    #get_fat
+   1013          			if (clst <= 1 || clst >= fs->n_fatent) goto fe_abort;
+   \   0000DA   0D93         CMP.W   #0x0, R13
+   \   0000DC   0220         JNE     ??pf_lseek_10
+   \   0000DE   2C93         CMP.W   #0x2, R12
+   \   0000E0   3928         JNC     ??pf_lseek_11
+   \                     ??pf_lseek_10:
+   \   0000E2   1D980800     CMP.W   0x8(R8), R13
+   \   0000E6   0428         JNC     ??pf_lseek_12
+   \   0000E8   3520         JNE     ??pf_lseek_11
+   \   0000EA   1C980600     CMP.W   0x6(R8), R12
+   \   0000EE   322C         JC      ??pf_lseek_11
+   1014          			fs->curr_clust = clst;
+   \                     ??pf_lseek_12:
+   \   0000F0   884C2200     MOV.W   R12, 0x22(R8)
+   \   0000F4   884D2400     MOV.W   R13, 0x24(R8)
+   1015          			fs->fptr += bcs;
+   \   0000F8   88561600     ADD.W   R6, 0x16(R8)
+   \   0000FC   88671800     ADDC.W  R7, 0x18(R8)
+   1016          			ofs -= bcs;
+   \   000100   0A86         SUB.W   R6, R10
+   \   000102   0B77         SUBC.W  R7, R11
+   1017          		}
+   \                     ??pf_lseek_9:
+   \   000104   079B         CMP.W   R11, R7
+   \   000106   E72B         JNC     ??pf_lseek_0
+   \   000108   0220         JNE     ??pf_lseek_13
+   \   00010A   069A         CMP.W   R10, R6
+   \   00010C   E42B         JNC     ??pf_lseek_0
+   1018          		fs->fptr += ofs;
+   \                     ??pf_lseek_13:
+   \   00010E   885A1600     ADD.W   R10, 0x16(R8)
+   \   000112   886B1800     ADDC.W  R11, 0x18(R8)
+   1019          		sect = clust2sect(clst);		/* Current sector */
+   \   000116   B012....     CALL    #clust2sect
+   \   00011A   0A4C         MOV.W   R12, R10
+   \   00011C   0B4D         MOV.W   R13, R11
+   1020          		if (!sect) goto fe_abort;
+   \   00011E   0F4C         MOV.W   R12, R15
+   \   000120   0FDD         BIS.W   R13, R15
+   \   000122   0F93         CMP.W   #0x0, R15
+   \   000124   1724         JEQ     ??pf_lseek_11
+   1021          		fs->dsect = sect + (fs->fptr / 512 & (fs->csize - 1));
+   \   000126   1C481600     MOV.W   0x16(R8), R12
+   \   00012A   1D481800     MOV.W   0x18(R8), R13
+   \   00012E   B012....     CALL    #?ShiftRight32u_9
+   \   000132   5E480200     MOV.B   0x2(R8), R14
+   \   000136   3E53         ADD.W   #0xffff, R14
+   \   000138   0F4E         MOV.W   R14, R15
+   \   00013A   3FE3         XOR.W   #0xffff, R15
+   \   00013C   0F5F         RLA.W   R15
+   \   00013E   0F7F         SUBC.W  R15, R15
+   \   000140   0CFE         AND.W   R14, R12
+   \   000142   0DFF         AND.W   R15, R13
+   \   000144   0A5C         ADD.W   R12, R10
+   \   000146   0B6D         ADDC.W  R13, R11
+   \   000148   884A2600     MOV.W   R10, 0x26(R8)
+   \   00014C   884B2800     MOV.W   R11, 0x28(R8)
+   1022          	}
+   1023          
+   1024          	return FR_OK;
+   \                     ??pf_lseek_6:
+   \   000150   4C43         MOV.B   #0x0, R12
+   \   000152   033C         JMP     ??pf_lseek_2
+   1025          
+   1026          fe_abort:
+   1027          	fs->flag = 0;
+   \                     ??pf_lseek_11:
+   \   000154   C8430100     MOV.B   #0x0, 0x1(R8)
+   1028          	return FR_DISK_ERR;
+   \   000158   5C43         MOV.B   #0x1, R12
+   \                     ??pf_lseek_2:
+   \   00015A   3541         POP.W   R5
+   \   00015C   3441         POP.W   R4
+   \   00015E   3741         POP.W   R7
+   \   000160   3641         POP.W   R6
+   \   000162   3040....     BR      #?Epilogue3
+   1029          }
+   1030          #endif
+   1031          
+   1032          
+   1033          
+   1034          /*-----------------------------------------------------------------------*/
+   1035          /* Create a Directroy Object                                             */
+   1036          /*-----------------------------------------------------------------------*/
+   1037          #if _USE_DIR
+   1038          
+   1039          FRESULT pf_opendir (
+   1040          	DIR *dj,			/* Pointer to directory object to create */
+   1041          	const char *path	/* Pointer to the directory path */
+   1042          )
+   1043          {
+   1044          	FRESULT res;
+   1045          	BYTE sp[12], dir[32];
+   1046          	FATFS *fs = FatFs;
+   1047          
+   1048          
+   1049          	if (!fs) {				/* Check file system */
+   1050          		res = FR_NOT_ENABLED;
+   1051          	} else {
+   1052          		dj->fn = sp;
+   1053          		res = follow_path(dj, dir, path);		/* Follow the path to the directory */
+   1054          		if (res == FR_OK) {						/* Follow completed */
+   1055          			if (dir[0]) {						/* It is not the root dir */
+   1056          				if (dir[DIR_Attr] & AM_DIR)		/* The object is a directory */
+   1057          					dj->sclust = LD_CLUST(dir);
+   1058          				else							/* The object is not a directory */
+   1059          					res = FR_NO_PATH;
+   1060          			}
+   1061          			if (res == FR_OK)
+   1062          				res = dir_rewind(dj);			/* Rewind dir */
+   1063          		}
+   1064          		if (res == FR_NO_FILE) res = FR_NO_PATH;
+   1065          	}
+   1066          
+   1067          	return res;
+   1068          }
+   1069          
+   1070          
+   1071          
+   1072          
+   1073          /*-----------------------------------------------------------------------*/
+   1074          /* Read Directory Entry in Sequense                                      */
+   1075          /*-----------------------------------------------------------------------*/
+   1076          
+   1077          FRESULT pf_readdir (
+   1078          	DIR *dj,			/* Pointer to the open directory object */
+   1079          	FILINFO *fno		/* Pointer to file information to return */
+   1080          )
+   1081          {
+   1082          	FRESULT res;
+   1083          	BYTE sp[12], dir[32];
+   1084          	FATFS *fs = FatFs;
+   1085          
+   1086          
+   1087          	if (!fs) {				/* Check file system */
+   1088          		res = FR_NOT_ENABLED;
+   1089          	} else {
+   1090          		dj->fn = sp;
+   1091          		if (!fno) {
+   1092          			res = dir_rewind(dj);
+   1093          		} else {
+   1094          			res = dir_read(dj, dir);
+   1095          			if (res == FR_NO_FILE) {
+   1096          				dj->sect = 0;
+   1097          				res = FR_OK;
+   1098          			}
+   1099          			if (res == FR_OK) {				/* A valid entry is found */
+   1100          				get_fileinfo(dj, dir, fno);	/* Get the object information */
+   1101          				res = dir_next(dj);			/* Increment index for next */
+   1102          				if (res == FR_NO_FILE) {
+   1103          					dj->sect = 0;
+   1104          					res = FR_OK;
+   1105          				}
+   1106          			}
+   1107          		}
+   1108          	}
+   1109          
+   1110          	return res;
+   1111          }
+   1112          
+   1113          #endif /* _USE_DIR */
+   1114          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      10  check_fs
+            10 -> disk_readp
+       4  clust2sect
+      10  create_name
+            10 -> mem_set
+      10  dir_find
+             8 -> dir_next
+             8 -> dir_rewind
+            10 -> disk_readp
+             8 -> mem_cmp
+       8  dir_next
+             8 -> clust2sect
+             8 -> get_fat
+       4  dir_rewind
+             4 -> clust2sect
+       8  follow_path
+             8 -> create_name
+             8 -> dir_find
+             8 -> dir_rewind
+      12  get_fat
+            12 -> disk_readp
+       4  mem_cmp
+       2  mem_set
+      20  pf_lseek
+            16 -> clust2sect
+            16 -> get_fat
+      52  pf_mount
+            50 -> check_fs
+            50 -> disk_initialize
+            52 -> disk_readp
+      68  pf_open
+            68 -> follow_path
+      16  pf_read
+            14 -> clust2sect
+            16 -> disk_readp
+            14 -> get_fat
+      14  pf_write
+            14 -> clust2sect
+            14 -> disk_writep
+            14 -> get_fat
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  FatFs
+     140  check_fs
+      64  clust2sect
+     136  create_name
+     124  dir_find
+     156  dir_next
+     114  dir_rewind
+     172  follow_path
+     188  get_fat
+      26  mem_cmp
+      18  mem_set
+     358  pf_lseek
+     524  pf_mount
+     164  pf_open
+     274  pf_read
+     352  pf_write
+
+ 
+ 2 810 bytes in segment CODE
+     2 bytes in segment DATA16_Z
+ 
+ 2 810 bytes of CODE memory
+     2 bytes of DATA memory
+
+Errors: none
+Warnings: 4
